@@ -275,11 +275,11 @@ freeswitch:
 
 ## FIXMEs
 
- - [redis-sentinel first fails to start](./FIXME/redis)
+ - redis-sentinel first fails to start
    manual restart fixed, further playbook runs work
    could be due to redis-server being slow to startup?
    or something else? pending further investigations...
- - [bbb-install first fails to complete](./FIXME/bbb-install)
+ - bbb-install first fails to complete
    to be fair, problem did occure after my SSH session was closed
    (inactivity timeout), apt was still running on the bbb hosts,
    until it didn't, ... might not be reproducible under normal
@@ -290,7 +290,7 @@ freeswitch:
    another time...
  - Greenlight does not seem to trust our custom CA (OIDC), despite its
    being trusted on the system (?)
- - [Starting up BBB LiveStream](./FIXME/rtmp-start), systemd unit first
+ - Starting up BBB LiveStream, systemd unit first
    appears to fail starting our container, while further check would
    confirm it was/is properly running
  - creating a BBB room with the "Automatically join me into the room"
