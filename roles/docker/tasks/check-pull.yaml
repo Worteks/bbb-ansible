@@ -1,0 +1,11 @@
+- name: "Checks Image Cached - {{ image_url }}:{{ image_tag }}"
+  changed_when: False
+  failed_when: False
+  register: has_img
+  shell: "docker images | grep $(echo {{ image_url }} | sed 's|docker.io/||') | grep {{ image_tag }}"
+- name: "Caches Image - {{ image_url }}:{{ image_tag }}"
+  shell: "docker pull {{ image_url }}:{{ image_tag }}"
+  when:
+  - has_img is defined
+  - has_img.rc is defined
+  - has_img.rc != 0

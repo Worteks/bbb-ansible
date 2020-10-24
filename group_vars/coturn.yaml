@@ -1,0 +1,3 @@
+# generate yours with  openssl rand -hex 16
+coturn_auth_secret: 2bb5e9e3ff1737e8e4c9240bcb8dc887
+coturn_fqdn: turn.example.com

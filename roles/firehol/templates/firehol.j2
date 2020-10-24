@@ -1,0 +1,23 @@
+version 5
+trusted_networks="{{ firehol_trusted_networks | join(' ') }}"
+
+interface any WAN
+{% if firehol_allow_icmp %}
+	server icmp accept
+{% endif %}
+{% for entry in (firehol_opened_ports + (firehol_app_opened_ports | default([]))) if entry['name'] is defined and entry['value'] is defined %}
+	server custom {{ entry['name'] }} "{{ entry['value'] }}" default accept
+{% endfor %}
+{% for entry in (firehol_filtered_ports + (firehol_app_filtered_ports | default([]))) if entry['name'] is defined and entry['value'] is defined %}
+	server custom {{ entry['name'] }} "{{ entry['value'] }}" default accept src "$trusted_networks"
+{% endfor %}
+	client all accept
+{% if firehol_docker_if in ansible_interfaces %}
+
+interface {{ firehol_docker_if }} docker
+        policy accept
+
+router docker2lan inface {{ firehol_docker_if }} outface {{ ansible_default_ipv4['interface'] }}
+        masquerade
+        route all accept
+{% endif %}

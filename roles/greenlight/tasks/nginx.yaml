@@ -1,0 +1,14 @@
+- name: Installs Greenlight Virtualhost
+  notify: Reload Nginx
+  template:
+    dest: /etc/nginx/sites-available/greenlight.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: vhost.j2
+- name: Enables Greenlight Virtualhost
+  file:
+    dest: /etc/nginx/sites-enabled/greenlight.conf
+    src: /etc/nginx/sites-available/greenlight.conf
+    state: link
+  notify: Reload Nginx

@@ -1,0 +1,21 @@
+- name: "Ensures {{ ansible_fqdn }} Certificates Directory Exists"
+  file:
+    dest: "{{ crt_dir | default('/etc/nginx/ssl') }}"
+    group: root
+    mode: 0700
+    owner: root
+    state: directory
+- name: "Concatenates {{ ansible_fqdn }} CA & Certificate"
+  args:
+    chdir: /root/pki
+    creates: "{{ crt_dir | default('/etc/nginx/ssl') }}/fullchain.pem"
+  shell: "cat {{ ansible_fqdn }}.crt ca.crt >{{ crt_dir | default('/etc/nginx/ssl') }}/fullchain.pem"
+- name: "Copies {{ ansible_fqdn }} Key"
+  copy:
+    dest: "{{ crt_dir | default('/etc/nginx/ssl') }}/privkey.pem"
+    group: root
+    mode: 0600
+    owner: root
+    remote_src: yes
+    src: "/root/pki/{{ ansible_fqdn }}.key"
+- include_tasks: install-ca.yaml

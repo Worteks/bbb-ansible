@@ -1,0 +1,6 @@
+prometheus_cluster_name: bigbluebutton
+prometheus_eval_interval: 30s
+prometheus_images_release: v2.20.1
+prometheus_images_repo: docker.io/prom/prometheus
+prometheus_retention: 7d
+prometheus_scrape_interval: 10s

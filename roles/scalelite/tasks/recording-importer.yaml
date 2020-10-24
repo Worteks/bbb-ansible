@@ -1,0 +1,6 @@
+- include_role:
+    name: docker
+    tasks_from: check-pull.yaml
+  vars:
+    image_tag: "{{ scalelite_images_release }}-recording-importer"
+    image_url: "{{ scalelite_images_repo }}"

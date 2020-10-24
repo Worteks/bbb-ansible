@@ -1,0 +1,13 @@
+- name: Installs Firehol
+  apt:
+    name: firehol
+    state: present
+  environment:
+    RUNLEVEL: "1"
+- name: Installs Firehol Defaults Configuration
+  copy:
+    dest: /etc/default/firehol
+    group: root
+    mode: 0644
+    owner: root
+    src: defaults

@@ -1,0 +1,10 @@
+- include_tasks: facts.yaml
+- include_role:
+    name: pki
+    tasks_from: install-cert.yaml
+  when:
+  - bbb_uses_selfsigned | default(True)
+- include_tasks: install.yaml
+- include_tasks: discover.yaml
+- include_tasks: configure.yaml
+- include_tasks: nginx.yaml

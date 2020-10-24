@@ -1,0 +1,17 @@
+- name: Installs Scalelite API Working Directories
+  file:
+    dest: "{{ fl }}"
+    group: root
+    mode: 0755
+    owner: root
+    state: directory
+  loop:
+  - /var/log/scalelite-api
+  loop_control:
+    loop_var: fl
+- include_role:
+    name: docker
+    tasks_from: check-pull.yaml
+  vars:
+    image_tag: "{{ scalelite_images_release }}-api"
+    image_url: "{{ scalelite_images_repo }}"

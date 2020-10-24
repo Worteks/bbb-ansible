@@ -1,0 +1,62 @@
+- name: Installs Grafana Server Configuration
+  register: config_changed
+  template:
+    dest: /etc/grafana/grafana.ini
+    group: grafana
+    mode: 0440
+    owner: grafana
+    src: grafana.j2
+- name: Installs Grafana LDAP Configuration
+  template:
+    dest: /etc/grafana/ldap.toml
+    group: grafana
+    mode: 0440
+    owner: grafana
+    src: ldap.j2
+  when:
+  - grafana_ldap_endpoint | default(False)
+- name: Installs Grafana DataSources Configuration
+  template:
+    dest: /etc/grafana/provisioning/datasources/prometheus.yaml
+    group: grafana
+    mode: 0440
+    owner: grafana
+    src: datasource.j2
+- name: Installs BigBlueButton Grafana Dashboards
+  copy:
+    dest: "/etc/grafana/bbb-dashboards/{{ dsh }}.json"
+    group: root
+    mode: 0644
+    owner: root
+    src: "dashboards/{{ dsh }}.json"
+  loop: "{{ grafana_dashboards }}"
+  loop_control:
+    loop_var: dsh
+- name: Installs Grafana Dashboards Configuration
+  copy:
+    dest: /etc/grafana/provisioning/dashboards/bbb.yaml
+    group: root
+    mode: 0644
+    owner: root
+    src: dashboards.yaml
+- name: Installs Grafana Docker-Compose Directory
+  file:
+    dest: /etc/docker-compose/grafana
+    group: root
+    mode: 0750
+    owner: root
+    state: directory
+- name: Installs Grafana Docker-Compose Configuration
+  register: should_reload
+  template:
+    dest: /etc/docker-compose/grafana/docker-compose.yaml
+    group: root
+    mode: 0640
+    owner: root
+    src: compose.j2
+- include_role:
+    name: docker
+    tasks_from: service.yaml
+  vars:
+    service_description: Grafana
+    service_name: grafana

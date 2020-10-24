@@ -1,0 +1,7 @@
+- name: Installs SSHFS Client
+  apt:
+    name: sshfs
+    state: present
+- include_tasks: user.yaml
+  when:
+  - ssh_user | default(False)

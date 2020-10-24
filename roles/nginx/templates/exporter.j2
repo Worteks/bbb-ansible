@@ -1,0 +1,12 @@
+[Unit]
+Description=Nginx Exporter
+After=nginx.service
+
+[Service]
+User=nginxexporter
+Group=nginxexporter
+ExecStart=/usr/bin/nginx_exporter --nginx.scrape-uri=http://127.0.0.1:{{ nginx_stats_port }}/basic_status --web.listen-address=:{{ nginx_exporter_port }}
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

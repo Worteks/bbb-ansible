@@ -1,0 +1,11 @@
+redis_bind_address: 0.0.0.0
+redis_down_after: 30
+redis_exporter_port: 9179
+redis_exporter_release: 1.11.1
+redis_failover_timeout: 180
+redis_quorum: 1
+redis_min_slaves_to_write: 1
+redis_port: 6379
+redis_replicaset_name: bbbdemo
+redis_sentinel_port: 26379
+redis_slave_priority: 100

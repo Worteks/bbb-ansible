@@ -1,0 +1,31 @@
+- name: "Installs {{ service_description | default(service_name) }} Unit"
+  register: docker_unit
+  template:
+    dest: "/etc/systemd/system/{{ service_name }}.service"
+    group: root
+    mode: 0644
+    owner: root
+    src: compose-systemd.j2
+- name: Reloads Systemd Configuration
+  shell: systemctl daemon-reload
+  when:
+  - docker_unit is defined
+  - docker_unit is changed
+- name: "Ensures {{ service_description | default(service_name) }} is Running & Starts on Boot"
+  register: did_start
+  service:
+    enabled: yes
+    name: "{{ service_name }}"
+    state: started
+- name: "Restarts {{ service_description | default(service_name) }}"
+  service:
+    name: "{{ service_name }}"
+    state: restarted
+  when:
+  - did_start is defined
+  - not (did_start is changed)
+  - >
+      (should_reload is defined
+       and should_reload is changed)
+      or (config_changed is defined
+       and config_changed is changed)

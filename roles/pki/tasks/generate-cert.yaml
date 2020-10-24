@@ -1,0 +1,48 @@
+- name: "Generates {{ cert_fqdn | default(ansible_fqdn) }} Private Key"
+  delegate_to: localhost
+  openssl_privatekey:
+    path: "{{ pki_root }}/{{ ansible_fqdn }}.key"
+    size: "{{ key_size | int }}"
+- name: "Sets {{ cert_fqdn | default(ansible_fqdn) }} Certificate subjectAlternativeNames"
+  delegate_to: localhost
+  changed_when: False
+  set_fact:
+    cert_cn:
+    - "DNS:{{ cert_fqdn | default(ansible_fqdn) }}"
+    - "DNS:{{ ansible_fqdn }}"
+    - "DNS:{{ ansible_nodename }}"
+    - "DNS:{{ ansible_hostname }}"
+    - "IP:{{ ansible_default_ipv4['address'] }}"
+- name: "Generates {{ cert_fqdn | default(ansible_fqdn) }} Certificate Signing Request"
+  delegate_to: localhost
+  openssl_csr:
+    common_name: "{{ ansible_fqdn }}"
+    country_name: "{{ ca_country }}"
+    locality_name: "{{ ca_loc }}"
+    organization_name: "{{ ca_org }}"
+    organizational_unit_name: "{{ ca_ou }}"
+    path: "{{ pki_root }}/{{ ansible_fqdn }}.csr"
+    privatekey_path: "{{ pki_root }}/{{ ansible_fqdn }}.key"
+    state_or_province_name: "{{ ca_st }}"
+    subject_alt_name: "{{ cert_cn }}"
+- name: "Generates {{ cert_fqdn | default(ansible_fqdn) }} Self-Signed Certificate"
+  delegate_to: localhost
+  openssl_certificate:
+    csr_path: "{{ pki_root }}/{{ ansible_fqdn }}.csr"
+    ownca_not_after: "+{{ key_validity }}d"
+    ownca_path: "{{ pki_root }}/ca.crt"
+    ownca_privatekey_passphrase: "{{ ca_passphrase }}"
+    ownca_privatekey_path: "{{ pki_root }}/ca.key"
+    path: "{{ pki_root }}/{{ ansible_fqdn }}.crt"
+    privatekey_path: "{{ pki_root }}/{{ ansible_fqdn }}.key"
+    provider: ownca
+- name: "Sends x509 Assets to {{ cert_fqdn | default(ansible_fqdn) }} Nodes"
+  loop:
+  - ca.crt
+  - "{{ ansible_fqdn }}.crt"
+  - "{{ ansible_fqdn }}.key"
+  loop_control:
+    loop_var: asset
+  synchronize:
+    dest: "/root/pki/{{ asset }}"
+    src: "{{ pki_root }}/{{ asset }}"

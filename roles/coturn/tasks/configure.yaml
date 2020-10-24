@@ -1,0 +1,39 @@
+- name: Installs Coturn Logroate Configuration
+  copy:
+    dest: /etc/logrotate.d/coturn.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: logrotate.conf
+- name: Installs Coturn Configuration
+  register: config_changed
+  template:
+    dest: /etc/turnserver.conf
+    group: root
+    mode: 0640
+    owner: root
+    src: coturn.j2
+- name: Enables Coturn Service
+  register: should_reload
+  lineinfile:
+    dest: /etc/default/coturn
+    line: "TURNSERVER_ENABLED=1"
+    regexp: ^TURNSERVER_ENABLED=
+- name: Ensures Coturn is Running & Starts on Boot
+  register: did_start
+  service:
+    enabled: yes
+    name: coturn
+    state: started
+- name: Restarts Coturn
+  service:
+    name: coturn
+    state: restarted
+  when:
+  - did_start is defined
+  - not (did_start is changed)
+  - >
+      (should_reload is defined
+       and should_reload is changed)
+      or (config_changed is defined
+       and config_changed is changed)

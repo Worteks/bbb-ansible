@@ -1,0 +1,22 @@
+- name: Installs Sysctl Redis Configuration
+  copy:
+    dest: /etc/sysctl.d/99-redis.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: sysctl.conf
+  register: reload_sysctl
+- name: Reloads Sysctl
+  args:
+    chdir: /etc/sysctl.d
+  notify:
+  - Reload Redis
+  - Reload Sentinel
+  shell: |
+    while read value; \
+        do \
+            sysctl "$value"; \
+        done <99-redis.conf
+  when:
+  - reload_sysctl is defined
+  - reload_sysctl is changed

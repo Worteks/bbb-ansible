@@ -1,0 +1,7 @@
+server {
+    listen 127.0.0.1:{{ nginx_stats_port | default(8080) }};
+    server_name stats;
+    location = /basic_status {
+	stub_status;
+    }
+}

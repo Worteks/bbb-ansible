@@ -1,0 +1,21 @@
+[Unit]
+Description={{ service_description | default(service_name) }} (docker-compose)
+Requires={{ service_depends | default('docker.service') }}
+After={{ service_depends | default('docker.service') }}
+
+[Service]
+Restart=always
+{% if tmp_has_noexec | default(False) %}
+Environment=TMP=/var/docker-compose
+{% endif %}
+ExecStartPre=/usr/bin/docker-compose{% if env_file | default(False) %} --env-file {{ env_file }}{% endif %} -f /etc/docker-compose/{{ service_name }}/docker-compose.yaml down -v
+ExecStartPre=/usr/bin/docker-compose{% if env_file | default(False) %} --env-file {{ env_file }}{% endif %} -f /etc/docker-compose/{{ service_name }}/docker-compose.yaml rm -v
+#ExecStartPre=-/bin/bash -c 'docker volume rm $(docker volume ls -q) || echo ok'
+#ExecStartPre=-/bin/bash -c 'docker rmi $(docker images | grep "<none>" | awk \'{print $3}\') || echo ok'
+#ExecStartPre=-/bin/bash -c 'docker rm -v $(docker ps -aq) || echo ok'
+
+ExecStart=/usr/bin/docker-compose{% if env_file | default(False) %} --env-file {{ env_file }}{% endif %} -f /etc/docker-compose/{{ service_name }}/docker-compose.yaml up
+ExecStop=/usr/bin/docker-compose{% if env_file | default(False) %} --env-file {{ env_file }}{% endif %} -f /etc/docker-compose/{{ service_name }}/docker-compose.yaml down -v
+
+[Install]
+WantedBy=multi-user.target

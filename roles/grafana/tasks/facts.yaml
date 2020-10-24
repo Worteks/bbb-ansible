@@ -1,0 +1,20 @@
+- name: Gather Facts from Prometheus
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['prometheus'] }}"
+  loop_control:
+    loop_var: srv
+  setup:
+  when:
+  - ansible_fqdn not in groups['prometheus']
+  - ansible_hostname not in groups['prometheus']
+- name: Gather Facts from LoadBalancers
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['lb_back'] }}"
+  loop_control:
+    loop_var: srv
+  setup:
+  when:
+  - groups['prometheus'] | length > 1
+  - groups['lb_back'] | length > 0

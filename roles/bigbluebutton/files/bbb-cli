@@ -1,0 +1,69 @@
+#!/bin/sh
+# minimalistic BigBlueButton CLI
+# pending completion ...
+
+if test "$DEBUG"; then
+    set -x
+fi
+if ! test -r /etc/bbb-cli/api.conf; then
+    echo Failed loading bbb-cli configuration >&2
+    exit 1
+fi
+. /etc/bbb-cli/api.conf
+
+getCheckSum()
+{
+    if test -z "$CMD" -o -z "$CALL" -z -o "$SECRET"; then
+	echo missing input &2
+	exit 1
+    fi
+    CKSTR="$CMD$CALL$SECRET"
+    echo -n "$CKSTR" | shasum | awk '{print $1}'
+}
+
+usage()
+{
+    cat <<EOF
+  usage: bbb-cli <command> [arguments]
+       bbb-cli create-room room-name meeting-uid
+       bbb-cli get-room meeting-uid
+       bbb-cli get-rooms
+       bbb-cli help
+EOF
+}
+
+case "$1" in
+    create-room)
+	CALL="name=$2&meetingID=$3&isBreakout=false"
+	CMD=create
+	shift 2
+	;;
+    get-rooms)
+	CALL=
+	CMD=getMeetings
+	;;
+    get-room)
+	CALL="meetingID=$2"
+	CMD=getMeetingInfo
+	shift 1
+	;;
+    help|--help|-h)
+	usage
+	exit 0
+	;;
+    *)
+	echo args error >&2
+	usage >&2
+	exit 1
+	;;
+esac
+
+CKSUM=`getCheckSum 2>/dev/null`
+if test -z "$CKSUM"; then
+    echo failed generating checksum >&2
+    exit 1
+fi
+
+curl -vvv "$HOST/$CMD?$CALL&checksum=$CKSUM"
+
+exit $?

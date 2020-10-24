@@ -1,0 +1,3 @@
+sshfs_exports_root: /srv/bbb-root
+sshfs_group: bbb-sshfs
+sshfs_user: bbb-sshfs

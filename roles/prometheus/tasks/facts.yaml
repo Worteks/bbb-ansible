@@ -1,0 +1,28 @@
+- name: Gather Facts from AlertManager
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['alertmanager'] }}"
+  loop_control:
+    loop_var: srv
+  setup:
+  when:
+  - groups['alertmanager'] | length > 0
+  - srv not in groups['prometheus']
+- name: Gather Facts from LoadBalancers
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['lb_back'] }}"
+  loop_control:
+    loop_var: srv
+  setup:
+  when:
+  - groups['lb_back'] | length > 0
+- name: Gather Facts from BlackBox Exporters
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['greenlight'] }}"
+  loop_control:
+    loop_var: srv
+  setup:
+  when:
+  - groups['greenlight'] | length > 0

@@ -1,0 +1,22 @@
+# when lb_front != lb_back, define in group_vars/lb_(front|back).yaml
+# when lb_front == lb_back, define here:
+firehol_app_opened_ports:
+- name: ssh
+  value: tcp/22
+- name: http
+  value: tcp/80
+- name: https
+  value: tcp/443
+- name: redis
+  value: tcp/6379
+- name: prometheus
+  value: tcp/9090
+- name: alertmanager
+  value: tcp/9093
+- name: nodexp
+  value: tcp/9142
+- name: haproxyxp
+  value: tcp/9180
+
+# using xen pv
+setup_firewall: False

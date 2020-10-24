@@ -1,0 +1,23 @@
+# Filters accesses to backend services (currently: redis)
+# based on source IP. Scalelite accesses would remain
+# unfiltered, as end-users would eventually connect
+# before being redirected to a BigBlueButton.
+haproxy_backends_ipfilter:
+- 10.42.253.0/24
+firehol_trusted_networks: "{{ haproxy_backends_ipfilter }}"
+
+# when lb_front == lb_back, define in group_vars/lb.yaml
+# when lb_front != lb_back, define here:
+#firehol_app_opened_ports:
+#- name: ssh
+#  value: tcp/22
+#- name: redis
+#  value: tcp/6379
+#- name: prometheus
+#  value: tcp/9090
+#- name: alertmanager
+#  value: tcp/9093
+#- name: nodexp
+#  value: tcp/9142
+#- name: haproxyxp
+#  value: tcp/9180

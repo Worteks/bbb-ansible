@@ -1,0 +1,31 @@
+- name: Gather Facts from NFS Server
+  delegate_to: "{{ groups['nfs'][0] }}"
+  delegate_facts: True
+  setup:
+  when:
+  - groups['nfs'] | length > 0
+- name: Gather Facts from LBs
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['lb'] }}"
+  loop_control:
+    loop_var: srv
+  setup:
+  when:
+  - groups['lb'] | length > 0
+- name: Gather Facts from Postgres
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['postgres'] }}"
+  loop_control:
+    loop_var: srv
+  setup:
+- name: Gather Facts from Redis
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['redis'] }}"
+  loop_control:
+    loop_var: srv
+  setup:
+  when:
+  - groups['lb'] | length == 0

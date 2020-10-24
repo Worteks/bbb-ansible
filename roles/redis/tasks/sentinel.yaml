@@ -1,0 +1,14 @@
+- name: Installs Sentinel Configuration
+  notify: Reload Sentinel
+  template:
+    dest: /etc/redis/sentinel.conf
+    force: no
+    group: redis
+    mode: 0644
+    owner: redis
+    src: sentinel.j2
+- name: Ensures Redis Sentinel is Running & Starts on Boot
+  service:
+    enabled: yes
+    name: redis-sentinel
+    state: started

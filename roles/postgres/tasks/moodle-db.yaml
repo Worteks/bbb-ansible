@@ -1,0 +1,23 @@
+- name: Installs Moodle Postgres Database
+  become: yes
+  become_user: postgres
+  postgresql_db:
+    encoding: UTF-8
+    name: "{{ moodle_postgres_database }}"
+    template: template0
+- name: Installs Moodle Postgres User
+  become: yes
+  become_user: postgres
+  postgresql_user:
+    db: "{{ moodle_postgres_database }}"
+    name: "{{ moodle_postgres_user }}"
+    password: "{{ moodle_postgres_password }}"
+- name: Grants Moodle User Privileges over its database
+  become: yes
+  become_user: postgres
+  postgresql_privs:
+    admin_option: yes
+    db: "{{ moodle_postgres_database }}"
+    privs: ALL
+    type: database
+    role: "{{ moodle_postgres_user }}"

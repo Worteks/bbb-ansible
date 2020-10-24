@@ -1,0 +1,13 @@
+- name: "Checks for HostKey {{ ssh_remote }}"
+  changed_when: False
+  failed_when: False
+  register: knows_host
+  shell: "ssh-keygen -f {{ ssh_homedir | default('/home/changeme') }}/.ssh/known_hosts -F {{ ssh_remote }}"
+- name: "Trusts {{ ssh_remote }} Host Key"
+  args:
+    chdir: "{{ ssh_homedir | default('/home/changeme') }}/.ssh"
+  shell: "ssh-keyscan -H -t ed25519,ecdsa,rsa -p {{ ssh_scan_port | default('22') }} -T 10 {{ ssh_remote }} >>known_hosts"
+  when:
+  - knows_host is defined
+  - knows_host.rc is defined
+  - knows_host.rc != 0

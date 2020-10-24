@@ -1,0 +1,13 @@
+- name: Waits for Scalelite API
+  changed_when: False
+  register: is_started
+  retries: 20
+  shell: docker exec -it scalelite-api uptime
+  until: is_started.rc == 0
+- name: Initializes Scalelite Database
+  args:
+    chdir: /etc/docker-compose/scalelite
+    creates: /etc/docker-compose/scalelite/db-init.log
+  delegate_to: "{{ groups['scalelite'][0] }}"
+  run_once: yes
+  shell: docker exec -i scalelite-api bundle exec rake db:setup >db-init.log 2>&1

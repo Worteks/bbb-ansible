@@ -1,0 +1,32 @@
+- name: Fetches BigBlueButton API Secret
+  changed_when: False
+  delegate_to: "{{ groups['bbb'][0] }}"
+  register: bbb_secret
+  run_once: True
+  shell: bbb-conf --secret | awk '/Secret:/{print $2}'
+  when:
+  - groups['scalelite'] | length == 0
+- name: "Resolves Meeting ID for {{ stream_meeting_id }}"
+  changed_when: False
+  delegate_to: "{{ stream_hosted_on | default(groups['bbb'][0]) }}"
+  register: bbb_meeting
+  run_once: True
+  shell: >
+    bbb-cli get-rooms \
+        | grep -A1 "<meetingName>{{ stream_meeting_id }}</meetingName>" \
+        | grep '<meetingID>' \
+        | sed -e 's|.*<meetingID>||' -e 's|</meetingID>.*||'
+- name: "Installs BigBlueButton LiveStream {{ stream_meeting_id }} Configuration"
+  register: should_reload
+  template:
+    dest: "/etc/docker-compose/bbb-livestream-{{ stream_meeting_id }}/docker-compose.yaml"
+    group: root
+    mode: 0640
+    owner: root
+    src: compose.j2
+- include_role:
+    name: docker
+    tasks_from: service.yaml
+  vars:
+    service_description: "BigBlueButton LiveStream {{ stream_meeting_id }}"
+    service_name: "bbb-livestream-{{ stream_meeting_id }}"

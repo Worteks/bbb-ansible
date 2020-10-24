@@ -1,0 +1,2 @@
+- include_tasks: init.yaml
+- include_tasks: ca.yaml

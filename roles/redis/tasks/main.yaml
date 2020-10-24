@@ -1,0 +1,11 @@
+- include_tasks: install.yaml
+- include_tasks: configure.yaml
+- include_tasks: server.yaml
+- include_tasks: sentinel.yaml
+  when:
+  - groups['redis'] | length > 1
+- include_tasks: prometheus.yaml
+  when:
+  - >
+      groups['prometheus'] | length > 0
+      or do_prometheus | default(False)

@@ -1,0 +1,61 @@
+app_mode = production
+instance_name = {{ grafana_name }}
+
+[log]
+mode = console
+
+[log.console]
+level = info
+format = console
+
+[security]
+admin_user = {{ grafana_admin_user }}
+admin_password = {{ grafana_admin_password }}
+{% if grafana_ldap_endpoint | default(False) %}
+
+[auth.ldap]
+enabled = true
+config_file = /etc/grafana/ldap.toml
+allow_sign_up = true
+{% endif %}
+{% if grafana_saml_endpoint | default(False) %}
+
+[auth.generic_oauth]
+name = OIDC
+enabled = true
+allow_sign_up = true
+client_id = {{ grafana_oidc_client_id }}
+client_secret = {{ grafana_oidc_client_secret }}
+scopes = openid email profile
+email_attribute_name = email
+api_url = {{ grafana_oidc_endpoint }}{{ grafana_oidc_userinfo_endpoint }}
+auth_url = {{ grafana_oidc_endpoint }}{{ grafana_oidc_authorize_endpoint }}
+token_url = {{ grafana_oidc_endpoint }}{{ grafana_oidc_token_endpoint }}
+send_client_credentials_via_post = false
+{% if bbb_uses_selfsigned | default(False) or oidc_uses_selfsigned | default(False)  %}
+tls_skip_verify_insecure = true
+{% endif %}
+{% endif %}
+
+[auth.anonymous]
+enabled = false
+org_role = Viewer
+
+[server]
+domain = {{ grafana_fqdn | default(ansible_fqdn) }}
+root_url = https://{{ grafana_fqdn | default(ansible_fqdn) }}
+
+[smtp]
+enabled = false
+
+[users]
+allow_sign_up = false
+default_theme = dark
+
+[database]
+type = sqlite3
+path = grafana.db
+
+[session]
+cookie_name = grafana_sess
+cookie_secure = true

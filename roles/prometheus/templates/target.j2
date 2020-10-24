@@ -1,0 +1,14 @@
+[
+    {
+	"labels": {
+{% for label in target_labels | default([]) %}
+		"{{ label['name'] }}": "{{ label['value'] }}",
+{% endfor %}
+		"prometheus_cluster": "{{ prometheus_cluster_name }}",
+		"prometheus_service_group": "{{ target_name }}"
+	    },
+	"targets": [
+		"{{ targets | sort | join(":" ~ target_port ~ '", "') }}:{{ target_port }}"
+	    ]
+    }
+]

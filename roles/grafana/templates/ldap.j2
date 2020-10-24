@@ -1,0 +1,21 @@
+[[servers]]
+host = "{{ grafana_ldap_endpoint | urlsplit('hostname') }}"
+port = {{ grafana_ldap_endpoint | urlsplit('port') }}
+use_ssl = {{ 'true' if (grafana_ldap_endpoint | urlsplit('scheme') == 'ldaps') else 'false' }}
+start_tls = {{ 'true' if (grafana_ldap_start_tls | default(False)) else 'false' }}
+{% if bbb_uses_selfsigned | default(False)  or ldap_uses_selfsigned | default(False) %}
+ssl_skip_verify = true
+{% endif %}
+bind_dn = "{{ grafana_ldap_bind_dn }}"
+bind_password = "{{ grafana_ldap_password }}"
+search_filter = "(&({{ grafana_ldap_uid }}=%s)(objectClass={{ grafana_ldap_user_objectclass }})(!(pwdAccountLockedTime=*)))"
+search_base_dns = ["{{ grafana_ldap_base }}"]
+#?? group_search_filter = "(&(objectClass={{ grafana_ldap_group_objectclass }})(memberUid=%s))"
+group_search_filter_user_attribute = "member"
+group_search_base_dns = ["{{ grafana_ldap_base }}"]
+[servers.attributes]
+name = "{{ grafana_ldap_givenname }}"
+surname = "{{ grafana_ldap_surname }}"
+username = "{{ grafana_ldap_uid }}"
+member_of = "memberOf"
+email = "{{ grafana_ldap_email }}"

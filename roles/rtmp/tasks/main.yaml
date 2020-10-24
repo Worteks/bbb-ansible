@@ -1,0 +1,4 @@
+- include_tasks: facts.yaml
+- include_tasks: install.yaml
+- include_tasks: nginx.yaml
+- include_tasks: configure.yaml

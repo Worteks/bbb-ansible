@@ -1,0 +1,6 @@
+$AddUnixListenSocket /var/lib/haproxy/dev/log
+if $programname startswith 'haproxy' then {
+    :msg, contains, "{{ haproxy_stats_listen_address | default('127.0.0.1') }}:{{ haproxy_stats_listen_port | default('1664') }} (stats/HTTP)" stop
+    :msg, contains, "Connect from {{ ansible_default_ipv4['address'] }}" stop
+    /var/log/haproxy.log
+}

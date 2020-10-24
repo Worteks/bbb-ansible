@@ -1,0 +1,110 @@
+global:
+  scrape_interval: {{ prometheus_scrape_interval }}
+  evaluation_interval: {{ prometheus_eval_interval }}
+  external_labels:
+    monitor: bbb-monitor
+
+rule_files:
+- /etc/prometheus/rules.d/*.yaml
+
+scrape_configs:
+- job_name: prometheus
+  static_configs:
+  - labels:
+{% if prometheus_k8s_integration | default(False) %}
+      kubernetes_cluster: metal
+      kubernetes_namespace: {{ prometheus_cluster_name }}
+      kubernetes_service_name: {{ prometheus_fqdn | default(ansible_fqdn) }}
+      kubernetes_pod_name: {{ ansible_fqdn }}
+{% endif %}
+      prometheus_cluster: {{ prometheus_cluster_name }}
+    targets:
+    - localhost:9090
+{% if groups['greenlight'] | length > 0 %}
+
+- job_name: blackbox
+  metrics_path: /probe
+  static_configs:
+  - targets:
+{% for remote in groups['greenlight'] %}
+    - {{ hostvars[remote]['ansible_default_ipv4']['address'] }}:443
+{% endfor %}
+  relabel_configs:
+{% if prometheus_k8s_integration | default(False) %}
+  - action: replace
+    replacement: metal
+    source_labels: [__address__]
+    target_label: kubernetes_cluster
+  - action: replace
+    replacement: {{ prometheus_cluster_name }}
+    source_labels: [__address__]
+    target_label: kubernetes_namespace
+  - regex: ([^:]+):\d+
+    source_labels: [__address__]
+    target_label: kubernetes_node_name
+  - regex: ([^:]+):\d+
+    source_labels: [__address__]
+    target_label: kubernetes_pod_name
+  - regex: ([^:]+):\d+
+    source_labels: [__address__]
+    target_label: kubernetes_service_name
+{% endif %}
+  - regex: ([^:]+):\d+
+    source_labels: [__address__]
+    target_label: __param_target
+  - source_labels: [__param_target]
+    target_label: instance
+  - replacement: {{ hostvars[groups['greenlight'][0]]['ansible_default_ipv4']['address'] }}:{{ hostvars[groups['greenlight'][0]]['blackbox_exporter_port'] | default(9158) }}
+    target_label: __address__
+{% endif %}
+
+- job_name: bigbluebutton
+  file_sd_configs:
+  - files:
+    - /etc/prometheus/targets.d/*.json
+  relabel_configs:
+{% if prometheus_k8s_integration | default(False) %}
+  - action: replace
+    replacement: metal
+    source_labels: [__address__]
+    target_label: kubernetes_cluster
+  - action: replace
+    replacement: {{ prometheus_cluster_name }}
+    source_labels: [__address__]
+    target_label: kubernetes_namespace
+  - regex: ([^:]+):\d+
+    source_labels: [__address__]
+    target_label: kubernetes_node_name
+  - regex: ([^:]+):\d+
+    source_labels: [__address__]
+    target_label: kubernetes_pod_name
+  - regex: ([^:]+):\d+
+    source_labels: [__address__]
+    target_label: kubernetes_service_name
+{% endif %}
+  - regex: ([^:]+):\d+
+    source_labels: [__address__]
+    target_label: instance
+  scheme: http
+{% if groups['alertmanager'] | length > 0 %}
+
+alerting:
+  alert_relabel_configs:
+  - action: replace
+    regex: (.+)
+    replacement: {{ ansible_fqdn }}
+    source_labels: [scrape_by]
+    target_label: scrape_by
+  alertmanagers:
+  - scheme: http
+    static_configs:
+    - targets:
+{% if groups['lb_back'] | length > 0 and groups['alertmanager'] | length > 1 %}
+{% set check_group = 'lb_back' %}
+{% else %}
+{% set check_group = 'alertmanager' %}
+{% endif %}
+{% for remote in groups[check_group] %}
+      - {{ hostvars[remote]['ansible_fqdn'] }}:9093
+{% endfor %}
+{% endif %}

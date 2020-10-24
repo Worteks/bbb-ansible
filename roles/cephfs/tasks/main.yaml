@@ -1,0 +1,30 @@
+- name: Creates BBB Ceph Keyring
+  args:
+    chdir: /etc/ceph
+    creates: "/etc/ceph/ceph.client.{{ bbb_ceph_username }}.keyring"
+  register: created_keyring
+  shell: |
+    ceph-authtool --create-keyring ceph.client.{{ bbb_ceph_username }}.keyring --gen-key -n client.{{ bbb_ceph_username }}
+- name: Patches Keyring
+  blockinfile:
+    block: |
+      caps mds = "allow r path=/, allow rw path=/{{ bbb_cephfs_root }}"
+      caps mon = "allow r"
+      caps osd = "allow class-read object_prefix rbd_children, allow rw pool={{ cephfs_data_pool }}"
+    path: "/etc/ceph/ceph.client.{{ bbb_ceph_username }}.keyring"
+  register: patched_keyring
+  when:
+  - created_keyring is defined
+  - created_keyring is changed
+- name: Imports patched Keyring
+  args:
+    chdir: /etc/ceph
+  shell: ceph auth import -i ceph.client.{{ bbb_ceph_username }}.keyring
+  when:
+  - patched_keyring is defined
+  - patched_keyring is changed
+
+# TODO:
+# * create share (need to mount cephfsroot somewhere)
+# * set quota (?)
+# => https://ceph.io/planet/cephfs-admin-tips-create-a-new-user-and-share/

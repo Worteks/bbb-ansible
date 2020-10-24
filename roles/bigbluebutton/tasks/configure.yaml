@@ -1,0 +1,104 @@
+- name: Ensures BigBlueButton Home Directory Exists
+  file:
+    dest: /home/bigbluebutton
+    force: no
+    group: bigbluebutton
+    mode: 0700
+    owner: bigbluebutton
+    state: directory
+  register: fixed_home
+- name: Installs BigBlueButton Demo
+  apt:
+    name: bbb-demo
+    state: present
+  register: has_demo
+  when:
+  - groups['scalelite'] | length == 0
+- name: Installs BigBlueButton WebHoooks
+  apt:
+    name: bbb-webhooks
+    state: present
+  when:
+  - >
+      groups['rocketchat'] | length > 0
+      or do_bbb_webhooks | default(False)
+- block:
+  - name: Installs BigBlueButton Recordings Post Process Configuration
+    template:
+      dest: /usr/local/bigbluebutton/core/scripts/scalelite.yml
+      group: root
+      mode: 0644
+      owner: root
+      src: scalelite.j2
+  - name: Installs BigBlueButton Recordings Post Process Script
+    get_url:
+      dest: /usr/local/bigbluebutton/core/scripts/post_publish/scalelite_post_publish.rb
+      group: root
+      mode: 0755
+      owner: root
+      url: https://raw.githubusercontent.com/blindsidenetworks/scalelite/master/bigbluebutton/scalelite_post_publish.rb
+    register: has_postpublish
+  - name: Installs BigBlueButton Recordings Migration Script
+    get_url:
+      dest: /root/scalelite_batch_import.sh
+      group: root
+      mode: 0755
+      owner: root
+      url: https://raw.githubusercontent.com/blindsidenetworks/scalelite/master/bigbluebutton/scalelite_batch_import.sh
+  - include_role:
+      name: sshfs
+      tasks_from: user.yaml
+    vars:
+      ssh_user: bigbluebutton
+  when:
+  - groups['scalelite'] | length > 0
+- name: Configures BigBlueButton TURN Integration
+  register: turn_conf
+  template:
+    dest: /usr/share/bbb-web/WEB-INF/classes/spring/turn-stun-servers.xml
+    group: bigbluebutton
+    mode: 0640
+    owner: root
+    src: turn.j2
+  vars:
+    turn_fqdn: "{{ external_turn_fqdn
+                     if (external_turn_fqdn | default(False))
+                     else hostvars[groups['coturn'][0]]['coturn_fqdn'] | default(hostvars[groups['coturn'][0]]['ansible_fqdn']) }}"
+    turn_secret: "{{ external_turn_secret
+                       if (external_turn_fqdn | default(False))
+                       else hostvars[groups['coturn'][0]]['coturn_auth_secret'] }}"
+  when:
+  - >
+      (external_turn_fqdn | default(False))
+      or (groups['coturn'] | length > 0)
+
+# TODO / FIXME
+# Meteor does not seem to trust our custom CA
+# which is normal: NodeJS doesn't use system trust store, and instead
+# ship with its own, static, trust store. Setting up TLS with a custom
+# CA, there's probably a lib in between that allows to load such chain
+# of certificates, ... pending further investigations
+- name: Fixes Meteor TLS Errors
+  register: meteor_fixed
+  lineinfile:
+    dest: /usr/share/meteor/bundle/systemd_start.sh
+    insertbefore: "^PORT=3000"
+    line: "export NODE_TLS_REJECT_UNAUTHORIZED=0"
+    regexp: "^export NODE_TLS_REJECT_UNAUTHORIZED=0"
+  when:
+  - bbb_uses_selfsigned | default(True)
+
+- name: Restarts BigBlueButton
+  shell: bbb-conf --restart
+  when:
+  - >
+      (fixed_home is defined
+       and fixed_home is changed)
+      or (fixed_meteor is defined
+       and fixed_meteor is changed)
+      or (has_demo is defined
+       and has_demo is changed)
+      or (has_postpublish is defined
+       and has_postpublish is changed)
+      or (turn_conf is defined
+       and turn_conf is changed)

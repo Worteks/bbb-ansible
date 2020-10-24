@@ -1,0 +1,34 @@
+- name: Generates BigBlueButton CA Private Key
+  delegate_to: localhost
+  openssl_privatekey:
+    cipher: auto
+    passphrase: "{{ ca_passphrase }}"
+    path: "{{ pki_root }}/ca.key"
+    size: "{{ ca_size | int }}"
+  run_once: yes
+- name: Generates BigBlueButton CA Certificate Signing Request
+  delegate_to: localhost
+  openssl_csr:
+    basic_constraints: "CA:TRUE"
+    common_name: "{{ ca_name }}"
+    country_name: "{{ ca_country }}"
+    extended_key_usage: []
+    key_usage: []
+    locality_name: "{{ ca_loc }}"
+    organization_name: "{{ ca_org }}"
+    organizational_unit_name: "{{ ca_ou }}"
+    path: "{{ pki_root }}/ca.csr"
+    privatekey_passphrase: "{{ ca_passphrase }}"
+    privatekey_path: "{{ pki_root }}/ca.key"
+    state_or_province_name: "{{ ca_st }}"
+  run_once: yes
+- name: Generates BigBlueButton CA Certificate
+  delegate_to: localhost
+  openssl_certificate:
+    csr_path: "{{ pki_root }}/ca.csr"
+    path: "{{ pki_root }}/ca.crt"
+    privatekey_passphrase: "{{ ca_passphrase }}"
+    privatekey_path: "{{ pki_root }}/ca.key"
+    provider: selfsigned
+    selfsigned_not_after: "+{{ ca_validity }}d"
+  run_once: yes

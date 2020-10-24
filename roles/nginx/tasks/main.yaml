@@ -1,0 +1,16 @@
+- include_tasks: install.yaml
+- include_role:
+    name: certbot
+  when:
+  - not (bbb_uses_selfsigned | default(True))
+- include_role:
+    name: pki
+    tasks_from: install-cert.yaml
+  when:
+  - bbb_uses_selfsigned | default(True)
+- include_tasks: configure.yaml
+- include_tasks: prometheus.yaml
+  when:
+  - >
+      groups['prometheus'] | length > 0
+      or do_prometheus | default(False)

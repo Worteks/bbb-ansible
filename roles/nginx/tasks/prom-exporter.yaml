@@ -1,0 +1,54 @@
+- name: Creates Nginx Exporter Extract Directory
+  file:
+    dest: "/usr/src/nginx-exporter-v{{ nginx_exporter_release }}.linux-amd64"
+    group: root
+    mode: 0755
+    owner: root
+    state: directory
+- name: Fetches Nginx Exporter
+  get_url:
+    dest: "/usr/src/nginx-exporter-{{ nginx_exporter_release }}.tar.gz"
+    group: root
+    mode: 0644
+    owner: root
+    url: "https://github.com/nginxinc/nginx-prometheus-exporter/releases/download/v{{ nginx_exporter_release }}/nginx-prometheus-exporter-{{ nginx_exporter_release }}-linux-amd64.tar.gz"
+- name: Extracts Nginx Exporter
+  args:
+    chdir: "/usr/src/nginx-exporter-v{{ nginx_exporter_release }}.linux-amd64"
+    creates: "/usr/src/nginx-exporter-v{{ nginx_exporter_release }}.linux-amd64/nginx-prometheus-exporter"
+    warn: False
+  shell: "tar -xzf /usr/src/nginx-exporter-{{ nginx_exporter_release }}.tar.gz"
+- name: Installs Nginx Exporter
+  copy:
+    dest: /usr/bin/nginx_exporter
+    group: root
+    mode: 0755
+    owner: root
+    remote_src: yes
+    src: "/usr/src/nginx-exporter-v{{ nginx_exporter_release }}.linux-amd64/nginx-prometheus-exporter"
+- name: Creates Nginx Exporter Group
+  group:
+    name: nginxexporter
+    state: present
+- name: Creates Nginx Exporter User
+  user:
+    groups: nginxexporter
+    name: nginxexporter
+- name: Installs Nginx Exporter Unit
+  register: exporter_unit
+  template:
+    dest: /etc/systemd/system/nginx-exporter.service
+    group: root
+    mode: 0644
+    owner: root
+    src: exporter.j2
+- name: Reloads Systemd Configuration
+  shell: systemctl daemon-reload
+  when:
+  - exporter_unit is defined
+  - exporter_unit is changed
+- name: Ensures Nginx Exporter is Running & Starts on Boot
+  service:
+    enabled: yes
+    name: nginx-exporter
+    state: started

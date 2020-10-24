@@ -1,0 +1,48 @@
+# Proxies requests to Greenlight based on the '{{ greenlight_app_root }}' prefix.
+# Use this file to route '{{ greenlight_app_root }}' paths on your BigBlueButton server
+# to the Greenlight application. If you are using a different
+# subpath, you should change it here.
+
+location {{ greenlight_app_root }} {
+    proxy_pass http://{{ hostvars[groups['greenlight'][0]]['ansible_fqdn'] }}:5000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_http_version 1.1;
+}
+
+location {{ greenlight_app_root }}/cable {
+    proxy_pass http://{{ hostvars[groups['greenlight'][0]]['ansible_fqdn'] }}:5000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "Upgrade";
+    proxy_http_version 1.1;
+    proxy_read_timeout 6h;
+    proxy_send_timeout 6h;
+    client_body_timeout 6h;
+    send_timeout 6h;
+}
+
+# Allow larger body size for uploading presentations
+location ~ /preupload_presentation$ {
+    client_max_body_size 30m;
+    proxy_pass http://{{ hostvars[groups['greenlight'][0]]['ansible_fqdn'] }}:5000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_http_version 1.1;
+}
+
+# Only needed if using presentations and deployed at a relative root (ex "{{ greenlight_app_root }}")
+# If deploying at "/", delete the section below
+location /rails/active_storage {
+    return 301 {{ greenlight_app_root }}$request_uri;
+}
+{% if greenlight_app_root != "/" and (greenlight_is_default | default(True)) %}
+
+location = / {
+    return 307 {{ greenlight_app_root }};
+}
+{% endif %}

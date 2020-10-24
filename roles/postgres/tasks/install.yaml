@@ -1,0 +1,40 @@
+- name: Ensures Role Dependencies are Installed
+  apt:
+    name:
+    - gnupg2
+    - python-psycopg2
+    - sudo
+    state: present
+  register: deps
+- name: Reloads Facts
+  setup:
+  when:
+  - deps is defined
+  - deps is changed
+
+- name: Installs Postgres GPG key
+  args:
+    creates: /etc/apt/sources.list.d/postgres.list
+    warn: False
+  shell: wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+- name: Installs Postgres APT Configuration
+  register: srcs
+  template:
+    dest: /etc/apt/sources.list.d/postgres.list
+    group: root
+    mode: 0644
+    owner: root
+    src: apt.j2
+- name: Updates APT Cache
+  apt:
+    update_cache: yes
+  when:
+  - srcs is defined
+  - srcs is changed
+
+- name: Installs Postgres
+  apt:
+    name:
+    - postgresql-12
+    - postgresql-client-12
+    state: present

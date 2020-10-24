@@ -1,0 +1,47 @@
+- name: Installs BigBlueButton Profile Configuration
+  copy:
+    dest: /etc/profile.d/bigbluebutton.sh
+    group: root
+    mode: 0644
+    owner: root
+    src: profile.sh
+
+- name: Installs bbb-cli Configuration Directory
+  file:
+    dest: /etc/bbb-cli
+    group: root
+    mode: 0750
+    owner: root
+    state: directory
+- name: Checks for bbb-cli Configuration
+  register: has_conf
+  stat:
+    path: /etc/bbb-cli/api.conf
+
+- block:
+  - name: Fetches BigBlueButton Secret
+    changed_when: False
+    register: bbb_secret
+    shell: bbb-conf --secret | awk '/Secret:/{print $2}'
+  - name: Fetches BigBlueButton API URL
+    register: bbb_url
+    shell: bbb-conf --secret | awk '/URL:/{print $2}'
+  - name: Installs bbb-cli Configuration
+    template:
+      dest: /etc/bbb-cli/api.conf
+      group: root
+      mode: 0640
+      owner: root
+      src: ./apiconf.j2
+  when:
+  - has_conf is defined
+  - has_conf.stat is defined
+  - not has_conf.stat.exists
+
+- name: Installs bbb-cli
+  copy:
+    dest: /usr/sbin/bbb-cli
+    group: root
+    mode: 0750
+    owner: root
+    src: bbb-cli

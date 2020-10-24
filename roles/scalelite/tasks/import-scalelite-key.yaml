@@ -1,0 +1,5 @@
+- name: "Ensures {{ ansible_fqdn }} Key is Trusted on {{ r }}"
+  delegate_to: "{{ r }}"
+  lineinfile:
+    dest: "/home/{{ hostvars[r]['sshfs_user'] | default(sshfs_user) }}/.ssh/authorized_keys"
+    line: "{{ has_key.stdout_lines[0] }}"

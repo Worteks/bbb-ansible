@@ -1,0 +1,14 @@
+- name: Installs Grafana Virtualhost
+  notify: Reload Nginx
+  template:
+    dest: /etc/nginx/sites-available/grafana.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: vhost.j2
+- name: Enables Grafana Virtualhost
+  file:
+    dest: /etc/nginx/sites-enabled/grafana.conf
+    src: /etc/nginx/sites-available/grafana.conf
+    state: link
+  notify: Reload Nginx

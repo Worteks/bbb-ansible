@@ -1,0 +1,17 @@
+- include_tasks: install.yaml
+- include_tasks: configure.yaml
+- include_tasks: coturn-db.yaml
+  when:
+  - groups['coturn'] | length > 0
+- include_tasks: greenlight-db.yaml
+  when:
+  - groups['greenlight'] | length > 0
+- include_tasks: moodle-db.yaml
+  when:
+  - groups['moodle'] | length > 0
+- include_tasks: scalelite-db.yaml
+- include_tasks: prometheus.yaml
+  when:
+  - >
+      groups['prometheus'] | length > 0
+      or do_prometheus | default(False)

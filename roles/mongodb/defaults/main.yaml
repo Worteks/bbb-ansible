@@ -1,0 +1,3 @@
+mongodb_exporter_port: 9117
+mongodb_exporter_release: 0.11.1
+mongodb_listen_address: 127.0.0.1

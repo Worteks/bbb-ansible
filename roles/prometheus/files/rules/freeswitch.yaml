@@ -1,0 +1,27 @@
+groups:
+- name: FreeSwitch
+  rules:
+  - alert: FreeSwitchDown
+    expr: freeswitch_up == 0
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "FreeSwitch down (instance {{ $labels.instance }})"
+      description: "FreeSwitch down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: FreeSwitchSessionsWarning
+    expr: (freeswitch_session_active * 100 / freeswitch_session_limit) > 80
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "FreeSwitch Sessions Usage Over 80% (instance {{ $labels.instance }})"
+      description: "FreeSwitch Sessions Usage Over 80%\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: FreeSwitchSessionsCritical
+    expr: (freeswitch_session_active * 100 / freeswitch_session_limit) > 95
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "FreeSwitch Sessions Usage Over 95% (instance {{ $labels.instance }})"
+      description: "FreeSwitch Sessions Usage Over 95%\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"

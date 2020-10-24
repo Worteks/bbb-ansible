@@ -1,0 +1,14 @@
+version: '3'
+services:
+  grafana:
+    container_name: grafana
+    image: {{ grafana_images_repo }}:{{ grafana_images_release }}
+    logging:
+      driver: journald
+    ports:
+    - "3000:3000"
+    restart: unless-stopped
+    user: "{{ grafana_user_id.stdout_lines[0] }}"
+    volumes:
+    - /etc/grafana:/etc/grafana
+    - /var/lib/grafana:/var/lib/grafana

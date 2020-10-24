@@ -1,0 +1,2 @@
+- include_tasks: install.yaml
+- include_tasks: configure.yaml

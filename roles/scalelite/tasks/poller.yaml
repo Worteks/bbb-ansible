@@ -1,0 +1,6 @@
+- include_role:
+    name: docker
+    tasks_from: check-pull.yaml
+  vars:
+    image_tag: "{{ scalelite_images_release }}-poller"
+    image_url: "{{ scalelite_images_repo }}"

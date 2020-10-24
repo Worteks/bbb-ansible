@@ -1,0 +1,13 @@
+- include_tasks: facts.yaml
+- include_tasks: auth.yaml
+- include_role:
+    name: pki
+    tasks_from: install-cert.yaml
+  when:
+  - bbb_uses_selfsigned | default(True)
+- include_tasks: install.yaml
+- include_tasks: reset.yaml
+  when:
+  - do_debugs | default(False)
+- include_tasks: configure.yaml
+- include_tasks: nginx.yaml

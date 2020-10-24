@@ -1,0 +1,43 @@
+- name: Gets Timezone
+  changed_when: False
+  failed_when: False
+  register: tz_check
+  shell: "timedatectl | awk '/Time zone:.*/' | grep ' {{ timezone }} '"
+- name: Sets Timezone
+  shell: "timedatectl set-timezone {{ timezone }}"
+  when:
+  - tz_check is defined
+  - tz_check.rc is defined
+  - tz_check.rc != 0
+- name: Sets Localtime
+  file:
+    dest: /etc/localtime
+    force: yes
+    src: "/usr/share/zoneinfo/{{ timezone | default('UTC') }}"
+    state: link
+- block:
+  - name: Installs NTP Configurationn
+    register: new_ntp
+    template:
+      dest: /etc/ntp.conf
+      group: root
+      mode: 0644
+      owner: root
+      src: ntp.j2
+  - block:
+    - name: Stops NTP Service
+      service:
+        name: ntp
+        state: stopped
+    - name: Syncs NTP From Upstream
+      shell: "ntpdate {{ ntp_upstreams[0] }}"
+    when:
+    - new_ntp is defined
+    - new_ntp is changed
+  - name: Ensures NTP is Running & Starts on Boot
+    service:
+      enabled: yes
+      name: ntp
+      state: started
+  when:
+  - ntp_upstreams | length > 0

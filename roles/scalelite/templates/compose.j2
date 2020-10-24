@@ -1,0 +1,118 @@
+version: '3'
+services:
+{% if 'api' in scalelite_has_roles %}
+  scalelite-api:
+    container_name: scalelite-api
+    environment:
+    - DATABASE_URL=postgres://{{ scalelite_postgres_user }}:{{ scalelite_postgres_password }}@{{ scalelite_postgres_host if (scalelite_postgres_host | default(False)) else hostvars[groups['postgres'][0]]['ansible_fqdn'] }}:{{ scalelite_postgres_port }}/{{ scalelite_postgres_database }}?pool=5&sslmode=disable
+    - LOADBALANCER_SECRET={{ scalelite_lb_secret }}
+    - REDIS_URL=redis://{{ scalelite_redis_host if (scalelite_redis_host | default(False)) else (hostvars[groups['lb'][0]]['ansible_fqdn'] if (groups['lb'] | length > 0) else hostvars[groups['redis'][0]]['ansible_fqdn']) }}:{{ scalelite_redis_port }}
+    - SECRET_KEY_BASE={{ scalelite_base_secret }}
+    - URL_HOST={{ scalelite_fqdn | default(ansible_fqdn) }}
+    image: {{ scalelite_images_repo }}:{{ scalelite_images_release }}-api
+    logging:
+      driver: journald
+    ports:
+    - "3000:3000"
+    restart: unless-stopped
+    volumes:
+{% if bbb_uses_selfsigned | default(True) %}
+    - /etc/ssl/certs:/etc/ssl/certs
+    - /usr/local/share/ca-certificates:/usr/local/share/ca-certificates
+{% endif %}
+    - /var/log/scalelite-api:/app/log
+    - /var/scalelite-recordings:/var/bigbluebutton
+{% endif %}
+{% if 'nginx' in scalelite_has_roles %}
+  scalelite-nginx:
+{% if groups['prometheus'] | length > 0 or do_prometheus | default(False) %}
+    build:
+      context: /usr/src/scalelite-nginx
+      dockerfile: Dockerfile
+{% endif %}
+    container_name: scalelite-nginx
+    environment:
+    - NGINX_SSL=true
+    - URL_HOST={{ scalelite_fqdn | default(ansible_fqdn) }}
+{% if 'api' in scalelite_has_roles %}
+    depends_on:
+    - scalelite-api
+{% endif %}
+{% if groups['prometheus'] | length > 0 or do_prometheus | default(False) %}
+    image: custom-scalelite:{{ scalelite_images_release }}-nginx
+{% else %}
+    image: {{ scalelite_images_repo }}:{{ scalelite_images_release }}-nginx
+{% endif %}
+    ports:
+    - "80:80"
+    - "443:443"
+{% if groups['prometheus'] | length > 0 or do_prometheus | default(False) %}
+    - "{{ nginx_stats_port }}:{{ nginx_stats_port }}"
+{% endif %}
+    restart: unless-stopped
+    volumes:
+{% if 0 == 1 and (groups['prometheus'] | length > 0 or do_prometheus | default(False)) %}
+    - /etc/nginx/conf.d/scalelite:/etc/nginx/conf.d/scalelite
+{% endif %}
+{% if bbb_uses_selfsigned | default(True) %}
+    - /etc/nginx/ssl:/etc/nginx/ssl/live/{{ scalelite_fqdn | default(ansible_fqdn ) }}
+    - /etc/ssl/certs:/etc/ssl/certs
+    - /usr/local/share/ca-certificates:/usr/local/share/ca-certificates
+{% else %}
+    - /etc/letsencrypt/ssl/live/{{ scalelite_fqdn | default(ansible_fqdn ) }}:/etc/nginx/ssl/live/{{ scalelite_fqdn | default(ansible_fqdn ) }}
+{% endif %}
+    - /var/log/nginx:/var/log/nginx
+    - /var/scalelite-recordings/published:/var/bigbluebutton/published
+{% if not (bbb_uses_selfsigned | default(True)) %}
+  certbot:
+    container_name: certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    image: {{ certbot_images_repo }}:{{ certbot_images_release }}
+    logging:
+      driver: journald
+    volumes:
+    - /var/log/certbot:/var/log/letsencrypt
+    - /etc/letsencrypt:/etc/letsencrypt
+    - /var/certbot:/var/www/certbot
+{% endif %}
+{% endif %}
+{% if 'poller' in scalelite_has_roles %}
+  scalelite-poller:
+    container_name: scalelite-poller
+{% if 'api' in scalelite_has_roles %}
+    depends_on:
+    - scalelite-api
+{% endif %}
+    environment:
+    - DATABASE_URL=postgres://{{ scalelite_postgres_user }}:{{ scalelite_postgres_password }}@{{ scalelite_postgres_host if (scalelite_postgres_host | default(False)) else hostvars[groups['postgres'][0]]['ansible_fqdn'] }}:{{ scalelite_postgres_port }}/{{ scalelite_postgres_database }}?pool=5&sslmode=disable
+    - REDIS_URL=redis://{{ scalelite_redis_host if (scalelite_redis_host | default(False)) else (hostvars[groups['lb'][0]]['ansible_fqdn'] if (groups['lb'] | length > 0) else hostvars[groups['redis'][0]]['ansible_fqdn']) }}:{{ scalelite_redis_port }}
+    image: {{ scalelite_images_repo }}:{{ scalelite_images_release }}-poller
+    logging:
+      driver: journald
+{% if bbb_uses_selfsigned | default(True) %}
+    volumes:
+    - /etc/ssl/certs:/etc/ssl/certs
+    - /usr/local/share/ca-certificates:/usr/local/share/ca-certificates
+{% endif %}
+{% endif %}
+{% if 'recording-importer' in scalelite_has_roles %}
+  scalelite-recording-importer:
+    container_name: scalelite-recording-importer
+{% if 'api' in scalelite_has_roles %}
+    depends_on:
+    - scalelite-api
+{% endif %}
+    environment:
+    - DATABASE_URL=postgres://{{ scalelite_postgres_user }}:{{ scalelite_postgres_password }}@{{ scalelite_postgres_host if (scalelite_postgres_host | default(False)) else hostvars[groups['postgres'][0]]['ansible_fqdn'] }}:{{ scalelite_postgres_port }}/{{ scalelite_postgres_database }}?pool=5&sslmode=disable
+    - REDIS_URL=redis://{{ scalelite_redis_host if (scalelite_redis_host | default(False)) else (hostvars[groups['lb'][0]]['ansible_fqdn'] if (groups['lb'] | length > 0) else hostvars[groups['redis'][0]]['ansible_fqdn']) }}:{{ scalelite_redis_port }}
+    image: {{ scalelite_images_repo }}:{{ scalelite_images_release }}-recording-importer
+    logging:
+      driver: journald
+    volumes:
+{% if bbb_uses_selfsigned | default(True) %}
+    - /etc/ssl/certs:/etc/ssl/certs
+    - /usr/local/share/ca-certificates:/usr/local/share/ca-certificates
+{% endif %}
+    - /var/scalelite-recordings:/var/bigbluebutton
+    - /var/scalelite-recordings/spool:/var/bigbluebutton/spool
+{% endif %}

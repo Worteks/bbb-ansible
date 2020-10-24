@@ -1,0 +1,12 @@
+[Unit]
+Description=MongoDB Exporter
+After=mongodb.service
+
+[Service]
+User=mongodbexporter
+Group=mongodbexporter
+ExecStart=/usr/bin/mongodb_exporter --mongodb.uri=mongodb://{{ mongodb_listen_address }}:27017 --web.listen-address=:{{ mongodb_exporter_port }}
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

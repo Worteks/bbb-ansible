@@ -1,0 +1,51 @@
+- name: "Fetches Secret from {{ bbb_remote }}"
+  changed_when: False
+  delegate_to: "{{ bbb_remote }}"
+  register: bbb_secret
+  shell: bbb-conf --secret | awk '/Secret:/{print $2}'
+- name: "Fetches URL from {{ bbb_remote }}"
+  changed_when: False
+  delegate_to: "{{ bbb_remote }}"
+  register: bbb_url
+  shell: bbb-conf --secret | awk '/URL:/{print $2}'
+- name: "Checks {{ bbb_remote }} Registered"
+  changed_when: False
+  failed_when: False
+  register: has_remote
+  shell: "docker exec -i scalelite-api bundle exec rake servers | grep {{ bbb_url.stdout_lines[0] }}"
+- block:
+  - name: "Registers {{ bbb_remote }}"
+    shell: docker exec -i scalelite-api bundle exec rake servers:add[{{ bbb_url.stdout_lines[0] }}api/,{{ bbb_secret.stdout_lines[0] }}]
+  - name: "Resolves {{ bbb_remote }} ID"
+    changed_when: False
+    failed_when: False
+    register: remote_id
+    shell: "docker exec -i scalelite-api bundle exec rake servers | grep -B1 {{ bbb_url.stdout_lines[0] }} | awk '/id:/{print $2}'"
+  - name: "Enables {{ bbb_remote }}"
+    shell: "docker exec -i scalelite-api bundle exec rake servers:enable[{{ remote_id.stdout_lines[0] }}]"
+  when:
+  - has_remote is defined
+  - has_remote.rc is defined
+  - has_remote.rc != 0
+- block:
+  - name: "Checks {{ bbb_remote }} Status"
+    changed_when: False
+    failed_when: False
+    register: remote_active
+    shell: "docker exec -i scalelite-api bundle exec rake servers | grep -A3 {{ bbb_url.stdout_lines[0] }} | grep enabled"
+  - block:
+    - name: "Resolves {{ bbb_remote }} ID"
+      changed_when: False
+      failed_when: False
+      register: remote_id
+      shell: "docker exec -i scalelite-api bundle exec rake servers | grep -B1 {{ bbb_url.stdout_lines[0] }} | awk '/id:/{print $2}'"
+    - name: "Enables {{ bbb_remote }}"
+      shell: "docker exec -i scalelite-api bundle exec rake servers:enable[{{ remote_id.stdout_lines[0] }}]"
+    when:
+    - remote_active is defined
+    - remote_active.rc is defined
+    - remote_active.rc != 0
+  when:
+  - has_remote is defined
+  - has_remote.rc is defined
+  - has_remote.rc == 0

@@ -1,0 +1,23 @@
+- name: Makes Sure known_hosts Exist
+  copy:
+    content: ""
+    dest: /home/bigbluebutton/.ssh/known_hosts
+    force: no
+    group: bigbluebutton
+    mode: 0644
+    owner: bigbluebutton
+- include_role:
+    name: sshfs
+    tasks_from: keyscan.yaml
+  loop: "{{ groups['scalelite'] }}"
+  loop_control:
+    loop_var: ssh_remote
+  vars:
+    ssh_homedir: /home/bigbluebutton
+- name: Ensures known_hosts Has Proper Permissions
+  file:
+    dest: /home/bigbluebutton/.ssh/known_hosts
+    group: bigbluebutton
+    mode: 0644
+    owner: bigbluebutton
+    state: file

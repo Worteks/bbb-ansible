@@ -1,0 +1,46 @@
+- name: Installs RTMP Modules Configuration
+  copy:
+    content: "load_module modules/ngx_{{ mod }}_module.so;"
+    dest: "/etc/nginx/modules-available/50-mod-{{ mod }}.conf"
+    group: root
+    mode: 0644
+    owner: root
+  loop:
+  - rtmp
+  - stream
+  loop_control:
+    loop_var: mod
+  register: modules_conf
+- name: Installs RTMP Server Configuration
+  notify: Reload Nginx
+  template:
+    dest: /etc/nginx/modules-available/99-rtmp.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: rtmp.j2
+  register: server_conf
+- name: Loads RTMP Modules and Server Configuration
+  file:
+    dest: "/etc/nginx/modules-enabled/{{ f }}.conf"
+    state: link
+    src: "/etc/nginx/modules-available/{{ f }}.conf"
+  loop:
+  - 50-mod-rtmp
+  - 50-mod-stream
+  - 99-rtmp
+  loop_control:
+    loop_var: f
+  register: loaded_conf
+- name: Restarts Nginx Server
+  service:
+    name: nginx
+    state: restarted
+  when:
+  - >
+      (modules_conf is defined
+       and modules_conf is changed)
+      or (server_conf is defined
+          and server_conf is changed)
+      or (loaded_conf is defined
+          and loaded_conf is changed)

@@ -1,0 +1,12 @@
+firehol_allow_icmp: True
+
+firehol_docker_if: docker0
+
+firehol_filtered_ports: []
+
+firehol_opened_ports:
+- name: openssh
+  value: tcp/22
+
+firehol_trusted_networks:
+- 127.0.0.0/24

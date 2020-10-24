@@ -1,0 +1,9 @@
+- include_tasks: commons.yaml
+- include_tasks: locale.yaml
+- include_tasks: time.yaml
+- include_tasks: update.yaml
+- include_tasks: prometheus.yaml
+  when:
+  - >
+      groups['prometheus'] | length > 0
+      or do_prometheus | default(False)

@@ -1,0 +1,53 @@
+- name: Installs Sysctl HAProxy Configuration
+  copy:
+    dest: /etc/sysctl.d/99-haproxy.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: sysctl.conf
+  register: reload_sysctl
+- name: Reloads Sysctl
+  args:
+    chdir: /etc/sysctl.d
+  notify: Reload HAProxy
+  shell: |
+    while read value; \
+        do \
+            sysctl "$value"; \
+        done <99-haproxy.conf
+  when:
+  - reload_sysctl is defined
+  - reload_sysctl is changed
+- name: Installs HAProxy Main Configuration
+  notify: Reload HAProxy
+  template:
+    dest: /etc/haproxy/haproxy.cfg
+    group: root
+    mode: 0644
+    owner: root
+    src: haproxy.j2
+- name: Purges Spurious HAProxy Rsyslog Configuration
+  file:
+    dest: /etc/rsyslog.d/haproxy.conf
+    state: absent
+  notify: Reload Rsyslog
+- name: Installs HAProxy Custom Rsyslog Configuration
+  notify: Reload Rsyslog
+  template:
+    dest: /etc/rsyslog.d/50-haproxy.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: rsyslog.j2
+- name: Ensures HAProxy is Running & Starts on Boot
+  service:
+    enabled: yes
+    name: haproxy
+    state: started
+- name: Installs HAProxy Profile Configuration
+  copy:
+    dest: /etc/profile.d/haproxy.sh
+    group: root
+    mode: 0644
+    owner: root
+    src: profile.sh

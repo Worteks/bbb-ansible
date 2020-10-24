@@ -1,0 +1,5 @@
+FROM python:3-slim-buster
+
+RUN pip install prometheus-freeswitch-exporter
+
+USER 1000

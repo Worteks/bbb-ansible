@@ -1,0 +1,220 @@
+# Finish hosts prep on dedicated instances
+- hosts: lb:postgres:redis:scalelite:bbb:greenlight:moodle:prometheus:grafana:alertmanager:sshfs:nfs:coturn:rtmp
+  tasks:
+  - include_role:
+      name: commons
+    when:
+    - not (is_on_shared_hardware | default(False))
+
+# Configures Firewall
+- hosts: lb:postgres:redis:sshfs:nfs
+  tasks:
+  - include_role:
+      name: firehol
+    when:
+    - setup_firewall | default(True)
+    - not (is_on_shared_hardware | default(False))
+
+# Initilizes BBB PKI
+# Generates Certificates to BBB, Greenlight, Scalelite,
+# AlertManager & Prometheus
+- hosts: bbb:scalelite:greenlight:prometheus:grafana:alertmanager:coturn
+  roles:
+  - { name: pki, when: bbb_uses_selfsigned | default(True) }
+- hosts: bbb:greenlight
+  serial: 1
+  tasks:
+  - fail:
+      msg: |
+        BigBueButton FQDN has to be set, deploying multiple servers
+    when:
+    - groups['bbb'] | length > 1
+    - not (bigbluebutton_fqdn | default(False))
+  - include_role:
+      name: pki
+      tasks_from: generate-cert.yaml
+    vars:
+      cert_fqdn: "{{ bigbluebutton_fqdn | default(ansible_fqdn) }}"
+    when:
+    - bbb_uses_selfsigned | default(True)
+- hosts: scalelite
+  serial: 1
+  tasks:
+  - fail:
+      msg: |
+        Scalelite FQDN has to be set, deploying multiple servers
+    when:
+    - groups['scalelite'] | length > 1
+    - not (scalelite_fqdn | default(False))
+  - include_role:
+      name: pki
+      tasks_from: generate-cert.yaml
+    vars:
+      cert_fqdn: "{{ scalelite_fqdn | default(ansible_fqdn) }}"
+    when:
+    - bbb_uses_selfsigned | default(True)
+- hosts: coturn
+  serial: 1
+  tasks:
+  - fail:
+      msg: |
+        Coturn FQDN has to be set, deploying multiple servers
+    when:
+    - groups['coturn'] | length > 1
+    - not (coturn_fqdn | default(False))
+  - include_role:
+      name: pki
+      tasks_from: generate-cert.yaml
+    vars:
+      cert_fqdn: "{{ coturn_fqdn | default(ansible_fqdn) }}"
+    when:
+    - bbb_uses_selfsigned | default(True)
+- hosts: alertmanager
+  serial: 1
+  tasks:
+  - fail:
+      msg: |
+        AlertManager FQDN has to be set, deploying multiple servers
+    when:
+    - groups['alertmanager'] | length > 1
+    - not (alertmanager_fqdn | default(False))
+  - include_role:
+      name: pki
+      tasks_from: generate-cert.yaml
+    vars:
+      cert_fqdn: "{{ alertmanager_fqdn | default(ansible_fqdn) }}"
+    when:
+    - bbb_uses_selfsigned | default(True)
+    - ansible_fqdn not in groups['prometheus']
+    - ansible_hostname not in groups['prometheus']
+    - ansible_fqdn not in groups['grafana']
+    - ansible_hostname not in groups['grafana']
+- hosts: prometheus
+  serial: 1
+  tasks:
+  - fail:
+      msg: |
+        Prometheus FQDN has to be set, deploying multiple servers
+    when:
+    - groups['prometheus'] | length > 1
+    - not (prometheus_fqdn | default(False))
+  - include_role:
+      name: pki
+      tasks_from: generate-cert.yaml
+    vars:
+      cert_fqdn: "{{ prometheus_fqdn | default(ansible_fqdn) }}"
+    when:
+    - bbb_uses_selfsigned | default(True)
+    - ansible_fqdn not in groups['grafana']
+    - ansible_hostname not in groups['grafana']
+- hosts: grafana
+  serial: 1
+  tasks:
+  - fail:
+      msg: |
+        Grafana FQDN has to be set, deploying multiple servers
+    when:
+    - groups['grafana'] | length > 1
+    - not (grafana_fqdn | default(False))
+  - include_role:
+      name: pki
+      tasks_from: generate-cert.yaml
+    vars:
+      cert_fqdn: "{{ grafana_fqdn | default(ansible_fqdn) }}"
+    when:
+    - bbb_uses_selfsigned | default(True)
+
+# Prepare Shared FS
+# a demo deployment would come without any network filesystem
+# otherwise: only one of these would be required, distributing Scalelite
+- hosts: nfs
+  roles:
+  - nfs
+- hosts: cephfs
+  roles:
+  - cephfs
+- hosts: sshfs
+  roles:
+  - sshfs
+
+# Installs Redis
+# only required when deploying Scalelite
+- hosts: redis
+  roles:
+  - redis
+
+# Installs Postgres
+# provisions Greenlight, Moodle & Scalelite databases & users
+- hosts: postgres
+  roles:
+  - postgres
+
+# Installs HAProxy for backend services
+# sends Scalelite clients to redis Master, Prometheus to AlertManager,
+# Grafana to Prometheus
+- hosts: lb_back
+  roles:
+  - haproxy
+
+# Installs Coturn
+- hosts: coturn
+  roles:
+  - coturn
+
+# Installs BigBlueButton
+- hosts: bbb
+  roles:
+  - bigbluebutton
+
+# Installs Scalelite
+- hosts: scalelite
+  roles:
+  - scalelite
+
+# Registers BigBlueButton backends to Scalelite
+- hosts: scalelite[0]
+  tasks:
+  - include_role:
+      name: scalelite
+      tasks_from: init-backends.yaml
+# Trusts Scalelite SSH Hostkey in BBB
+- hosts: bbb
+  tasks:
+  - include_role:
+      name: bigbluebutton
+      tasks_from: ssh-keyscan.yaml
+    when:
+    - groups['cephfs'] | length == 0
+    - groups['nfs'] | length == 0
+
+# Installs HAProxy for frontend services
+# Greenlight & external clients to an active Scalelite server,
+# external clients to Greenlight & Grafana
+# -- don't re-apply, if host also member of lb_back group
+- hosts: lb_front
+  tasks:
+  - include_role:
+      name: haproxy
+    when:
+    - not (ansible_fqdn in groups['lb_back'])
+    - groups['scalelite'] | length > 0
+
+# Installs Greenlight
+- hosts: greenlight
+  roles:
+  - greenlight
+
+# Installs AlertManager
+- hosts: alertmanager
+  roles:
+  - alertmanager
+
+# Installs Prometheus
+- hosts: prometheus
+  roles:
+  - prometheus
+
+# Installs Grafana
+- hosts: grafana
+  roles:
+  - grafana

@@ -1,0 +1,92 @@
+version: '3'
+services:
+  greenlight:
+{% if greenlight_saml_endpoint | default(False) or greenlight_oidc_endpoint | default(False) %}
+    build:
+      context: /usr/src/greenlight
+      dockerfile: Dockerfile
+{% endif %}
+    container_name: greenlight
+    environment:
+    - ALLOW_GREENLIGHT_ACCOUNTS={{ 'true' if (greenlight_allow_local_accounts) else 'false' }}
+{% if groups['scalelite'] | length > 1 and groups['lb_front'] | length > 0 %}
+    - BIGBLUEBUTTON_ENDPOINT=https://{{ hostvars[groups['lb_front'][0]]['scalelite_fqdn'] | default(hostvars[groups['lb_front'][0]]['ansible_fqdn']) }}/bigbluebutton/api/
+    - BIGBLUEBUTTON_SECRET={{ hostvars[groups['scalelite'][0]]['scalelite_lb_secret'] }}
+{% elif groups['scalelite'] | length > 0 %}
+    - BIGBLUEBUTTON_ENDPOINT=https://{{ hostvars[groups['scalelite'][0]]['scalelite_fqdn'] | default(hostvars[groups['scalelite'][0]]['ansible_fqdn']) }}/bigbluebutton/api/
+    - BIGBLUEBUTTON_SECRET={{ hostvars[groups['scalelite'][0]]['scalelite_lb_secret'] }}
+{% else %}
+    - BIGBLUEBUTTON_ENDPOINT=https://{{ hostvars[groups['bbb'][0]]['ansible_fqdn'] }}/bigbluebutton/api/
+    - BIGBLUEBUTTON_SECRET={{ bbb_secret.stdout_lines[0] }}
+{% endif %}
+    - DB_ADAPTER=postgresql
+    - DB_HOST={{ greenlight_postgres_host if (greenlight_postgres_host | default(False)) else hostvars[groups['postgres'][0]]['ansible_fqdn'] }}
+    - DB_NAME={{ greenlight_postgres_database }}
+    - DB_PASSWORD={{ greenlight_postgres_password }}
+    - DB_PORT={{ greenlight_postgres_port }}
+    - DB_USERNAME={{ greenlight_postgres_user }}
+    - DEFAULT_REGISTRATION={{ greenlight_registrations }}
+    - ENABLE_SSL=true
+    - HELP_URL={{ greenlight_help_url }}
+{% if greenlight_ldap_endpoint | default(False) %}
+    - LDAP_AUTH={{ greenlight_ldap_auth }}
+    - LDAP_BASE={{ greenlight_ldap_base }}
+    - LDAP_BIND_DN={{ greenlight_ldap_bind_dn }}
+    - LDAP_FILTER='(&(objectClass={{ greenlight_ldap_user_objectclass }})(!(pwdAccountLockedTime=*)))'
+    - LDAP_METHOD={{ 'plain' if ((greenlight_ldap_endpoint | urlsplit('scheme')) == 'ldap') else 'tls' }}
+    - LDAP_PASSWORD={{ greenlight_ldap_password }}
+    - LDAP_PORT={{ greenlight_ldap_endpoint | urlsplit('port') }}
+    - LDAP_ROLE_FIELD={{ greenlight_ldap_role_field }}
+    - LDAP_SERVER={{ greenlight_ldap_endpoint | urlsplit('hostname') }}
+    - LDAP_UID={{ greenlight_ldap_uid }}
+{% endif %}
+    - MAINTENANCE_MODE=false
+    - MAINTENANCE_WINDOW=
+    - NUMBER_OF_ROWS=25
+{% if greenlight_oidc_endpoint | default(False) %}
+    - OPENID_CONNECT_AUTHORIZATION_ENDPOINT={{ greenlight_oidc_authorization_endpoint }}
+    - OPENID_CONNECT_CLIENT_ID={{ greenlight_oidc_client_id }}
+    - OPENID_CONNECT_CLIENT_SECRET={{ greenlight_oidc_client_secret }}
+    - OPENID_CONNECT_DISCOVERY=
+{% if greenlight_oidc_logout_endpoint | default(False) %}
+    - OPENID_CONNECT_END_SESSION_ENDPOINT={{ greenlight_oidc_logout_endpoint }}
+{% endif %}
+    - OPENID_CONNECT_ISSUER=https://{{ bigbluebutton_fqdn | default(ansible_fqdn) }}
+{% if greenlight_oidc_site | default(False) %}
+    - OPENID_CONNECT_SITE={{ greenlight_oidc_site }}
+{% endif %}
+    - OPENID_CONNECT_TOKEN_ENDPOINT={{ greenlight_oidc_token_endpoint }}
+    - OPENID_CONNECT_UID_FIELD={{ greenlight_oidc_uid_field }}
+{% endif %}
+    - PAGINATION_NUMBER=25
+    - RAILS_LOG_TO_STDOUT=true
+    - RELATIVE_URL_ROOT={{ greenlight_app_root }}
+    - ROOM_FEATURES={{ greenlight_room_features | join(',') }}
+    - SAFE_HOSTS={{ bigbluebutton_fqdn | default(ansible_fqdn) }}
+{% if greenlight_saml_endpoint | default(False) %}
+    - SAML_COMMONNAME_ATTRIBUTE={{ greenlight_saml_commonname_field }}
+    - SAML_EMAIL_ATTRIBUTE={{ greenlight_saml_email_field }}
+    - SAML_IDP_CERT_FINGERPRINT={{ greenlight_saml_cert_fingerprint }}
+    - SAML_IDP_URL={{ greenlight_saml_endpoint }}
+    - SAML_ISSUER={{ greenlight_saml_issuer }}
+    - SAML_NAME_IDENTIFIER={{ greenlight_saml_nameid_format }}
+    - SAML_UID_ATTRIBUTE={{ greenlight_saml_uid_field }}
+    - SAML_USERNAME_ATTRIBUTE={{ greenlight_saml_username_field }}
+{% endif %}
+    - SECRET_KEY_BASE={{ greenlight_base_secret }}
+{% if greenlight_saml_endpoint | default(False) or greenlight_oidc_endpoint | default(False) %}
+    image: custom-greenlight:sso
+{% else %}
+    image: {{ greenlight_images_repo }}:{{ greenlight_images_release }}
+{% endif %}
+    logging:
+      driver: journald
+    ports:
+    - "5000:80"
+    restart: unless-stopped
+    volumes:
+{% if bbb_uses_selfsigned | default(True) %}
+    - /etc/ssl/certs:/etc/ssl/certs
+    - /usr/local/share/ca-certificates:/usr/local/share/ca-certificates
+{% endif %}
+    - /var/lib/greenlight:/usr/src/app/storage

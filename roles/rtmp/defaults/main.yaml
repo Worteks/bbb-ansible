@@ -1,0 +1,8 @@
+bigbluebutton_livestream_images_release: latest
+bigbluebutton_livestream_images_repo: docker.io/aauzid/bigbluebutton-livestreaming
+
+rtmp_chunk_size: 4096
+rtmp_port: 1935
+rtmp_record: False
+
+stream_meeting_id: MyMeetingID

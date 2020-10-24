@@ -1,0 +1,11 @@
+- name: Installs Nginx
+  apt:
+    name: nginx
+    state: present
+  environment:
+    RUNLEVEL: "1"
+- name: Purges Default Configuration
+  file:
+    dest: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Reload Nginx

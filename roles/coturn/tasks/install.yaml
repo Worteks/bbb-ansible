@@ -1,0 +1,6 @@
+- name: Installs Coturn
+  apt:
+    name: coturn
+    state: present
+# FIXME:
+# provisions DB with /usr/share/doc/coturn/schema.sql

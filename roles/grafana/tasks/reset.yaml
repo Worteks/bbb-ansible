@@ -1,0 +1,12 @@
+- name: Stops Grafana
+  failed_when: False
+  service:
+    name: grafana
+    state: stopped
+- name: Purges Grafana Configuration & Database
+  loop:
+  - /var/lib/grafana
+  - /etc/grafana
+  loop_control:
+    loop_var: fl
+  shell: "find {{ fl }} -type f -delete"

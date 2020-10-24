@@ -1,0 +1,22 @@
+version: '3'
+services:
+  scalelite-exporter:
+    container_name: scalelite-exporter
+    environment:
+    - API_BASE_URL=https://{{ scalelite_fqdn | default(ansible_fqdn) }}/bigbluebutton/api/
+    - API_SECRET={{ scalelite_lb_secret }}
+    - BIND_IP=0.0.0.0
+{% if do_debugs | default(False) %}
+    - DEBUG=true
+{% endif %}
+    - RECORDINGS_METRICS=true
+    - PORT={{ scalelite_exporter_port }}
+    - TLS_VERIFY=false
+    extra_hosts:
+    - {{ scalelite_fqdn | default(ansible_fqdn) }}:{{ ansible_default_ipv4['address'] }}
+    image: {{ scalelite_exporter_images_repo }}:{{ scalelite_exporter_images_release }}
+    logging:
+      driver: journald
+    ports:
+    - "{{ scalelite_exporter_port }}:{{ scalelite_exporter_port }}"
+    restart: unless-stopped

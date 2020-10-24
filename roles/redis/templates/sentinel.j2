@@ -1,0 +1,9 @@
+bind {{ redis_bind_address }}
+daemonize no
+port {{ redis_sentinel_port }}
+protected-mode no
+sentinel monitor {{ redis_replicaset_name }} {{ hostvars[groups['redis'][0]]['ansible_default_ipv4']['address'] }} {{ redis_port }} {{ redis_quorum }}
+sentinel down-after-milliseconds {{ redis_replicaset_name }} {{ redis_down_after }}000
+sentinel failover-timeout {{ redis_replicaset_name }} {{ redis_failover_timeout }}000
+sentinel parallel-syncs {{ redis_replicaset_name }} {{ (groups['redis'] | length) - 1 }}
+logfile /var/log/redis/redis-sentinel.log

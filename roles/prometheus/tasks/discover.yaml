@@ -1,0 +1,45 @@
+- include_tasks: register-targets.yaml
+  loop:
+  - { name: alertmanager, port: 9093, remotes: "{{ groups['alertmanager'] }}" }
+  - { name: blackbox, port: 9158, remotes: "{{ groups['greenlight'] }}" }
+# - { name: coturn, port: 9641, remotes: "{{ groups['coturn'] }}" }
+  - { name: freeswitch, port: 9725, remotes: "{{ groups['bbb'] }}" }
+  - { name: grafana, port: 3000, remotes: "{{ groups['grafana'] }}" }
+  - { name: haproxy, port: 9180, remotes: "{{ groups['lb'] }}" }
+  - { name: mongodb, port: 9117, remotes: "{{ groups['bbb'] }}" }
+  - { name: nginx, port: 9143, remotes: "{{ groups['front'] }}" }
+  - { name: nodes, port: 9142, remotes: "{{ groups['bigbluebutton'] }}" }
+  - { name: postgres, port: 9144, remotes: "{{ groups['postgres'] }}" }
+  - { name: redis, port: 9179, remotes: "{{ groups['bbb'] }}" }
+  loop_control:
+    loop_var: t
+  vars:
+     target_name: "{{ t.name }}"
+     target_port: "{{ t.port }}"
+     targets: "{{ t.remotes }}"
+- include_tasks: register-targets.yaml
+  vars:
+     target_name: redis-masterslave
+     target_port: 9179
+     targets: "{{ groups['redis'] }}"
+     target_labels:
+      - name: redis_is_persistent
+        value: scalelite
+      - name: redis_replica_set
+        value: "{{ groups['redis'][0] }}"
+- include_tasks: register-targets.yaml
+  vars:
+     target_name: scalelite
+     target_port: 9688
+     targets: "{{ groups['scalelite'] }}"
+     target_labels:
+      - name: target_type
+        value: scalelite
+- include_tasks: register-targets.yaml
+  vars:
+     target_name: bigbluebutton
+     target_port: 9688
+     targets: "{{ groups['bbb'] }}"
+     target_labels:
+      - name: target_type
+        value: bigbluebutton

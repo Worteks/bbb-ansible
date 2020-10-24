@@ -1,0 +1,29 @@
+# note: could use facts (?)
+- name: Checks for Swap Device
+  args:
+    chdir: /etc
+  changed_when: False
+  failed_when: False
+  register: sw_check
+  shell: grep ' sw ' fstab
+- block:
+  - name: Creates Swap File
+    shell: "dd if=/dev/zero of=/swapfile bs=1M count={{ swap_size | default(1024) }}"
+  - name: Sets Proper Permissions on Swap File
+    file:
+      dest: /swapfile
+      group: root
+      mode: 0600
+      owner: root
+  - name: Makes Swap Filesystem
+    shell: mkswap /swapfile
+  - name: Adds Swap Entry to /etc/fstab
+    lineinfile:
+      dest: /etc/fstab
+      line: /swapfile none swap sw 0 0
+  - name: Mounts Swap Devices
+    shell: swapon -a
+  when:
+  - sw_check is defined
+  - sw_check.rc is defined
+  - sw_check.rc != 0

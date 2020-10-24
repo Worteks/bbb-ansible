@@ -1,0 +1,30 @@
+- name: Installs Firehol Configuration Directory
+  file:
+    dest: /etc/firehol
+    group: root
+    mode: 0755
+    owner: root
+    state: directory
+- name: Installs Firehol Service Configuration
+  register: config_changed
+  template:
+    dest: /etc/firehol/firehol.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: firehol.j2
+- name: Ensures Firehol is Running & Starts on Boot
+  register: did_start
+  service:
+    enabled: yes
+    name: firehol
+    state: started
+- name: Restarts Firehol
+  service:
+    name: firehol
+    state: restarted
+  when:
+  - did_start is defined
+  - not (did_start is changed)
+  - config_changed is defined
+  - config_changed is changed

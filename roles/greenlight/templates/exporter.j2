@@ -1,0 +1,12 @@
+[Unit]
+Description=BlackBox Exporter
+After=greenlight.target
+
+[Service]
+User=blackboxexporter
+Group=blackboxexporter
+ExecStart=/usr/bin/blackbox_exporter --config.file=/etc/blackbox/config.yaml --web.listen-address=:{{ blackbox_exporter_port }}
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

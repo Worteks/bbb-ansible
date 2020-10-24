@@ -1,0 +1,23 @@
+- name: Installs Greenlight Postgres Database
+  become: yes
+  become_user: postgres
+  postgresql_db:
+    encoding: UTF-8
+    name: "{{ greenlight_postgres_database }}"
+    template: template0
+- name: Installs Greenlight Postgres User
+  become: yes
+  become_user: postgres
+  postgresql_user:
+    db: "{{ greenlight_postgres_database }}"
+    name: "{{ greenlight_postgres_user }}"
+    password: "{{ greenlight_postgres_password }}"
+- name: Grants Greenlight User Privileges over its database
+  become: yes
+  become_user: postgres
+  postgresql_privs:
+    admin_option: yes
+    db: "{{ greenlight_postgres_database }}"
+    privs: ALL
+    type: database
+    role: "{{ greenlight_postgres_user }}"

@@ -1,0 +1,14 @@
+- name: Installs AlertManager Virtualhost
+  notify: Reload Nginx
+  template:
+    dest: /etc/nginx/sites-available/alertmanager.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: vhost.j2
+- name: Enables AlertManager Virtualhost
+  file:
+    dest: /etc/nginx/sites-enabled/alertmanager.conf
+    src: /etc/nginx/sites-available/alertmanager.conf
+    state: link
+  notify: Reload Nginx

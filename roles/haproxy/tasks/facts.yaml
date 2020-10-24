@@ -1,0 +1,90 @@
+- name: Initializes HAProxy Relays Facts
+  changed_when: False
+  set_fact:
+    check_group: "{{ 'lb_front' if (ansible_hostname in groups['lb_front']
+                                    or ansible_fqdn in groups['lb_front'])
+                                else 'lb_back' }}"
+    do_alertmanager: "{{ True if ((ansible_hostname in groups['lb_back']
+                                   or ansible_fqdn in groups['lb_back'])
+                                  and (groups['alertmanager'] | length > 1
+                                       or do_debugs | default(False)))
+                              else False }}"
+    do_grafana: "{{ True if ((ansible_hostname in groups['lb_front']
+                              or ansible_fqdn in groups['lb_front'])
+                             and (groups['grafana'] | length > 1
+                                  or do_debugs | default(False)))
+                         else False }}"
+    do_greenlight: "{{ True if ((ansible_hostname in groups['lb_front']
+                                 or ansible_fqdn in groups['lb_front'])
+                                and (groups['greenlight'] | length > 1
+                                     or do_debugs | default(False)))
+                            else False }}"
+    do_prometheus: "{{ True if ((ansible_hostname in groups['lb_back']
+                                 or ansible_fqdn in groups['lb_back'])
+                                and (groups['prometheus'] | length > 1
+                                     or do_debugs | default(False)))
+                            else False }}"
+    do_redis: "{{ True if ((ansible_hostname in groups['lb_back']
+                            or ansible_fqdn in groups['lb_back'])
+                           and (groups['redis'] | length > 1
+                                or do_debugs | default(False)))
+                       else False }}"
+    do_scalelite: "{{ True if ((ansible_hostname in groups['lb_front']
+                                or ansible_fqdn in groups['lb_front'])
+                               and (groups['scalelite'] | length > 1
+                                    or do_debugs | default(False)))
+                           else False }}"
+- name: Gather Facts from AlertManager
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['alertmanager'] }}"
+  loop_control:
+    loop_var: srv
+  setup:
+  when:
+  - do_alertmanager
+- name: Gather Facts from Grafana
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['grafana'] }}"
+  loop_control:
+    loop_var: srv
+  setup:
+  when:
+  - do_grafana
+- name: Gather Facts from Greenlight
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['greenlight'] }}"
+  loop_control:
+    loop_var: srv
+  setup:
+  when:
+  - do_greenlight
+- name: Gather Facts from Prometheus
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['prometheus'] }}"
+  loop_control:
+    loop_var: srv
+  setup:
+  when:
+  - do_prometheus
+- name: Gather Facts from Redis
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['redis'] }}"
+  loop_control:
+    loop_var: srv
+  setup:
+  when:
+  - do_redis
+- name: Gather Facts from Scalelite
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['scalelite'] }}"
+  loop_control:
+    loop_var: srv
+  setup:
+  when:
+  - do_scalelite

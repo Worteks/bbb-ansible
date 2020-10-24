@@ -1,0 +1,16 @@
+[Unit]
+Description=HAProxy Exporter
+After=haproxy.service
+
+[Service]
+User=haproxyexporter
+Group=haproxyexporter
+{% if haproxy_stats_auth | length > 0 %}
+ExecStart=/usr/bin/haproxy_exporter --haproxy.scrape-uri=http://{{ haproxy_stats_auth[0] }}@127.0.0.1:{{ haproxy_stats_port }}/?stats;csv;norefresh --web.listen-address=:{{ haproxy_exporter_port }}
+{% else %}
+ExecStart=/usr/bin/haproxy_exporter --haproxy.scrape-uri=http://127.0.0.1:{{ haproxy_stats_port }} --web.listen-address=:{{ haproxy_exporter_port }}
+{% endif %}
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

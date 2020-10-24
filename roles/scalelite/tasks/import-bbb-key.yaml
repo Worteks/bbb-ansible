@@ -1,0 +1,12 @@
+- name: "Fetches BigBlueButton Public SSH Key fom {{ srv }}"
+  args:
+    chdir: /home/bigbluebutton/.ssh
+  changed_when: False
+  delegate_to: "{{ srv }}"
+  register: has_key
+  run_once: yes
+  shell: cat id_rsa.pub
+- name: "Ensures {{ srv }} Key is Trusted"
+  lineinfile:
+    dest: /home/scalelite-spool/.ssh/authorized_keys
+    line: "{{ has_key.stdout_lines[0] }}"

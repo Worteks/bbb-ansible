@@ -1,0 +1,11 @@
+nfs_exports_root: /srv/bbb-root
+nfs_exports_options:
+- no_subtree_check
+- root_squash
+- rw
+- sync
+nfs_group: root
+nfs_scalelite_uid: 1000
+nfs_scalelite_gid: 2000
+nfs_trusted_clients: 10.0.0.0/8
+nfs_user: nobody

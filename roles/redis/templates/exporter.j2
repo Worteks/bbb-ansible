@@ -1,0 +1,12 @@
+[Unit]
+Description=Redis Exporter
+After=redis-server.service
+
+[Service]
+User=redisexporter
+Group=redisexporter
+ExecStart=/usr/bin/redis_exporter --redis.addr=redis://127.0.0.1:{{ redis_port }} --web.listen-address=:{{ redis_exporter_port }}
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

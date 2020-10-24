@@ -1,0 +1,11 @@
+- include_tasks: install.yaml
+- include_role:
+    name: certbot
+  when:
+  - not (bbb_uses_selfsigned | default(True))
+- include_role:
+    name: pki
+    tasks_from: install-cert.yaml
+  when:
+  - bbb_uses_selfsigned | default(True)
+- include_tasks: configure.yaml

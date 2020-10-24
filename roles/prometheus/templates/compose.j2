@@ -1,0 +1,21 @@
+version: '3'
+services:
+  prometheus:
+    container_name: prometheus
+    entrypoint:
+    - /bin/prometheus
+    - --config.file=/etc/prometheus/prometheus.yaml
+    - --storage.tsdb.path=/prometheus
+    - --storage.tsdb.retention.time={{ prometheus_retention }}
+    - --web.console.libraries=/usr/share/prometheus/console_libraries
+    - --web.console.templates=/usr/share/prometheus/consoles
+    image: {{ prometheus_images_repo }}:{{ prometheus_images_release }}
+    logging:
+      driver: journald
+    ports:
+    - "9090:9090"
+    restart: unless-stopped
+    user: "{{ prometheus_user_id.stdout_lines[0] }}"
+    volumes:
+    - /etc/prometheus:/etc/prometheus
+    - /var/lib/prometheus:/prometheus

@@ -1,0 +1,36 @@
+#scalelite_fqdn: scalelite.example.com   defaults to fqdn
+
+scalelite_has_roles:
+- api
+- nginx
+- poller
+- recording-importer
+
+certbot_images_release: latest
+certbot_images_repo: docker.io/certbot/certbot
+
+scalelite_exporter_images_repo: greenstatic/bigbluebutton-exporter
+scalelite_exporter_images_release: v0.5.2
+scalelite_exporter_port: 9688
+
+scalelite_images_release: v1
+scalelite_images_repo: docker.io/blindsidenetwks/scalelite
+
+scalelite_postgres_database: scalelite
+#scalelite_postgres_host: False -- detected from inventory
+scalelite_postgres_password: scalelitepw
+scalelite_postgres_port: 5432
+scalelite_postgres_user: scaleliteusr
+
+#scalelite_redis_host: False -- detected from inventory
+scalelite_redis_port: 6379
+
+scalelite_lb_secret: 9568cb1e1f15cd61b2dbdd96ba36520d46a715c37dcacbe9
+scalelite_base_secret: 4061b75be452e096b08071045f46b1b1387f1cccba51df3ae7ed66669f24aeb86f905ab2cb1e5c587b146eb8de73ccb79b67458c9664d21988cb9f48ca45c4b3
+
+nfs_exports_root: /srv/bbb-root
+sshfs_exports_root: /srv/bbb-root
+sshfs_group: bbb-sshfs
+sshfs_user: bbb-sshfs
+
+nginx_stats_port: 8080

@@ -1,0 +1,16 @@
+rtmp {
+    server {
+	application live {
+	    live on;
+{% if rtmp_record %}
+	    record all;
+	    record_path /var/www/html/recordings;
+	    record_unique on;
+{% else %}
+	    record off;
+{% endif %}
+	}
+	chunk_size {{ rtmp_chunk_size }};
+	listen {{ rtmp_port }};
+    }
+}

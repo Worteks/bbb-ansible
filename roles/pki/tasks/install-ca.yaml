@@ -1,0 +1,14 @@
+- name: Trusts Custom CA
+  copy:
+    dest: "/usr/local/share/ca-certificates/{{ install_as | default('bbb') }}.crt"
+    group: root
+    mode: 0644
+    owner: root
+    remote_src: yes
+    src: "{{ ca_path | default('/root/pki/ca.crt') }}"
+  register: new_ca
+- name: Refreshes Trusted CA
+  shell: update-ca-certificates
+  when:
+  - new_ca is defined
+  - new_ca is changed

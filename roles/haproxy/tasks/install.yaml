@@ -1,0 +1,14 @@
+- name: Installs HAProxy
+  apt:
+    name:
+    - haproxy
+    - hatop
+    - socat
+    state: present
+- name: Creates HAProxy Configuration Directory
+  file:
+    dest: /etc/haproxy
+    group: root
+    mode: 0755
+    owner: root
+    state: directory

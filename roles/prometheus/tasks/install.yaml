@@ -1,0 +1,32 @@
+- name: Creates Prometheus Group
+  group:
+    name: prometheus
+    state: present
+- name: Creates Prometheus User
+  user:
+    groups: prometheus
+    name: prometheus
+- name: Resolves Prometheus User ID
+  changed_when: False
+  register: prometheus_user_id
+  shell: "getent passwd prometheus | awk -F: '{print $3;exit;}'"
+- name: Installs Prometheus Server Configuration Directories
+  file:
+    dest: "{{ fl }}"
+    group: root
+    mode: 0755
+    owner: root
+    state: directory
+  loop:
+  - /etc/prometheus
+  - /etc/prometheus/rules.d
+  - /etc/prometheus/targets.d
+  loop_control:
+    loop_var: fl
+- name: Installs Prometheus Database Directory
+  file:
+    dest: /var/lib/prometheus
+    group: prometheus
+    mode: 0755
+    owner: prometheus
+    state: directory

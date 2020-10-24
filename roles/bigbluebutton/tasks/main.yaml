@@ -1,0 +1,17 @@
+- include_tasks: facts.yaml
+- include_role:
+    name: commons
+    tasks_from: swap.yaml
+  vars:
+    swap_size: 4006
+- include_tasks: ssl.yaml
+  when:
+  - bbb_uses_selfsigned | default(True)
+- include_tasks: install.yaml
+- include_tasks: configure.yaml
+- include_tasks: utils.yaml
+- include_tasks: prometheus.yaml
+  when:
+  - >
+      groups['prometheus'] | length > 0
+      or do_prometheus | default(False)

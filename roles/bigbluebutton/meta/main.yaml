@@ -1,0 +1,6 @@
+dependencies:
+- role: docker
+  when:
+  - >
+      groups['prometheus'] | length > 0
+      or do_prometheus | default(False)

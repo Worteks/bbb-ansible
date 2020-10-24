@@ -1,0 +1,14 @@
+prometheus_rules:
+- bigbluebutton
+- blackbox
+- freeswitch
+- haproxy
+- jobs
+- mongodb
+- nginx
+- nodes
+- pgbouncer
+- postgres
+- prometheus
+- redis
+- thanos

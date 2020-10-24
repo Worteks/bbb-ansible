@@ -1,0 +1,11 @@
+FROM {{ scalelite_images_repo }}:{{ scalelite_images_release }}-nginx
+
+RUN ( \
+	echo "server {"; \
+	echo "    listen {{ nginx_stats_port | default(8080) }};"; \
+	echo "    server_name stats;"; \
+	echo "    location = /basic_status {"; \
+	echo "	stub_status;"; \
+	echo "    }"; \
+	echo "}"; \
+    ) >>/etc/nginx/conf.d/scalelite-ssl.template

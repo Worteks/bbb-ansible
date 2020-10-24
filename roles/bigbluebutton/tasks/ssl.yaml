@@ -1,0 +1,12 @@
+- name: Ensures BigBlueButton Input Certificates Directory Exists
+  file:
+    dest: /local
+    group: root
+    mode: 0700
+    owner: root
+    state: directory
+- include_role:
+    name: pki
+    tasks_from: install-cert.yaml
+  vars:
+    crt_dir: /local/certs

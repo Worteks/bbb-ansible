@@ -1,0 +1,14 @@
+grafana_dashboards:
+- BigBlueButton
+- FreeSwitch
+- Go_Applications
+- Grafana
+- HAProxy
+- MongoDB_Operations
+- MongoDB_Overview
+- MongoDB_WiredTiger
+- Nginx
+- Nodes
+- Postgres
+- Prometheus
+- Redis

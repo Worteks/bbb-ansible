@@ -1,0 +1,13 @@
+ca_country: FR
+ca_email: root@example.com
+ca_loc: Paris
+ca_name: BBBDemoPKI
+ca_org: Worteks
+ca_ou: BigBlueButton
+ca_passphrase: MyCASecret
+ca_root: pki.example.com
+ca_size: 4096
+ca_st: France
+ca_validity: 7300
+key_size: 4096
+key_validity: 3650

@@ -1,0 +1,47 @@
+- name: Fetches HAProxy Exporter
+  get_url:
+    dest: "/usr/src/haproxy-exporter-{{ haproxy_exporter_release }}.tar.gz"
+    group: root
+    mode: 0644
+    owner: root
+    url: "https://github.com/prometheus/haproxy_exporter/releases/download/v{{ haproxy_exporter_release }}/haproxy_exporter-{{ haproxy_exporter_release }}.linux-amd64.tar.gz"
+- name: Extracts HAProxy Exporter
+  args:
+    chdir: /usr/src
+    creates: "/usr/src/haproxy_exporter-{{ haproxy_exporter_release }}.linux-amd64"
+    warn: False
+  shell: "tar -xzf /usr/src/haproxy-exporter-{{ haproxy_exporter_release }}.tar.gz"
+- name: Installs HAProxy Exporter
+  copy:
+    dest: /usr/bin/haproxy_exporter
+    group: root
+    mode: 0755
+    owner: root
+    remote_src: yes
+    src: "/usr/src/haproxy_exporter-{{ haproxy_exporter_release }}.linux-amd64/haproxy_exporter"
+- name: Creates HAProxy Exporter Group
+  group:
+    name: haproxyexporter
+    state: present
+- name: Creates HAProxy Exporter User
+  user:
+    groups: haproxyexporter
+    name: haproxyexporter
+- name: Installs HAProxy Exporter Unit
+  register: exporter_unit
+  template:
+    dest: /etc/systemd/system/haproxy-exporter.service
+    group: root
+    mode: 0644
+    owner: root
+    src: exporter.j2
+- name: Reloads Systemd Configuration
+  shell: systemctl daemon-reload
+  when:
+  - exporter_unit is defined
+  - exporter_unit is changed
+- name: Ensures HAProxy Exporter is Running & Starts on Boot
+  service:
+    enabled: yes
+    name: haproxy-exporter
+    state: started

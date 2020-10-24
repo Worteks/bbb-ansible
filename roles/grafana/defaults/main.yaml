@@ -1,0 +1,25 @@
+grafana_admin_user: admin
+grafana_admin_password: secret
+
+grafana_images_release: 7.1.2
+grafana_images_repo: docker.io/grafana/grafana
+
+grafana_ldap_base: dc=demo,dc=local
+grafana_ldap_bind_dn: cn=changeme,dc=demo,dc=local
+grafana_ldap_email: email
+grafana_ldap_givenname: givenName
+grafana_ldap_password: changeme
+grafana_ldap_surname: sn
+grafana_ldap_start_tls: False
+grafana_ldap_uid: uid
+grafana_ldap_group_objectclass: groupOfNames
+grafana_ldap_user_objectclass: inetOrgPerson
+
+grafana_name: BigBlueButton
+
+grafana_oidc_authorize_endpint: /oauth2/authorize
+grafana_oidc_client_id: greenlight
+grafana_oidc_client_secret: changeme
+#grafana_oidc_endpoint: https://auth.example.com
+grafana_oidc_token_endpint: /oauth2/token
+grafana_oidc_userinfo_endpint: /oauth2/userinfo

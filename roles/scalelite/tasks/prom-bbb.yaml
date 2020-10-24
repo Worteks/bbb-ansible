@@ -1,0 +1,27 @@
+- name: Installs Scalelite Exporter Docker-Compose Directory
+  file:
+    dest: /etc/docker-compose/scalelite-exporter
+    group: root
+    mode: 0755
+    owner: root
+    state: directory
+- include_role:
+    name: docker
+    tasks_from: check-pull.yaml
+  vars:
+    image_tag: "{{ scalelite_exporter_images_release }}"
+    image_url: "{{ scalelite_exporter_images_repo }}"
+- name: Installs Scalelite Exporter Configuration
+  register: should_reload
+  template:
+    dest: /etc/docker-compose/scalelite-exporter/docker-compose.yaml
+    group: root
+    mode: 0640
+    owner: root
+    src: exporter.j2
+- include_role:
+    name: docker
+    tasks_from: service.yaml
+  vars:
+    service_description: Scalelite Exporter
+    service_name: scalelite-exporter

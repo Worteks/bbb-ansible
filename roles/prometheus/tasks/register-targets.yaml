@@ -1,0 +1,15 @@
+- name: "Installs {{ target_name }} Targets Configuration"
+  register: tgt_check
+  template:
+    dest: "/etc/prometheus/targets.d/{{ target_name }}.json"
+    group: root
+    mode: 0644
+    owner: root
+    src: target.j2
+- name: "Keeps Track of {{ target_name }} Modifications"
+  set_fact:
+    tgt_changed: True
+  when:
+  - not (tgt_changed | default(False))
+  - tgt_check is defined
+  - tgt_check is changed

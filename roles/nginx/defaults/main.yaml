@@ -1,0 +1,4 @@
+nginx_exporter_port: 9143
+nginx_exporter_release: 0.8.0
+nginx_names_bucket_hash: 128
+nginx_stats_port: 8080

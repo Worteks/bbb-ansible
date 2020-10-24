@@ -1,0 +1,29 @@
+# https://docs.bigbluebutton.org/legacy/11install.html#check-server-specs
+- name: Installs Locales
+  apt:
+    name:
+    - locales
+    - locales-all
+    state: present
+- name: Configures Locales Generation
+  lineinfile:
+    dest: /etc/locale.gen
+    regexp: "^{{ locale }}"
+    line: "{{ locale }}"
+  register: regen_locales
+- name: Ensures locale.alias Present
+  changed_when: False
+  file:
+    dest: /usr/share/locale/locale.alias
+    src: /etc/locale.alias
+    state: link
+- name: Generates Locales
+  shell: locale-gen
+  when:
+  - regen_locales is defined
+  - regen_locales is changed
+- name: Sets LANG
+  lineinfile:
+    dest: /etc/default/locale
+    regexp: "^export LANG="
+    line: "export LANG={{ locale }}"

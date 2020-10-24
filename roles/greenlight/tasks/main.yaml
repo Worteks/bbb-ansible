@@ -1,0 +1,18 @@
+- include_tasks: facts.yaml
+- include_tasks: install.yaml
+- include_tasks: auth.yaml
+- include_tasks: configure.yaml
+- include_tasks: nginx.yaml
+  when:
+  - >
+     not (ansible_fqdn in groups['bbb']
+          and ansible_fqdn in groups['greenlight'])
+  - >
+     not (ansible_hostname in groups['bbb']
+          and ansible_hostname in groups['greenlight'])
+- include_tasks: bbb-proxy.yaml
+- include_tasks: prometheus.yaml
+  when:
+  - >
+      groups['prometheus'] | length > 0
+      or do_prometheus | default(False)

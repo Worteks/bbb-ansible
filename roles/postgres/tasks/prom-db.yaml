@@ -1,0 +1,41 @@
+- name: "Installs Postgres Exporter Unit (db={{ postgres_exporter_db }}"
+  register: exporter_unit
+  template:
+    dest: "/etc/systemd/system/postgres-exporter-{{ postgres_exporter_db }}.service"
+    group: root
+    mode: 0644
+    owner: root
+    src: exporter.j2
+- name: "Installs Postgres Exporter Configuration (db={{ postgres_exporter_db }}"
+  register: exporter_config
+  template:
+    dest: "/etc/default/postgres-exporter-{{ postgres_exporter_db }}"
+    group: postgresexporter
+    mode: 0640
+    owner: root
+    src: xp-defaults.j2
+- name: "Reloads Systemd Configuration (db={{ postgres_exporter_db }}"
+  register: reconfigured
+  shell: systemctl daemon-reload
+  when:
+  - >
+      (exporter_unit is defined
+      and exporter_unit is changed)
+      or (exporter_config is defined
+      and exporter_config is changed)
+- name: "Ensures Postgres Exporter is Running & Starts on Boot (db={{ postgres_exporter_db }}"
+  register: restarted
+  service:
+    enabled: yes
+    name: "postgres-exporter-{{ postgres_exporter_db }}"
+    state: started
+- name: "Restarts Postgres Exporter (db={{ postgres_exporter_db }}"
+  register: restarted
+  service:
+    name: "postgres-exporter-{{ postgres_exporter_db }}"
+    state: restarted
+  when:
+  - reconfigured is defined
+  - reconfigured is changed
+  - restarted is defined
+  - not (restarted is changed)

@@ -1,0 +1,17 @@
+grafana_admin_user: admin
+grafana_admin_password: secr3t
+grafana_fqdn: bbb-gfn.example.com
+prometheus_fqdn: "{{ ansible_fqdn }}"
+
+#grafana_ldap_ca_path: /path/to/custom/ca/on/ansible/node.crt
+#grafana_oidc_ca_path: /path/to/custom/ca/on/ansible/node.crt
+
+firehol_app_opened_ports:
+- name: ssh
+  value: tcp/22
+- name: grafana
+  value: tcp/3000
+- name: nodexp
+  value: tcp/9142
+- name: nginxxp
+  value: tcp/9143

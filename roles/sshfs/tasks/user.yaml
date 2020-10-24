@@ -1,0 +1,22 @@
+- name: "Ensures {{ ssh_user }} SSH Configuration Directory Exist"
+  file:
+    dest: "{{ fl }}"
+    force: no
+    group: "{{ ssh_group | default(ssh_user) }}"
+    mode: 0700
+    owner: "{{ ssh_user }}"
+    state: directory
+  loop:
+  - "{{ ssh_homedir | default('/home/' ~ ssh_user) }}"
+  - "{{ ssh_homedir | default('/home/' ~ ssh_user) }}/.ssh"
+  loop_control:
+    loop_var: fl
+- name: "Generates {{ ssh_user }} {{ ssh_key_name | default('id_rsa') }} Key Pair"
+  openssh_keypair:
+    comment: "{{ ssh_user }}@{{ ansible_fqdn }}"
+    group: "{{ ssh_group | default(ssh_user) }}"
+    mode: 0600
+    owner: "{{ ssh_user }}"
+    path: "{{ ssh_homedir | default('/home/' ~ ssh_user) }}/.ssh/{{ ssh_key_name | default('id_' ~ (ssh_key_type | default('rsa'))) }}"
+    size: 4096
+    type: "{{ ssh_key_type | default('rsa') }}"

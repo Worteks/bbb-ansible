@@ -1,0 +1,47 @@
+- name: Installs Docker Dependencies
+  apt:
+    name:
+    - apt-transport-https
+    - gnupg2
+    - software-properties-common
+
+- name: Installs Docker GPG key
+  args:
+    creates: /etc/apt/sources.list.d/docker.list
+    warn: False
+  shell: wget --quiet -O - https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+- name: Installs Docker APT Configuration
+  register: srcs
+  template:
+    dest: /etc/apt/sources.list.d/docker.list
+    group: root
+    mode: 0644
+    owner: root
+    src: apt.j2
+- name: Updates APT Cache
+  apt:
+    update_cache: yes
+  when:
+  - srcs is defined
+  - srcs is changed
+
+- name: Installs Docker-CE
+  apt:
+    name: docker-ce
+    state: present
+
+- name: Fetches Docker Compose Release
+  get_url:
+    dest: "/usr/src/docker-compose-{{ docker_compose_release }}"
+    group: root
+    mode: 0644
+    owner: root
+    url: "https://github.com/docker/compose/releases/download/{{ docker_compose_release }}/docker-compose-Linux-x86_64"
+- name: Installs Docker Compose
+  copy:
+    dest: /usr/bin/docker-compose
+    group: root
+    mode: 0755
+    owner: root
+    remote_src: yes
+    src: "/usr/src/docker-compose-{{ docker_compose_release }}"

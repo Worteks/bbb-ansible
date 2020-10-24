@@ -1,0 +1,38 @@
+- block:
+  - name: Installs Scalelite Nginx Build Directory
+    file:
+      dest: /usr/src/scalelite-nginx
+      group: root
+      mode: 0755
+      owner: root
+      state: directory
+  - name: Installs Scalelite Nginx custom Dockerfile Metrics
+    register: patch_conf
+    template:
+      dest: /usr/src/scalelite-nginx/Dockerfile
+      group: root
+      mode: 0644
+      owner: root
+      src: patch-nginx.j2
+  when:
+  - >
+      groups['prometheus'] | length > 0
+      or do_prometheus | default(False)
+- name: Installs Scalelite Nginx Working Directories
+  file:
+    dest: "{{ fl }}"
+    group: root
+    mode: 0755
+    owner: root
+    state: directory
+  loop:
+  - /etc/nginx
+  - /var/log/nginx
+  loop_control:
+    loop_var: fl
+- include_role:
+    name: docker
+    tasks_from: check-pull.yaml
+  vars:
+    image_tag: "{{ scalelite_images_release }}-nginx"
+    image_url: "{{ scalelite_images_repo }}"

@@ -1,0 +1,35 @@
+- include_tasks: sshfs.yaml
+  when:
+  - groups['sshfs'] | length > 0
+
+- include_tasks: nfs-client.yaml
+  when:
+  - groups['sshfs'] | length == 0
+  - groups['nfs'] | length > 0
+
+#TODO:
+#- include_tasks: cephfs-client.yaml
+#  when:
+#  - groups['cephfs'] | length > 0
+
+- name: Ensures Scalelite Working Directories Exist
+  file:
+    dest: "/var/scalelite-recordings/{{ fl }}"
+    group: scalelite-spool
+    mode: 0755
+    owner: scalelite-spool
+    state: directory
+  loop:
+  - published
+  - spool
+  loop_control:
+    loop_var: fl
+  when:
+  - groups['nfs'] | length == 0
+  - groups['sshfs'] | length == 0
+
+- include_role:
+    name: commons
+    tasks_from: swap.yaml
+  vars:
+    swap_size: 4006

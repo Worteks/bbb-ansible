@@ -1,0 +1,54 @@
+- name: Creates MongoDB Exporter Extract Directory
+  file:
+    dest: "/usr/src/mongodb-exporter-v{{ mongodb_exporter_release }}.linux-amd64"
+    group: root
+    mode: 0755
+    owner: root
+    state: directory
+- name: Fetches MongoDB Exporter
+  get_url:
+    dest: "/usr/src/mongodb-exporter-{{ mongodb_exporter_release }}.tar.gz"
+    group: root
+    mode: 0644
+    owner: root
+    url: "https://github.com/percona/mongodb_exporter/releases/download/v{{ mongodb_exporter_release }}/mongodb_exporter-{{ mongodb_exporter_release }}.linux-amd64.tar.gz"
+- name: Extracts MongoDB Exporter
+  args:
+    chdir: "/usr/src/mongodb-exporter-v{{ mongodb_exporter_release }}.linux-amd64"
+    creates: "/usr/src/mongodb-exporter-v{{ mongodb_exporter_release }}.linux-amd64/mongodb_exporter"
+    warn: False
+  shell: "tar -xzf /usr/src/mongodb-exporter-{{ mongodb_exporter_release }}.tar.gz"
+- name: Installs MongoDB Exporter
+  copy:
+    dest: /usr/bin/mongodb_exporter
+    group: root
+    mode: 0755
+    owner: root
+    remote_src: yes
+    src: "/usr/src/mongodb-exporter-v{{ mongodb_exporter_release }}.linux-amd64/mongodb_exporter"
+- name: Creates MongoDB Exporter Group
+  group:
+    name: mongodbexporter
+    state: present
+- name: Creates MongoDB Exporter User
+  user:
+    groups: mongodbexporter
+    name: mongodbexporter
+- name: Installs MongoDB Exporter Unit
+  register: exporter_unit
+  template:
+    dest: /etc/systemd/system/mongodb-exporter.service
+    group: root
+    mode: 0644
+    owner: root
+    src: exporter.j2
+- name: Reloads Systemd Configuration
+  shell: systemctl daemon-reload
+  when:
+  - exporter_unit is defined
+  - exporter_unit is changed
+- name: Ensures MongoDB Exporter is Running & Starts on Boot
+  service:
+    enabled: yes
+    name: mongodb-exporter
+    state: started

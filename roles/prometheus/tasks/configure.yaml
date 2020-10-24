@@ -1,0 +1,53 @@
+- name: Installs Prometheus Server Configuration
+  register: prom_config
+  template:
+    dest: /etc/prometheus/prometheus.yaml
+    group: root
+    mode: 0644
+    owner: root
+    src: prometheus.j2
+- name: Installs Prometheus Alerting Rules
+  copy:
+    dest: "/etc/prometheus/rules.d/{{ rule }}.yaml"
+    group: root
+    mode: 0644
+    owner: root
+    src: "rules/{{ rule }}.yaml"
+  loop: "{{ prometheus_rules }}"
+  loop_control:
+    loop_var: rule
+  register: prom_rules
+- name: Installs Prometheus Docker-Compose Directory
+  file:
+    dest: /etc/docker-compose/prometheus
+    group: root
+    mode: 0750
+    owner: root
+    state: directory
+- name: Installs Prometheus Docker-Compose Configuration
+  register: should_reload
+  template:
+    dest: /etc/docker-compose/prometheus/docker-compose.yaml
+    group: root
+    mode: 0640
+    owner: root
+    src: compose.j2
+- include_role:
+    name: docker
+    tasks_from: service.yaml
+  vars:
+    service_description: Prometheus
+    service_name: prometheus
+- name: Reloads Prometheus Configuration
+  shell: docker exec -it prometheus kill -HUP 1
+  when:
+  - >
+      tgt_changed | default(False)
+      or (prom_config is defined
+          and prom_config is changed)
+      or (prom_rules is defined
+          and prom_rules is changed)
+  - did_start is defined
+  - not (did_start is changed)
+  - should_reload is defined
+  - not (should_reload is changed)

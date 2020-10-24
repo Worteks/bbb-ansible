@@ -1,0 +1,42 @@
+- name: Install Common Packages
+  apt:
+    name:
+    - ca-certificates
+    - lsb-release
+    - net-tools
+    - ntp
+    - ntpdate
+    - openssl
+    - python-apt
+    - python-boto
+    - rsync
+    - unattended-upgrades
+    - vim
+    - wget
+    state: present
+
+- name: Creates certs-trusted Group
+  group:
+    name: certs-trusted
+    state: present
+#- name: Ensures Nagios User Member of certs-trusted Group
+#  user:
+#    append: yes
+#    groups: certs-trusted
+#    name: nagios
+
+- name: Installs Empty Vimrc
+  copy:
+    content: ""
+    dest: /root/.vimrc
+    group: root
+    mode: 0600
+    owner: root
+
+- name: Installs DropCaches
+  copy:
+    dest: /usr/sbin/dropcaches
+    group: root
+    mode: 0700
+    owner: root
+    src: dropcaches

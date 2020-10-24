@@ -1,0 +1,31 @@
+- name: Fixes /etc/hosts
+  lineinfile:
+    dest: /etc/hosts
+    line: "{{ ansible_default_ipv4['address'] }} {{ h }}"
+    regexp: "^{{ ansible_default_ipv4['address'] }} {{ h }}"
+  loop:
+  - "{{ scalelite_fqdn | default(ansible_fqdn) }}"
+  - "{{ ansible_fqdn }}"
+  loop_control:
+    loop_var: h
+- name: Installs Scalelite Docker-Compose Directory
+  file:
+    dest: /etc/docker-compose/scalelite
+    group: root
+    mode: 0750
+    owner: root
+    state: directory
+- name: Installs Scalelite Docker-Compose Configuration
+  register: should_reload
+  template:
+    dest: /etc/docker-compose/scalelite/docker-compose.yaml
+    group: root
+    mode: 0640
+    owner: root
+    src: compose.j2
+- include_role:
+    name: docker
+    tasks_from: service.yaml
+  vars:
+    service_description: Scalelite
+    service_name: scalelite

@@ -1,0 +1,9 @@
+- name: Gather Facts from Scalelite
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['scalelite'] }}"
+  loop_control:
+    loop_var: srv
+  setup:
+  when:
+  - groups['scalelite'] | length > 0

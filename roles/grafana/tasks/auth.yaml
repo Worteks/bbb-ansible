@@ -1,0 +1,33 @@
+- block:
+  - name: Sends Custom OIDC CA to Grafana
+    synchronize:
+      dest: /root/pki/oidc-ca.crt
+      src: "{{ grafana_oidc_ca_path }}"
+  - include_role:
+      name: pki
+      tasks_from: install-ca.yaml
+    vars:
+      ca_path: /root/pki/oidc-ca.crt
+      install_as: oidc
+  when:
+  - grafana_oidc_ca_path | default(False)
+  - grafana_oidc_endpoint | default(False)
+- block:
+  - name: Sends Custom LDAP CA to Grafana
+    synchronize:
+      dest: /root/pki/ldap-ca.crt
+      src: "{{ grafana_ldap_ca_path }}"
+  - include_role:
+      name: pki
+      tasks_from: install-ca.yaml
+    vars:
+      ca_path: /root/pki/ldap-ca.crt
+      install_as: ldap
+  - include_role:
+      name: commons
+      tasks_from: ldap.yaml
+    vars:
+      ldap_endpoint: "{{ grafana_ldap_endpoint }}"
+  when:
+  - grafana_ldap_ca_path | default(False)
+  - grafana_ldap_endpoint | default(False)

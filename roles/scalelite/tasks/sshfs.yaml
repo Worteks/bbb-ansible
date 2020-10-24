@@ -1,0 +1,89 @@
+#FIXME: add local ssh key to sshgw
+- name: Checks for Existing SSHFS Mount
+  args:
+    warn: False
+  changed_when: False
+  failed_when: False
+  register: has_sshfs
+  shell: mount | grep /var/scalelite-recordings
+- block:
+  - name: Gather Facts from SSHFS Server
+    delegate_to: "{{ groups['sshfs'][0] }}"
+    delegate_facts: True
+    setup:
+  - name: Makes Sure known_hosts Exist
+    copy:
+      content: ""
+      dest: /root/.ssh/known_hosts
+      force: no
+      group: root
+      mode: 0644
+      owner: root
+  - include_role:
+      name: sshfs
+      tasks_from: client.yaml
+    vars:
+      ssh_homedir: /root
+      ssh_key_name: sshfs_rsa
+      ssh_user: root
+  - include_role:
+      name: sshfs
+      tasks_from: keyscan.yaml
+    loop: "{{ groups['sshfs'] }}"
+    loop_control:
+      loop_var: r
+    vars:
+      ssh_homedir: /root
+      ssh_remote: "{{ hostvars[r]['ansible_default_ipv4']['address'] }}"
+  - name: Fetches Scalelite Public SSHFS
+    args:
+      chdir: /root/.ssh
+    changed_when: False
+    register: has_key
+    shell: cat sshfs_rsa.pub
+  - include_tasks: import-scalelite-key.yaml
+    loop: "{{ groups['sshfs'] }}"
+    loop_control:
+      loop_var: r
+  - name: Ensures SSHFS Mount Directory Exists
+    file:
+      dest: /var/scalelite-recordings
+      force: no
+      group: root
+      mode: 0755
+      owner: root
+      state: directory
+  - name: Adds SSHFS Mount to /etc/fstab
+    lineinfile:
+      dest: /etc/fstab
+      line: "{{ hostvars[groups['sshfs'][0]]['sshfs_user'] | default(sshfs_user) }}@{{ hostvars[groups['sshfs'][0]]['ansible_default_ipv4']['address'] }}:{{ hostvars[groups['sshfs'][0]]['sshfs_exports_root'] | default(sshfs_exports_root) }} /var/scalelite-recordings fuse.sshfs users,idmap=user,IdentityFile=/root/.ssh/sshfs_rsa,uid=1000,gid=2000,allow_other,reconnect 0 0"
+      regexp: " /var/scalelite-recordings "
+  - name: Mounts SSHFS Share
+    args:
+      warn: False
+    shell: mount /var/scalelite-recordings
+  - name: Ensures Scalelite Directories Present
+    delegate_to: "{{ groups['sshfs'][0] }}"
+    file:
+      dest: "{{ hostvars[groups['sshfs'][0]]['sshfs_exports_root'] | default(sshfs_exports_root) }}/{{ sub }}"
+      group:  "{{ hostvars[groups['sshfs'][0]]['sshfs_group'] | default(sshfs_group) }}"
+      mode: 0775
+      owner: "{{ hostvars[groups['sshfs'][0]]['sshfs_user'] | default(sshfs_user) }}"
+      state: directory
+    loop:
+    - published
+    - spool
+    loop_control:
+      loop_var: sub
+    run_once: yes
+  when:
+  - has_sshfs is defined
+  - has_sshfs.rc is defined
+  - has_sshfs.rc != 0
+- name: Ensures known_hosts Has Proper Permissions
+  file:
+    dest: /root/.ssh/known_hosts
+    group: root
+    mode: 0644
+    owner: root
+    state: file

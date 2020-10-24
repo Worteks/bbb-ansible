@@ -1,0 +1,14 @@
+version: '3'
+services:
+  freeswitch-exporter:
+    container_name: freeswitch-exporter
+    entrypoint: /bin/sh -c "/usr/local/bin/freeswitch_exporter /config/esl.yaml 9724 0.0.0.0"
+    image: freeswitch-exporter
+    logging:
+      driver: journald
+    network_mode: host
+    ports:
+    - "127.0.0.1:9724:9724"
+    restart: unless-stopped
+    volumes:
+    - /etc/docker-compose/freeswitch-exporter:/config

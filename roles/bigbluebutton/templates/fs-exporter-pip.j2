@@ -1,0 +1,10 @@
+[Unit]
+Description=Freeswitch Exporter
+After=freeswitch.service
+
+[Service]
+User=freeswitchexporter
+Group=freeswitchexporter
+ExecStartPre=source /var/lib/freeswitch-exporter/bin/activate
+ExecStart=/var/lib/freeswitch-exporter/bin/freeswitch_exporter /var/lib/freeswitch-exporter/esl.yaml {{ freeswitch_exporter_port }} 0.0.0.0
+Restart=always

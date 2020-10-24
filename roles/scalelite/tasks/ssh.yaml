@@ -1,0 +1,42 @@
+- name: Creates Scalelite Spool Group
+  group:
+    name: scalelite-spool
+    gid: 2000
+    state: present
+- name: Creates Scalelite Spool User
+  user:
+    groups: scalelite-spool
+    name: scalelite-spool
+    uid: 1000
+#FIXME: should check/drop/... user with uid=1000, if another exists
+- name: Creates Scalelite Spool Home Directory
+  file:
+    dest: "{{ fl }}"
+    group: scalelite-spool
+    mode: 0700
+    owner: scalelite-spool
+    state: directory
+  loop:
+  - /home/scalelite-spool
+  - /home/scalelite-spool/.ssh
+  loop_control:
+    loop_var: fl
+- name: Ensures authorized_keys Exist
+  copy:
+    content: ""
+    dest: /home/scalelite-spool/.ssh/authorized_keys
+    force: no
+    group: scalelite-spool
+    mode: 0600
+    owner: scalelite-spool
+- include_tasks: import-bbb-key.yaml
+  loop: "{{ groups['bbb'] }}"
+  loop_control:
+    loop_var: srv
+- name: Ensures authorized_keys Has Proper Permissions
+  file:
+    dest: /home/scalelite-spool/.ssh/authorized_keys
+    group: scalelite-spool
+    mode: 0600
+    owner: scalelite-spool
+    state: file

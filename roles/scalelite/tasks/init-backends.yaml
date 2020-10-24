@@ -1,0 +1,4 @@
+- include_tasks: ./init-bbb.yaml
+  loop: "{{ groups['bbb'] }}"
+  loop_control:
+    loop_var: bbb_remote

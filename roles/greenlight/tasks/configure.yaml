@@ -1,0 +1,49 @@
+- name: Fixes /etc/hosts
+  lineinfile:
+    dest: /etc/hosts
+    line: "{{ ansible_default_ipv4['address'] }} {{ h }}"
+    regexp: "^{{ ansible_default_ipv4['address'] }} {{ h }}"
+  loop:
+  - "{{ bigbluebutton_fqdn | default(ansible_fqdn) }}"
+  - "{{ ansible_fqdn }}"
+  loop_control:
+    loop_var: h
+- name: Clones Greenlight SSO
+  git:
+    dest: /usr/src/greenlight
+    repo: 'https://github.com/Worteks/greenlight'
+    update: no
+    version: sso
+  when:
+  - >
+      (greenlight_saml_endpoint | default(False))
+      or (greenlight_oidc_endpoint | default(False))
+- name: Installs Greenlight Pre-Upload Directory
+  file:
+    dest: /var/lib/greenlight
+    group: root
+    mode: 0755
+    owner: root
+    state: directory
+- name: Fetches BigBlueButton API Secret
+  changed_when: False
+  delegate_to: "{{ groups['bbb'][0] }}"
+  register: bbb_secret
+  run_once: True
+  shell: bbb-conf --secret | awk '/Secret:/{print $2}'
+  when:
+  - groups['scalelite'] | length == 0
+- name: Installs Greenlight Configuration
+  register: should_reload
+  template:
+    dest: /etc/docker-compose/greenlight/docker-compose.yaml
+    group: root
+    mode: 0640
+    owner: root
+    src: compose.j2
+- include_role:
+    name: docker
+    tasks_from: service.yaml
+  vars:
+    service_description: Greenlight
+    service_name: greenlight

@@ -1,0 +1,45 @@
+- name: Installs BigBlueButton Exporter Docker-Compose Directory
+  file:
+    dest: /etc/docker-compose/bbb-exporter
+    group: root
+    mode: 0755
+    owner: root
+    state: directory
+- include_role:
+    name: docker
+    tasks_from: check-pull.yaml
+  vars:
+    image_tag: "{{ bigbluebutton_exporter_images_release }}"
+    image_url: "{{ bigbluebutton_exporter_images_repo }}"
+
+- name: Checks for BigBlueButton Exporter Configuration
+  register: has_conf
+  stat:
+    path: /etc/docker-compose/bbb-exporter/docker-compose.yaml
+- block:
+  - name: Fetches BigBlueButton Secret
+    changed_when: False
+    register: bbb_secret
+    shell: bbb-conf --secret | awk '/Secret:/{print $2}'
+  - name: Fetches BigBlueButton API URL
+    register: bbb_url
+    shell: bbb-conf --secret | awk '/URL:/{print $2}'
+  - name: Installs BigBlueButton Exporter Configuration
+    register: should_reload
+    template:
+      dest: /etc/docker-compose/bbb-exporter/docker-compose.yaml
+      group: root
+      mode: 0640
+      owner: root
+      src: bbb-exporter.j2
+  when:
+  - has_conf is defined
+  - has_conf.stat is defined
+  - not has_conf.stat.exists
+
+- include_role:
+    name: docker
+    tasks_from: service.yaml
+  vars:
+    service_description: BigBlueButton Exporter
+    service_name: bbb-exporter

@@ -1,0 +1,21 @@
+- name: Installs Docker Compose Configuration Directory
+  file:
+    dest: /etc/docker-compose
+    group: root
+    mode: 0750
+    owner: root
+    state: directory
+- name: Ensures Docker is Running & Starts on Boot
+  service:
+    enabled: yes
+    name: docker
+    state: started
+- name: Creates Docker Compose Temp Folder
+  file:
+    dest: /var/docker-compose
+    group: root
+    mode: 0755
+    owner: root
+    state: directory
+  when:
+  - tmp_has_noexec | default(False)

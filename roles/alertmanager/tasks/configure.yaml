@@ -1,0 +1,29 @@
+- name: Installs AlertManager Server Configuration
+  register: prom_config_changed
+  template:
+    dest: /etc/alertmanager/alertmanager.yaml
+    group: root
+    mode: 0644
+    owner: root
+    src: alertmanager.j2
+- name: Installs AlertManager Docker-Compose Directory
+  file:
+    dest: /etc/docker-compose/alertmanager
+    group: root
+    mode: 0750
+    owner: root
+    state: directory
+- name: Installs AlertManager Docker-Compose Configuration
+  register: should_reload
+  template:
+    dest: /etc/docker-compose/alertmanager/docker-compose.yaml
+    group: root
+    mode: 0640
+    owner: root
+    src: compose.j2
+- include_role:
+    name: docker
+    tasks_from: service.yaml
+  vars:
+    service_description: AlertManager
+    service_name: alertmanager

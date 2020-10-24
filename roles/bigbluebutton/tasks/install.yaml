@@ -1,0 +1,32 @@
+- name: Fetches BigBlueButton Installer
+  get_url:
+    dest: /root/bbb-install.sh
+    group: root
+    mode: 0700
+    owner: root
+    url: https://raw.githubusercontent.com/Worteks/bbb-install/master/bbb-install.sh
+- name: Fixes /etc/hosts
+  lineinfile:
+    dest: /etc/hosts
+    line: "{{ ansible_default_ipv4['address'] }} {{ h }}"
+    regexp: "^{{ ansible_default_ipv4['address'] }} {{ h }}"
+  loop:
+  - "{{ bigbluebutton_fqdn | default(ansible_fqdn) }}"
+  - "{{ ansible_fqdn }}"
+  loop_control:
+    loop_var: h
+- name: Installs BigBlueButton (self-signed)
+  args:
+    chdir: /root
+    creates: /root/bbb-install.out
+  shell: "/root/bbb-install.sh -v {{ ansible_distribution_release }}-{{ bigbluebutton_version }} -d -s {{ ansible_fqdn }} >bbb-install.out 2>&1"
+  when:
+  - bbb_uses_selfsigned | default(True)
+- name: Installs BigBlueButton (letsencrypt)
+  args:
+    chdir: /root
+    creates: /root/bbb-install.out
+  shell: "/root/bbb-install.sh -v {{ ansible_distribution_release }}-{{ bigbluebutton_version }} -e {{ bigbluebutton_letsencrypt_address }} -s {{ ansible_fqdn }} >bbb-install.out 2>&1"
+  when:
+  - not (bbb_uses_selfsigned | default(True))
+  - bigbluebutton_letsencrypt_address | default(False)

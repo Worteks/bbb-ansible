@@ -1,0 +1,42 @@
+- name: Installs Scalelite Postgres Database
+  become: yes
+  become_user: postgres
+  postgresql_db:
+    encoding: unicode
+    name: "{{ scalelite_postgres_database }}"
+    template: template0
+- name: Installs Scalelite Postgres User
+  become: yes
+  become_user: postgres
+  postgresql_user:
+    db: "{{ scalelite_postgres_database }}"
+    name: "{{ scalelite_postgres_user }}"
+    password: "{{ scalelite_postgres_password }}"
+    role_attr_flags: CREATEDB
+- name: Grants Scalelite User Privileges over its database
+  become: yes
+  become_user: postgres
+  postgresql_privs:
+    admin_option: yes
+    db: "{{ scalelite_postgres_database }}"
+    privs: ALL
+    type: database
+    role: "{{ scalelite_postgres_user }}"
+- name: Installs Scalelite Template Fix
+  copy:
+    dest: /var/lib/postgresql/scalelite-fix.sql
+    force: no
+    group: root
+    mode: 0644
+    owner: root
+    src: scalelite-fix.sql
+  register: fix_check
+- name: Applies Scalelite Template Fix
+  args:
+    chdir: /var/lib/postgresql
+  become: yes
+  become_user: postgres
+  shell: cat scalelite-fix.sql | psql
+  when:
+  - fix_check is defined
+  - fix_check is changed

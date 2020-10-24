@@ -1,0 +1,23 @@
+- name: Installs Coturn Postgres Database
+  become: yes
+  become_user: postgres
+  postgresql_db:
+    encoding: UTF-8
+    name: "{{ coturn_postgres_database }}"
+    template: template0
+- name: Installs Coturn Postgres User
+  become: yes
+  become_user: postgres
+  postgresql_user:
+    db: "{{ coturn_postgres_database }}"
+    name: "{{ coturn_postgres_user }}"
+    password: "{{ coturn_postgres_password }}"
+- name: Grants Coturn User Privileges over its database
+  become: yes
+  become_user: postgres
+  postgresql_privs:
+    admin_option: yes
+    db: "{{ coturn_postgres_database }}"
+    privs: ALL
+    type: database
+    role: "{{ coturn_postgres_user }}"

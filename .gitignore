@@ -1,0 +1,4 @@
+.pki
+*.[0-9]
+*.tar.gz
+test.yaml

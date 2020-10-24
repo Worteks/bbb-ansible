@@ -1,0 +1,13 @@
+#bigbluebutton_fqdn: {{ ansible_fqdn }}
+
+bigbluebutton_letsencrypt_address: r00t@example.com
+
+# ubuntu xenial / stable:
+bigbluebutton_version: 22
+# ubuntu bionic / dev:
+#bigbluebutton_version: 230-dev
+
+bigbluebutton_exporter_images_repo: greenstatic/bigbluebutton-exporter
+bigbluebutton_exporter_images_release: v0.5.1
+bigbluebutton_exporter_port: 9688
+freeswitch_exporter_port: 9725

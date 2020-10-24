@@ -1,0 +1,3 @@
+extra_rsync_opts: []
+spool_dir: scalelite-spool@{{ hostvars[groups['scalelite'][0]]['ansible_fqdn'] }}:/var/scalelite-recordings/spool
+work_dir: /var/bigbluebutton/recording/scalelite

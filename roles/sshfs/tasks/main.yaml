@@ -1,0 +1,36 @@
+- name: Creates SSHFS Group
+  group:
+    name: "{{ sshfs_group }}"
+    state: present
+- name: Creates SSHFS User
+  user:
+    groups: "{{ sshfs_group }}"
+    name: "{{ sshfs_user }}"
+- name: Creates SSHFS User Home Directories
+  file:
+    dest: "{{ fl }}"
+    force: no
+    group: "{{ sshfs_group }}"
+    mode: 0700
+    owner: "{{ sshfs_user }}"
+    state: directory
+  loop:
+  - "/home/{{ sshfs_user }}"
+  - "/home/{{ sshfs_user }}/.ssh"
+  loop_control:
+    loop_var: fl
+- name: Ensures SSHFS User authorized_keys Exist
+  copy:
+    content: ""
+    dest: "/home/{{ sshfs_user }}/.ssh/authorized_keys"
+    force: no
+    group: "{{ sshfs_group }}"
+    mode: 0600
+    owner: "{{ sshfs_user }}"
+- name: Ensures Exported Directory Exists
+  file:
+    group: "{{ sshfs_group }}"
+    mode: 0750
+    owner: "{{ sshfs_user }}"
+    state: directory
+    path: "{{ sshfs_exports_root }}"

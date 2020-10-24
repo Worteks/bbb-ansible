@@ -1,0 +1,13 @@
+- name: Configures Nginx Serving Metrics
+  template:
+    dest: /etc/nginx/sites-available/stats.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: prometheus-vhost.j2
+- name: Enables Nginx Metrics VirtualHost
+  file:
+    dest: /etc/nginx/sites-enabled/stats.conf
+    src: /etc/nginx/sites-available/stats.conf
+    state: link
+  notify: Reload Nginx

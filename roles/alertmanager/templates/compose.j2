@@ -1,0 +1,29 @@
+version: '3'
+services:
+  alertmanager:
+    container_name: alertmanager
+    entrypoint:
+    - /bin/alertmanager
+    - --config.file=/etc/config/alertmanager.yaml
+{% if groups['alertmanager'] | length > 1 %}
+    - --cluster.listen-address=:6783
+{% for remote in groups['alertmanager'] %}
+    - --cluster.peer={{ remote }}:6783
+{% endfor %}
+{% endif %}
+    - --storage.path=/data
+    - --web.listen-address=:9093
+    - --web.route-prefix=/
+    image: {{ alertmanager_images_repo }}:{{ alertmanager_images_release }}
+    logging:
+      driver: journald
+    ports:
+{% if groups['alertmanager'] | length > 1 %}
+    - "6783:6783"
+{% endif %}
+    - "9093:9093"
+    restart: unless-stopped
+    user: "{{ alertmanager_user_id.stdout_lines[0] }}"
+    volumes:
+    - /etc/alertmanager:/etc/config
+    - /var/lib/alertmanager:/data

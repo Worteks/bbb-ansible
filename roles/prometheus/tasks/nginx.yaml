@@ -1,0 +1,14 @@
+- name: Installs Prometheus Virtualhost
+  notify: Reload Nginx
+  template:
+    dest: /etc/nginx/sites-available/prometheus.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: vhost.j2
+- name: Enables Prometheus Virtualhost
+  file:
+    dest: /etc/nginx/sites-enabled/prometheus.conf
+    src: /etc/nginx/sites-available/prometheus.conf
+    state: link
+  notify: Reload Nginx

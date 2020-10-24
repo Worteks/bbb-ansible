@@ -1,0 +1,13 @@
+- name: Installs Redis Configuration
+  notify: Reload Redis
+  template:
+    dest: /etc/redis/redis.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: redis.j2
+- name: Ensures Redis Server is Running & Starts on Boot
+  service:
+    enabled: yes
+    name: redis-server
+    state: started

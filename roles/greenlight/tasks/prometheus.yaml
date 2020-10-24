@@ -1,0 +1,61 @@
+- name: Fetches BlackBox Exporter
+  get_url:
+    dest: "/usr/src/blackbox-exporter-{{ blackbox_exporter_release }}.tar.gz"
+    group: root
+    mode: 0644
+    owner: root
+    url: "https://github.com/prometheus/blackbox_exporter/releases/download/v{{ blackbox_exporter_release }}/blackbox_exporter-{{ blackbox_exporter_release }}.linux-amd64.tar.gz"
+- name: Extracts BlackBox Exporter
+  args:
+    chdir: /usr/src
+    creates: "/usr/src/blackbox_exporter-{{ blackbox_exporter_release }}.linux-amd64"
+    warn: False
+  shell: "tar -xzf /usr/src/blackbox-exporter-{{ blackbox_exporter_release }}.tar.gz"
+- name: Installs BlackBox Exporter
+  copy:
+    dest: /usr/bin/blackbox_exporter
+    group: root
+    mode: 0755
+    owner: root
+    remote_src: yes
+    src: "/usr/src/blackbox_exporter-{{ blackbox_exporter_release }}.linux-amd64/blackbox_exporter"
+- name: Installs BlackBox Exporter Configuration Directory
+  file:
+    dest: /etc/blackbox
+    group: root
+    mode: 0755
+    owner: root
+    state: directory
+- name: Installs BlackBox Exporter Configuration
+  template:
+    dest: /etc/blackbox/config.yaml
+    group: root
+    mode: 0644
+    owner: root
+    src: blackbox-config.j2
+- name: Creates BlackBox Exporter Group
+  group:
+    name: blackboxexporter
+    state: present
+- name: Creates BlackBox Exporter User
+  user:
+    groups: blackboxexporter
+    name: blackboxexporter
+- name: Installs BlackBox Exporter Unit
+  register: exporter_unit
+  template:
+    dest: /etc/systemd/system/blackbox-exporter.service
+    group: root
+    mode: 0644
+    owner: root
+    src: exporter.j2
+- name: Reloads Systemd Configuration
+  shell: systemctl daemon-reload
+  when:
+  - exporter_unit is defined
+  - exporter_unit is changed
+- name: Ensures BlackBox Exporter is Running & Starts on Boot
+  service:
+    enabled: yes
+    name: blackbox-exporter
+    state: started

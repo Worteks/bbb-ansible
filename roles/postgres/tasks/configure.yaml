@@ -1,0 +1,32 @@
+- name: Sets Postgres Listen Address
+  lineinfile:
+    dest: /etc/postgresql/12/main/postgresql.conf
+    regexp: listen_addresses
+    line: "listen_addresses = '{{ postgres_bind_address }}'"
+  notify: Reload Postgres
+- name: Allows Remote Connections to Postgres
+  lineinfile:
+    dest: /etc/postgresql/12/main/pg_hba.conf
+    regexp: "^host    all             all              {{ h }}                       md5"
+    line: "host    all             all              {{ h }}                       md5"
+  loop: "{{ postgres_trusted_clients }}"
+  loop_control:
+    loop_var: h
+  notify: Reload Postgres
+- name: Ensures Postgres is Running & Starts on Boot
+  service:
+    enabled: yes
+    name: postgresql
+    state: started
+- name: Installs Postgres User Ansible Working Directory
+  file:
+    dest: "{{ fl }}"
+    group: postgres
+    mode: 0700
+    owner: postgres
+    state: directory
+  loop:
+  - /var/lib/postgresql/.ansible
+  - /var/lib/postgresql/.ansible/tmp
+  loop_control:
+    loop_var: fl

@@ -1,0 +1,2 @@
+is_on_shared_hardware: True
+sshfs_exports_root: /srv/bbb-published-records

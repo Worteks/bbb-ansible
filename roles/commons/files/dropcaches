@@ -1,0 +1,13 @@
+#!/bin/sh
+
+LOCK=/tmp/drop_caches
+if ! test -s $LOCK; then
+    echo $$ >$LOCK
+    if grep $$ $LOCK >/dev/null; then
+	sync
+	echo 3 >/proc/sys/vm/drop_caches
+	rm -f $LOCK
+    fi
+fi
+
+exit 0

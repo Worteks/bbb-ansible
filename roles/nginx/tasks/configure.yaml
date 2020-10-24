@@ -1,0 +1,43 @@
+- block:
+  - name: Checks for Existing DH Params
+    register: has_dh
+    stat:
+      path: /etc/nginx/ssl/dh.pem
+# https://github.com/ansible/ansible/issues/61967#issuecomment-529309393
+# how to lose 4h, generating a f-ing DH on a PoC
+# but hey... it's secure ...
+# also: could there be a bug?
+# openssl_dhparam always re-generates dh.pem
+# doc suggests force=no is the default, and should preserve prior existing DH
+  - name: "Generates DH Params (sit tight: this WILL take a while)"
+    notify: Reload Nginx
+    openssl_dhparam:
+      group: root
+      mode: 0640
+      owner: root
+      path: /etc/nginx/ssl/dh.pem
+      size: 4096
+    when:
+    - has_dh is defined
+    - has_dh.stat is defined
+    - not has_dh.stat.exists
+  when:
+  - not (do_unsafe_dhparam | default(False))
+
+- name: "Generates *UNSAFE* DH Params"
+  args:
+    chdir: /etc/nginx/ssl
+    creates: /etc/nginx/ssl/dh.pem
+  notify: Reload Nginx
+  shell: openssl dhparam -dsaparam -out dh.pem 4096
+  when:
+  - do_unsafe_dhparam | default(False)
+
+- name: Installs Nginx Names Hash Bucket Size Configuration
+  notify: Reload Nginx
+  template:
+    dest: /etc/nginx/conf.d/names.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: names.j2

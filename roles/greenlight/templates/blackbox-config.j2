@@ -1,0 +1,19 @@
+modules:
+  http_2xx:
+    prober: http
+    http:
+#     fail_if_body_matches_regexp:
+#     - "Could not connect to database"
+#     fail_if_body_not_matches_regexp:
+#     - "Download the latest version here"
+      fail_if_not_ssl: true
+      fail_if_ssl: false
+      headers:
+        Host: {{ bigbluebutton_fqdn | default(ansible_fqdn) }}
+      ip_protocol_fallback: false
+      method: GET
+      no_follow_redirects: false
+      preferred_ip_protocol: "ip4"
+      tls_config:
+        insecure_skip_verify: true
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]

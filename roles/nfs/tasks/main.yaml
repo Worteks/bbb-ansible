@@ -1,0 +1,31 @@
+- name: Installs NFS Server
+  apt:
+    name:
+    - nfs-common
+    - nfs-kernel-server
+    - rpcbind
+    state: present
+- name: Ensures Exported Directory Exists
+  file:
+    group: "{{ nfs_group }}"
+    mode: 0777
+    owner: "{{ nfs_user }}"
+    state: directory
+    path: "{{ nfs_exports_root }}"
+- name: Ensures NFS Server is Running & Starts on Boot
+  loop:
+  - rpcbind
+  - nfs-kernel-server
+  loop_control:
+    loop_var: svc
+  service:
+    enabled: yes
+    name: "{{ svc }}"
+    state: started
+- name: Configures Scalelite Pulished Records Exports
+  lineinfile:
+    create: yes
+    dest: /etc/exports
+    line: "{{ nfs_exports_root }} {{ nfs_trusted_clients }}({{ nfs_exports_options | join(',') }},anonuid={{ nfs_scalelite_uid }},anongid={{ nfs_scalelite_gid }})"
+    regexp: "^{{ nfs_exports_root }} "
+  notify: Reloads NFS shares

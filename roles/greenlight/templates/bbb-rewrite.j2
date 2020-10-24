@@ -1,0 +1,9 @@
+location {{ greenlight_app_root }} {
+    return 301 $scheme://{{ hostvars[groups['greenlight'][0]]['bigbluebutton_fqdn'] | default(hostvars[groups['greenlight'][0]]['ansible_fqdn']) }}$request_uri;
+}
+{% if greenlight_app_root != "/" and (greenlight_is_default | default(True)) %}
+
+location = / {
+    return 301 $scheme://{{ hostvars[groups['greenlight'][0]]['bigbluebutton_fqdn'] | default(hostvars[groups['greenlight'][0]]['ansible_fqdn']) }}$request_uri;
+}
+{% endif %}

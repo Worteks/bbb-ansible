@@ -1,0 +1,3 @@
+bbb_ceph_username: bigbluebutton-demo
+bbb_cephfs_root: bbb-demo
+cephfs_data_pool: cephfs_data

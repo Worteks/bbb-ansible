@@ -1,0 +1,19 @@
+- name: Sets PKI Root Directory Fact
+  delegate_to: localhost
+  run_once: yes
+  set_fact:
+    pki_root: "{{ playbook_dir }}/.pki"
+- name: Ensures PKI Root Directory Exists on Control Node
+  delegate_to: localhost
+  file:
+    dest: "{{ pki_root }}"
+    mode: 0700
+    state: directory
+  run_once: yes
+- name: Ensures PKI Root Directory Exists on BigBlueButton Nodes
+  file:
+    dest: /root/pki
+    group: root
+    mode: 0700
+    owner: root
+    state: directory

@@ -1,0 +1,41 @@
+global:
+  resolve_timeout: 5m
+  smtp_smarthost: {{ smtp_relay | default(ansible_default_ipv4['address']) }}:25
+  smtp_from: alertmanager@{{ alertmanager_fqdn | default(ansible_fqdn) }}
+  smtp_require_tls: False
+receivers:
+- name: deadmansswitch
+- name: default
+{% if alertmanager_notify_slack_address | default(False) %}
+  slack_configs:
+  - api_url: {{ alertmanager_notify_slack_address }}
+{% if alertmanager_notify_slack_channel | default(False) %}
+    channel: #{{ alertmanager_notify_slack_channel }}
+{% endif %}
+    send_resolved: {{ alertmanager_notify_slack_send_resolved }}
+{% endif %}
+{% if alertmanager_notify_smtp_address | default(False) %}
+  email_configs:
+  - from: alertmanager@{{ alertmanager_fqdn | default(ansible_fqdn) }}
+    send_resolved: {{ alertmanager_notify_smtp_send_resolved }}
+    to: {{ alertmanager_notify_smtp_address }}
+{% endif %}
+route:
+  group_by:
+  - job
+  group_interval: 5m
+  group_wait: 30s
+  receiver: default
+  repeat_interval: {{ alertmanager_repeat_interval_default }}
+  routes:
+  - match:
+      alertname: DeadMansSwitch
+    receiver: deadmansswitch
+  - match:
+      severity: warning
+    receiver: default
+    repeat_interval: {{ alertmanager_repeat_interval_warning }}
+  - match:
+      severity: critical
+    receiver: default
+    repeat_interval: {{ alertmanager_repeat_interval_critical }}

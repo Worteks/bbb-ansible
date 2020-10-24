@@ -1,0 +1,8 @@
+driftfile /var/lib/ntp/ntp.drift
+{% for remote in ntp_upstreams %}
+server {{ remote }}
+{% endfor %}
+restrict -4 default kod notrap nomodify nopeer noquery
+restrict -6 default kod notrap nomodify nopeer noquery
+restrict 127.0.0.1
+restrict ::1

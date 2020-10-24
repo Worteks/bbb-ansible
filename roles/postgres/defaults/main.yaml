@@ -1,0 +1,24 @@
+postgres_bind_address: '*'
+postgres_trusted_clients:
+- 0.0.0.0/0
+- ::/0
+
+coturn_postgres_database: coturn
+coturn_postgres_password: coturnpw
+coturn_postgres_user: coturnusr
+
+greenlight_postgres_database: greenlight
+greenlight_postgres_password: greenlightpw
+greenlight_postgres_user: greenlightusr
+
+moodle_postgres_database: moodle
+moodle_postgres_password: moodlepw
+moodle_postgres_user: moodleusr
+
+postgres_exporter_db: postgres
+postgres_exporter_port: 9144
+postgres_exporter_release: 0.8.0
+
+scalelite_postgres_database: scalelite
+scalelite_postgres_password: scalelitepw
+scalelite_postgres_user: scaleliteusr

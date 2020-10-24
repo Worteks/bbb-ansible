@@ -1,0 +1,47 @@
+- name: Fetches Redis Exporter
+  get_url:
+    dest: "/usr/src/redis-exporter-{{ redis_exporter_release }}.tar.gz"
+    group: root
+    mode: 0644
+    owner: root
+    url: "https://github.com/oliver006/redis_exporter/releases/download/v{{ redis_exporter_release }}/redis_exporter-v{{ redis_exporter_release }}.linux-amd64.tar.gz"
+- name: Extracts Redis Exporter
+  args:
+    chdir: /usr/src
+    creates: "/usr/src/redis_exporter-v{{ redis_exporter_release }}.linux-amd64"
+    warn: False
+  shell: "tar -xzf /usr/src/redis-exporter-{{ redis_exporter_release }}.tar.gz"
+- name: Installs Redis Exporter
+  copy:
+    dest: /usr/bin/redis_exporter
+    group: root
+    mode: 0755
+    owner: root
+    remote_src: yes
+    src: "/usr/src/redis_exporter-v{{ redis_exporter_release }}.linux-amd64/redis_exporter"
+- name: Creates Redis Exporter Group
+  group:
+    name: redisexporter
+    state: present
+- name: Creates Redis Exporter User
+  user:
+    groups: redisexporter
+    name: redisexporter
+- name: Installs Redis Exporter Unit
+  register: exporter_unit
+  template:
+    dest: /etc/systemd/system/redis-exporter.service
+    group: root
+    mode: 0644
+    owner: root
+    src: exporter.j2
+- name: Reloads Systemd Configuration
+  shell: systemctl daemon-reload
+  when:
+  - exporter_unit is defined
+  - exporter_unit is changed
+- name: Ensures Redis Exporter is Running & Starts on Boot
+  service:
+    enabled: yes
+    name: redis-exporter
+    state: started

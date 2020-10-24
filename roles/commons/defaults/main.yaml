@@ -1,0 +1,6 @@
+locale: en_US.UTF-8
+node_exporter_port: 9142
+node_exporter_release: 1.0.1
+ntp_upstreams:
+- pool.ntp.org
+timezone: UTC

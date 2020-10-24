@@ -1,0 +1,19 @@
+- name: Installs Scalelite Certbot Working Directories
+  file:
+    dest: "{{ fl }}"
+    group: root
+    mode: 0755
+    owner: root
+    state: directory
+  loop:
+  - /etc/letsencrypt
+  - /var/certbot
+  - /var/log/certbot
+  loop_control:
+    loop_var: fl
+- include_role:
+    name: docker
+    tasks_from: check-pull.yaml
+  vars:
+    image_tag: "{{ certbot_images_release }}"
+    image_url: "{{ certbot_images_repo }}"

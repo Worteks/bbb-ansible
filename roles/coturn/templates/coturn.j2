@@ -1,0 +1,36 @@
+listening-port=3478
+tls-listening-port=443
+{% if coturn_bind_addresses | length > 0 %}
+{% for remote in coturn_bind_addresses %}
+listening-ip={{ remote }}
+{% endfor %}
+{% endif %}
+{% if coturn_external_address %}
+external-ip={{ coturn_external_address }}
+{% elif coturn_external_addresses | length > 0 %}
+{% for remote in coturn_external_addresses if remote['in'] is defined and remote['out'] is defined %}
+external-ip={{ remote['out'] }}/{{ remote['in'] }}
+{% endfor %}
+{% endif %}
+psql-userdb="host={{ scalelite_postgres_host if (scalelite_postgres_host | default(False)) else hostvars[groups['postgres'][0]]['ansible_fqdn'] }} dbname={{ scalelite_postgres_database }} user={{ scalelite_postgres_user }} password={{ scalelite_postgres_password }} connect_timeout=30 sslmode=disable"
+fingerprint
+lt-cred-mech
+use-auth-secret
+static-auth-secret={{ coturn_auth_secret }}
+realm={{ coturn_fqdn | default(ansible_fqdn) }}
+cert=/etc/letsencrypt/live/{{ ansible_fqdn }}/fullchain.pem
+pkey=/etc/letsencrypt/live/{{ ansible_fqdn }}/privkey.pem
+cipher-list="{{ coturn_ciphers | join(':') }}"
+dh2066
+no-tlsv1
+no-tlsv1_1
+log-file=/var/log/coturn.log
+simple-log
+{% if do_debugs | default(False) %}
+web-admin
+web-admin-ip={{ ansible_default_ipv4['address'] }}
+web-admin-port=8080
+{% endif %}
+{% if groups['prometheus'] | length > 0 or do_prometheus | default(False) %}
+prometheus
+{% endif %}

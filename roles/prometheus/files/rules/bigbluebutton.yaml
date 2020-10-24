@@ -1,0 +1,19 @@
+groups:
+- name: BigBlueButton
+  rules:
+  - alert: BigBlueButtonDown
+    expr: bbb_api_up == 0
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "BigBlueButton down (instance {{ $labels.instance }})"
+      description: "BigBlueButton down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: BigBlueButtonnLatencyHigh
+    expr: histogram_quantile(0.99, rate(bbb_api_latency_bucket[30m])) > 0.8
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "BigBlueButton API latency high (instance {{ $labels.instance }})"
+      description: "BigBlueButton API p99 latency is higher than .8 seconds\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"

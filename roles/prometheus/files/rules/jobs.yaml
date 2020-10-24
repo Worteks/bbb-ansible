@@ -1,0 +1,19 @@
+groups:
+- name: PrometheusJobs
+  rules:
+  - alert: PrometheusJobMissing
+    expr: absent(up{job="bigbluebutton"})
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "BigBlueButton job missing (instance {{ $labels.instance }})"
+      description: "A Prometheus job has disappeared\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: PrometheusJobMissing
+    expr: absent(up{job="prometheus"})
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Prometheus job missing (instance {{ $labels.instance }})"
+      description: "A Prometheus job has disappeared\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"

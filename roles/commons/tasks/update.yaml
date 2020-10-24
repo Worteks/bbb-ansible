@@ -1,0 +1,24 @@
+- name: Checks for Ansible Mark
+  register: was_provisioned
+  stat:
+    path: /root/.ansible/bbb-mark
+- block:
+  - name: Upgrades System
+    apt:
+      upgrade: dist
+    register: sysupgrade
+  - name: Marks Up-to-Date
+    args:
+      chdir: /root/.ansible
+    shell: date >bbb-mark
+  - block:
+    - shell: ( sleep 2 && reboot ) &
+    - wait_for_connection:
+        delay: 10
+    when:
+    - sysupgrade is defined
+    - sysupgrade is changed
+  when:
+  - was_provisioned is defined
+  - was_provisioned.stat is defined
+  - not was_provisioned.stat.exists

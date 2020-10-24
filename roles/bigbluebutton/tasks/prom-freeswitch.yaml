@@ -1,0 +1,75 @@
+- name: Installs FreeSwitch Exporter Image Build Directory
+  file:
+    dest: /usr/src/freeswitch-exporter
+    group: root
+    mode: 0755
+    owner: root
+    state: directory
+- name: Installs FreeSwitch Exporter Image Sources
+  copy:
+    dest: /usr/src/freeswitch-exporter/Dockerfile
+    group: root
+    mode: 0644
+    owner: root
+    src: Dockerfile.freeswitch-exporter
+  register: has_dkrfile
+- name: Builds FreeSwitch Exporter Image
+  args:
+    chdir: /usr/src/freeswitch-exporter
+  shell: docker build -t freeswitch-exporter .
+  when:
+  - has_dkrfile is defined
+  - has_dkrfile is changed
+
+- name: Fetches Freeswitch Event Socket Password
+  args:
+    chdir: /opt/freeswitch/etc/freeswitch/autoload_configs
+  changed_when: False
+  register: fs_secret
+  shell: "awk '/password/{print $3}' event_socket.conf.xml | sed -e 's|.*value=.||' -e 's|./>$||'"
+- name: Installs FreeSwitch Exporter Configuration
+  register: config_changed
+  template:
+    dest: /etc/docker-compose/freeswitch-exporter/esl.yaml
+    group: root
+    mode: 0640
+    owner: root
+    src: esl.j2
+
+- name: Installs FreeSwitch Exporter Docker-Compose Directory
+  file:
+    dest: /etc/docker-compose/freeswitch-exporter
+    group: root
+    mode: 0755
+    owner: root
+    state: directory
+- name: Installs BigBlueButton Exporter Configuration
+  register: should_reload
+  template:
+    dest: /etc/docker-compose/freeswitch-exporter/docker-compose.yaml
+    group: root
+    mode: 0640
+    owner: root
+    src: fs-exporter.j2
+
+- include_role:
+    name: docker
+    tasks_from: service.yaml
+  vars:
+    service_description: FreeSwitch Exporter
+    service_name: freeswitch-exporter
+
+- name: Installs FreeSwitch Exporter Proxy Configuration
+  notify: Reload Nginx
+  template:
+    dest: /etc/nginx/sites-available/fs-exporter.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: fs-vhost.j2
+- name: Enables FreeSwitch Exporter VirtualHost
+  notify: Reload Nginx
+  file:
+    dest: /etc/nginx/sites-enabled/fs-exporter.conf
+    src: /etc/nginx/sites-available/fs-exporter.conf
+    state: link

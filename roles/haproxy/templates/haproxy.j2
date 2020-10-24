@@ -1,0 +1,306 @@
+global
+    log /dev/log local0
+    log /dev/log local1 notice
+    maxconn {{ haproxy_maxconn }}
+    chroot /var/lib/haproxy
+    user haproxy
+    group haproxy
+    spread-checks 5
+    stats socket /etc/haproxy/hactl level admin
+    stats timeout 30s
+    ssl-default-bind-ciphers {{ haproxy_default_bind_ciphers | join(':') }}
+    ssl-default-bind-options {{ haproxy_default_bind_options | join(' ') }}
+    tune.ssl.default-dh-param {{ haproxy_default_dhparam | default('4096') }}
+    daemon
+
+defaults
+    log global
+    mode tcp
+{% for option in (haproxy_default_options | default([])) %}
+    option {{ option }}
+{% endfor %}
+{% for option in (haproxy_default_no_options | default([])) %}
+    no option {{ option }}
+{% endfor %}
+    maxconn {{ haproxy_maxconn }}
+    timeout client {{ haproxy_timeout_client }}
+    timeout connect {{ haproxy_timeout_connect }}
+    timeout http-keep-alive {{ haproxy_timeout_http_keepalive }}
+    timeout http-request {{ haproxy_timeout_http_request }}
+    timeout queue {{ haproxy_timeout_queue }}
+    timeout server {{ haproxy_timeout_server }}
+    timeout tarpit {{ haproxy_timeout_tarpit }}
+    timeout tunnel {{ haproxy_timeout_tunnel }}
+{% if check_group and groups[check_group] | length > 1 %}
+
+peers bbb
+{% for target in groups[check_group] %}
+{% if ansible_nodename != hostvars[target]['ansible_nodename'] %}
+    peer {{ hostvars[target]['ansible_hostname'] }} {{ hostvars[target]['ansible_default_ipv4']['address'] }}:9999 check
+{% else %}
+    peer {{ ansible_hostname }} {{ ansible_default_ipv4['address'] }}:9999 check
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if do_alertmanager %}
+
+backend bbb_alertmanager_backend
+    mode tcp
+    option ssl-hello-chk
+{% if check_group and groups[check_group] | length > 1 %}
+    stick-table type ip size {{ haproxy_sync_table_size | default('20k') }} peers bbb
+    stick on src
+{% endif %}
+{% for back in groups['alertmanager'] %}
+    server {{ hostvars[back]['ansible_hostname'] }} {{ hostvars[back]['ansible_default_ipv4']['address'] }}:{{ alertmanager_port }} check maxconn {{ haproxy_alertmanager_maxconn }}
+{% endfor %}
+
+backend bbb_alertmanager_plain_backend
+    mode http
+    option httpchk GET /
+{% if check_group and groups[check_group] | length > 1 %}
+    stick-table type ip size {{ haproxy_sync_table_size | default('20k') }} peers bbb
+    stick on src
+{% endif %}
+{% for back in groups['alertmanager'] %}
+    server {{ hostvars[back]['ansible_hostname'] }}-plain {{ hostvars[back]['ansible_default_ipv4']['address'] }}:{{ alertmanager_plain_port }} check maxconn {{ haproxy_alertmanager_maxconn }}
+{% endfor %}
+{% endif %}
+{% if do_grafana %}
+
+backend bbb_grafana_backend
+    mode tcp
+    option ssl-hello-chk
+{% if check_group and groups[check_group] | length > 1 %}
+    stick-table type ip size {{ haproxy_sync_table_size | default('20k') }} peers bbb
+    stick on src
+{% endif %}
+{% for back in groups['grafana'] %}
+    server {{ hostvars[back]['ansible_hostname'] }} {{ hostvars[back]['ansible_default_ipv4']['address'] }}:{{ grafana_port }} check maxconn {{ haproxy_grafana_maxconn }}
+{% endfor %}
+{% endif %}
+{% if do_greenlight %}
+
+backend bbb_greenlight_backend
+    mode tcp
+    option ssl-hello-chk
+{% if check_group and groups[check_group] | length > 1 %}
+    stick-table type ip size {{ haproxy_sync_table_size | default('20k') }} peers bbb
+    stick on src
+{% endif %}
+{% for back in groups['greenlight'] %}
+    server {{ hostvars[back]['ansible_hostname'] }} {{ hostvars[back]['ansible_default_ipv4']['address'] }}:{{ greenlight_port }} check maxconn {{ haproxy_greenlight_maxconn }}
+{% endfor %}
+{% endif %}
+{% if do_prometheus %}
+
+backend bbb_prometheus_backend
+    mode tcp
+    option ssl-hello-chk
+{% if check_group and groups[check_group] | length > 1 %}
+    stick-table type ip size {{ haproxy_sync_table_size | default('20k') }} peers bbb
+    stick on src
+{% endif %}
+{% for back in groups['prometheus'] %}
+    server {{ hostvars[back]['ansible_hostname'] }} {{ hostvars[back]['ansible_default_ipv4']['address'] }}:{{ prometheus_port }} check maxconn {{ haproxy_prometheus_maxconn }}
+{% endfor %}
+
+backend bbb_prometheus_plain_backend
+    mode http
+    option httpchk GET /
+{% if check_group and groups[check_group] | length > 1 %}
+    stick-table type ip size {{ haproxy_sync_table_size | default('20k') }} peers bbb
+    stick on src
+{% endif %}
+{% for back in groups['prometheus'] %}
+    server {{ hostvars[back]['ansible_hostname'] }} {{ hostvars[back]['ansible_default_ipv4']['address'] }}:{{ prometheus_plain_port }} check maxconn {{ haproxy_prometheus_maxconn }}
+{% endfor %}
+{% endif %}
+{% if do_scalelite %}
+
+backend bbb_scalelite_backend
+{% if 0 == 1 %}
+# doesn't work / fixme
+    mode http
+    balance roundrobin
+    option httpchk
+{% if check_group and groups[check_group] | length > 1 %}
+    stick-table type ip size {{ haproxy_sync_table_size | default('20k') }} peers bbb
+    stick on src
+{% endif %}
+    http-check expect status 403
+# backend appears to be up & running. a client connecting won't be served any sertificate, tls handshake breaks, ...
+# fixme fixme ... would be better to have http checks here (didn't I do this for openshift-ansible?)
+{% for back in groups['scalelite'] %}
+    server {{ hostvars[back]['ansible_hostname'] }} {{ hostvars[back]['ansible_default_ipv4']['address'] }}:{{ scalelite_port }} check ssl verify none maxconn {{ haproxy_scalelite_maxconn }}
+{% endfor %}
+{% else %}
+    mode tcp
+    option ssl-hello-chk
+{% if check_group and groups[check_group] | length > 1 %}
+    stick-table type ip size {{ haproxy_sync_table_size | default('20k') }} peers bbb
+    stick on src
+{% endif %}
+{% for back in groups['scalelite'] %}
+    server {{ hostvars[back]['ansible_hostname'] }} {{ hostvars[back]['ansible_default_ipv4']['address'] }}:{{ scalelite_port }} check maxconn {{ haproxy_scalelite_maxconn }}
+{% endfor %}
+{% endif %}
+{% endif %}
+{% if do_scalelite or do_greenlight or do_alertmanager or do_grafana or do_prometheus %}
+
+frontend bbb_http
+    bind {{ haproxy_bind_address | default(ansible_default_ipv4['address']) }}:80
+    mode http
+    option httplog
+    option contstats
+    redirect scheme https code 301
+{% if do_alertmanager %}
+
+frontend bbb_alertmanager_plain
+    bind {{ haproxy_bind_address | default(ansible_default_ipv4['address']) }}:9093
+    mode http
+    option httplog
+    option contstats
+{% if (haproxy_backends_ipfilter | default([])) | length > 0 %}
+{% for remote in haproxy_backends_ipfilter %}
+    acl network_allowed src {{ remote }}
+{% endfor %}
+{% if '127.0.0.1' not in haproxy_backends_ipfilter %}
+    acl network_allowed src 127.0.0.1
+{% endif %}
+{% if ansible_default_ipv4['address'] not in haproxy_backends_ipfilter %}
+    acl network_allowed src {{ ansible_default_ipv4['address'] }}
+{% endif %}
+    http-request deny if !network_allowed
+{% endif %}
+    default_backend bbb_alertmanager_plain_backend
+{% endif %}
+{% if do_prometheus %}
+
+frontend bbb_prometheus_plain
+    bind {{ haproxy_bind_address | default(ansible_default_ipv4['address']) }}:9090
+    mode http
+    option httplog
+    option contstats
+{% if (haproxy_backends_ipfilter | default([])) | length > 0 %}
+{% for remote in haproxy_backends_ipfilter %}
+    acl network_allowed src {{ remote }}
+{% endfor %}
+{% if '127.0.0.1' not in haproxy_backends_ipfilter %}
+    acl network_allowed src 127.0.0.1
+{% endif %}
+{% if ansible_default_ipv4['address'] not in haproxy_backends_ipfilter %}
+    acl network_allowed src {{ ansible_default_ipv4['address'] }}
+{% endif %}
+    http-request deny if !network_allowed
+{% endif %}
+    default_backend bbb_prometheus_plain_backend
+{% endif %}
+
+frontend bbb_https
+    bind {{ haproxy_bind_address | default(ansible_default_ipv4['address']) }}:443
+    mode tcp
+    option tcplog
+    option contstats
+{% if do_alertmanager %}
+    acl alertmanager req.ssl_sni -i {{ hostvars[groups['alertmanager'][0]]['bigbluebutton_fqdn'] | default(hostvars[groups['alertmanager'][0]]['ansible_fqdn']) }}
+{% endif %}
+{% if do_grafana %}
+    acl grafana req.ssl_sni -i {{ hostvars[groups['grafana'][0]]['bigbluebutton_fqdn'] | default(hostvars[groups['grafana'][0]]['ansible_fqdn']) }}
+{% endif %}
+{% if do_greenlight %}
+    acl greenlight req.ssl_sni -i {{ hostvars[groups['greenlight'][0]]['bigbluebutton_fqdn'] | default(hostvars[groups['greenlight'][0]]['ansible_fqdn']) }}
+{% endif %}
+{% if do_prometheus %}
+    acl prometheus req.ssl_sni -i {{ hostvars[groups['prometheus'][0]]['bigbluebutton_fqdn'] | default(hostvars[groups['prometheus'][0]]['ansible_fqdn']) }}
+{% endif %}
+{% if do_scalelite %}
+    acl scalelite req.ssl_sni -i {{ hostvars[groups['scalelite'][0]]['scalelite_fqdn'] | default(hostvars[groups['scalelite'][0]]['ansible_fqdn']) }}
+{% endif %}
+{% if (do_alertmanager or do_prometheus) and (haproxy_backends_ipfilter | default([])) | length > 0 %}
+{% for remote in (haproxy_backends_ipfilter | default([])) %}
+    acl network_allowed src {{ remote }}
+{% endfor %}
+{% if '127.0.0.1' not in haproxy_backends_ipfilter %}
+    acl network_allowed src 127.0.0.1
+{% endif %}
+{% if ansible_default_ipv4['address'] not in haproxy_backends_ipfilter %}
+    acl network_allowed src {{ ansible_default_ipv4['address'] }}
+{% endif %}
+{% endif %}
+    tcp-request inspect-delay 2s
+    tcp-request content reject if{% if do_alertmanager %} !alertmanager{% endif %}{% if do_grafana %} !grafana{% endif %}{% if do_greenlight %} !greenlight{% endif %}{% if do_prometheus %} !prometheus{% endif %}{% if do_scalelite %} !scalelite{% endif %}
+
+{% if do_alertmanager and (haproxy_backends_ipfilter | default([])) | length > 0 %}
+    tcp-request content reject if alertmanager !network_allowed
+{% endif %}
+{% if do_prometheus and (haproxy_backends_ipfilter | default([])) | length > 0 %}
+    tcp-request content reject if prometheus !network_allowed
+{% endif %}
+    tcp-request content accept if { req_ssl_hello_type 1 }
+{% if do_alertmanager %}
+    use_backend bbb_alertmanager_backend if alertmanager
+{% endif %}
+{% if do_grafana %}
+    use_backend bbb_grafana_backend if grafana
+{% endif %}
+{% if do_greenlight %}
+    use_backend bbb_greenlight_backend if greenlight
+{% endif %}
+{% if do_prometheus %}
+    use_backend bbb_prometheus_backend if prometheus
+{% endif %}
+{% if do_scalelite %}
+    use_backend bbb_scalelite_backend if scalelite
+{% endif %}
+{% endif %}
+{% if do_redis %}
+
+backend bbb_redis_backend
+    mode tcp
+    balance roundrobin
+    option tcp-check
+{% if check_group and groups[check_group] | length > 1 %}
+    stick-table type ip size {{ haproxy_sync_table_size | default('20k') }} peers bbb
+    stick on src
+{% endif %}
+    tcp-check send PING\r\n
+    tcp-check expect string +PONG
+    tcp-check send info\ replication\r\n
+    tcp-check expect string role:master
+    tcp-check send QUIT\r\n
+    tcp-check expect string +OK
+{% for back in groups['redis'] %}
+    server {{ hostvars[back]['ansible_hostname'] }} {{ hostvars[back]['ansible_default_ipv4']['address'] }}:{{ redis_port }} check maxconn {{ haproxy_redis_maxconn }}
+{% endfor %}
+
+frontend bbb_redis
+{% for remote in (haproxy_backends_ipfilter | default([])) %}
+    acl network_allowed src {{ remote }}
+{% endfor %}
+    bind {{ haproxy_bind_address | default(ansible_default_ipv4['address']) }}:{{ redis_port }}
+    mode tcp
+    option tcplog
+    option contstats
+{% if (haproxy_backends_ipfilter | default([])) | length > 0 %}
+{% if '127.0.0.1' not in haproxy_backends_ipfilter %}
+    acl network_allowed src 127.0.0.1
+{% endif %}
+{% if ansible_default_ipv4['address'] not in haproxy_backends_ipfilter %}
+    acl network_allowed src {{ ansible_default_ipv4['address'] }}
+{% endif %}
+    tcp-request connection reject if !network_allowed
+{% endif %}
+    default_backend bbb_redis_backend
+{% endif %}
+
+frontend stats
+    bind 127.0.0.1:{{ haproxy_stats_port }}
+    mode http
+    stats enable
+    stats hide-version
+{% for user in (haproxy_stats_auth | default([])) %}
+    stats auth {{ user }}
+{% endfor %}
+    stats realm "Haproxy Statistics"
+    stats uri /

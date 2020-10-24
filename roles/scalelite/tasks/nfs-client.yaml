@@ -1,0 +1,46 @@
+- name: Checks for Existing NFS Mount
+  args:
+    warn: False
+  changed_when: False
+  failed_when: False
+  register: has_nfs
+  shell: mount | grep /var/scalelite-recordings
+- block:
+  - name: Installs NFS Client
+    apt:
+      name: nfs-common
+      state: present
+  - name: Ensures NFS Mount Directory Exists
+    file:
+      dest: /var/scalelite-recordings
+      group: root
+      mode: 0755
+      owner: root
+      state: directory
+  - name: Adds NFS Mount to /etc/fstab
+    lineinfile:
+      dest: /etc/fstab
+      line: "{{ hostvars[groups['nfs'][0]]['ansible_default_ipv4']['address'] }}:{{ hostvars[groups['nfs'][0]]['nfs_exports_root'] | default(nfs_exports_root) }} /var/scalelite-recordings nfs noatime,nodiratime,noexec,nodev,nosuid 0 0"
+      regexp: " /var/scalelite-recordings "
+  - name: Ensures Scalelite Directories Present
+    delegate_to: "{{ groups['nfs'][0] }}"
+    file:
+      dest: "{{ hostvars[groups['nfs'][0]]['nfs_exports_root'] | default(nfs_exports_root) }}/{{ sub }}"
+      group: 2000
+      mode: 0775
+      owner: 1000
+      state: directory
+    loop:
+    - published
+    - spool
+    loop_control:
+      loop_var: sub
+    run_once: yes
+  - name: Mounts NFS Share
+    args:
+      warn: False
+    shell: mount /var/scalelite-recordings
+  when:
+  - has_nfs is defined
+  - has_nfs.rc is defined
+  - has_nfs.rc != 0

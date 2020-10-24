@@ -1,0 +1,26 @@
+- name: Creates AlertManager Group
+  group:
+    name: alertmanager
+    state: present
+- name: Creates AlertManager User
+  user:
+    groups: alertmanager
+    name: alertmanager
+- name: Resolves AlertManager User ID
+  changed_when: False
+  register: alertmanager_user_id
+  shell: "getent passwd alertmanager | awk -F: '{print $3;exit;}'"
+- name: Installs AlertManager Server Configuration Directories
+  file:
+    dest: /etc/alertmanager
+    group: root
+    mode: 0755
+    owner: root
+    state: directory
+- name: Installs AlertManager Database Directory
+  file:
+    dest: /var/lib/alertmanager
+    group: alertmanager
+    mode: 0755
+    owner: alertmanager
+    state: directory

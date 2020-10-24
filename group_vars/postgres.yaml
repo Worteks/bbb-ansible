@@ -1,0 +1,17 @@
+postgres_trusted_clients:
+- 10.42.253.0/24
+firehol_trusted_networks: "{{ postgres_trusted_clients }}"
+
+firehol_app_filtered_ports:
+- name: postgres
+  value: tcp/5432
+firehol_app_opened_ports:
+- name: ssh
+  value: tcp/22
+- name: nodexp
+  value: tcp/9142
+- name: postgresxp
+  value: tcp/9144
+
+# using xen pv
+setup_firewall: False

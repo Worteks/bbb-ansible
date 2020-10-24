@@ -1,0 +1,34 @@
+- name: Fetches Postgres Exporter
+  get_url:
+    dest: "/usr/src/postgres-exporter-{{ postgres_exporter_release }}.tar.gz"
+    group: root
+    mode: 0644
+    owner: root
+    url: "https://github.com/wrouesnel/postgres_exporter/releases/download/v{{ postgres_exporter_release }}/postgres_exporter_v{{ postgres_exporter_release }}_linux-amd64.tar.gz"
+- name: Extracts Postgres Exporter
+  args:
+    chdir: /usr/src
+    creates: "/usr/src/postgres_exporter_v{{ postgres_exporter_release }}_linux-amd64"
+    warn: False
+  shell: "tar -xzf /usr/src/postgres-exporter-{{ postgres_exporter_release }}.tar.gz"
+- name: Installs Postgres Exporter
+  copy:
+    dest: /usr/bin/postgres_exporter
+    group: root
+    mode: 0755
+    owner: root
+    remote_src: yes
+    src: "/usr/src/postgres_exporter_v{{ postgres_exporter_release }}_linux-amd64/postgres_exporter"
+- name: Creates Postgres Exporter Group
+  group:
+    name: postgresexporter
+    state: present
+- name: Creates Postgres Exporter User
+  user:
+    groups: postgresexporter
+    name: postgresexporter
+- include_tasks: prom-db.yaml
+  vars:
+    postgres_exporter_db: "{{ scalelite_postgres_database }}"
+    postgres_exporter_password: "{{ scalelite_postgres_password }}"
+    postgres_exporter_user: "{{ scalelite_postgres_user }}"

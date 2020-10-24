@@ -1,0 +1,20 @@
+- name: Installs Redis Server
+  apt:
+    name: redis-server
+    state: present
+- block:
+  - name: Installs Sentinel Unit
+    register: sentinel_unit
+    copy:
+      dest: /etc/systemd/system/redis-sentinel.service
+      group: root
+      mode: 0644
+      owner: root
+      src: sentinel.systemd
+  - name: Reloads Systemd Configuration
+    shell: systemctl daemon-reload
+    when:
+    - sentinel_unit is defined
+    - sentinel_unit is changed
+  when:
+  - groups['redis'] | length > 1
