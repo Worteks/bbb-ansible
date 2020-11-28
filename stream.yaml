@@ -1,5 +1,7 @@
 - hosts: rtmp
   vars:
-    stream_meeting_id: MyMeetingID
+    osp_stream_key: f9448056-f649-43ae-9ecd-111e1504b0a2
+    stream_chat: False
+    stream_meeting_id: BiteRoom
   roles:
   - rtmp

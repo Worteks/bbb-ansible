@@ -88,12 +88,61 @@
   when:
   - bbb_uses_selfsigned | default(True)
 
+- block:
+  - name: Installs FreeSwitch SIP Trunk Configuration
+    regster fcf1
+    template:
+      dest: "/opt/freeswitch/conf/sip_profiles/external/{{ freeswitch_trunk_name }}.xml"
+      group: daemon
+      mode: 0640
+      owner: freeswitch
+      src: fs-external.j2
+  - name: Installs FreeSwitch SIP DIDs Configuration
+    regster fcf2
+    template:
+      dest: "/opt/freeswitch/conf/dialplan/public/{{ freeswitch_trunk_name }}.xml"
+      group: daemon
+      mode: 0640
+      owner: freeswitch
+      src: fs-route.j2
+  - name: Restarts FreeSwitch
+    service:
+      name: freeswitch
+      state: restarted
+    when:
+    - >
+        (fcf1 is defined
+         and fcf1 is changed)
+        or (fcf2 is defined
+         and fcf2 is changed)
+  - name: Sets BBB Phone Number
+    lineinfile:
+      dest: /usr/share/bbb-web/WEB-INF/classes/bigbluebutton.properties
+      line: "defaultDialAccessNumber={{ freeswitch_trunk_dids[0] }}"
+      regex: ^defaultDialAccessNumber=
+    register: fixed_did
+  - name: Sets BBB Welcome Footer
+    lineinfile:
+      dest: /usr/share/bbb-web/WEB-INF/classes/bigbluebutton.properties
+      line: "defaultWelcomeMessageFooter=<br><br>To join this meeting by phone, dial:<br>  %%DIALNUM%%<br>Then enter %%CONFNUM%% as the conference PIN number."
+      regex: ^defaultWelcomeMessageFooter=
+    register: fixed_footer
+  when:
+  - freeswitch_trunk_dids is defined
+  - freeswitch_trunk_dids | length > 0
+  - freeswitch_trunk_password is defined
+  - freeswitch_trunk_username is defined
+
 - name: Restarts BigBlueButton
   shell: bbb-conf --restart
   when:
   - >
       (fixed_home is defined
        and fixed_home is changed)
+      or (fixed_did is defined
+       and fixed_did is changed)
+      or (fixed_footer is defined
+       and fixed_footer is changed)
       or (fixed_meteor is defined
        and fixed_meteor is changed)
       or (has_demo is defined

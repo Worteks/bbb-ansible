@@ -1,5 +1,5 @@
 # Finish hosts prep on dedicated instances
-- hosts: lb:postgres:redis:scalelite:bbb:greenlight:moodle:prometheus:grafana:alertmanager:sshfs:nfs:coturn:rtmp
+- hosts: lb:postgres:redis:scalelite:bbb:greenlight:moodle:prometheus:grafana:alertmanager:sshfs:nfs:openstreamingplatform:coturn:rtmp
   tasks:
   - include_role:
       name: commons

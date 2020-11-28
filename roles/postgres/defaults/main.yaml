@@ -15,6 +15,10 @@ moodle_postgres_database: moodle
 moodle_postgres_password: moodlepw
 moodle_postgres_user: moodleusr
 
+openstreamingplatform_postgres_database: osp
+openstreamingplatform_postgres_password: osppw
+openstreamingplatform_postgres_user: ospusr
+
 postgres_exporter_db: postgres
 postgres_exporter_port: 9144
 postgres_exporter_release: 0.8.0

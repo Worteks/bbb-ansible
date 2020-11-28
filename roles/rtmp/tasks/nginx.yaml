@@ -1,3 +1,9 @@
+- name: Installs Nginx RTMP Module
+  apt:
+    name:
+    - libnginx-mod-rtmp
+    - libnginx-mod-stream
+    state: present
 - name: Installs RTMP Modules Configuration
   copy:
     content: "load_module modules/ngx_{{ mod }}_module.so;"

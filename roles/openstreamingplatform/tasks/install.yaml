@@ -1,0 +1,59 @@
+- name: Installs OpenStreamingPlatform Dependencies
+  apt:
+    name:
+    - build-essential
+    - curl
+    - ffmpeg
+    - git
+    - libpcre3
+    - libpcre3-dev
+    - libpq-dev
+    - libssl-dev
+    - python3
+    - python3-dev
+    - python3-pip
+    - python3-setuptools
+    - unzip
+    - uwsgi-plugin-python3
+    state: present
+- name: Installs Wheel
+  pip:
+    name: wheel
+    state: present
+- name: Fetches OpenStreamingPlatform Installer
+  git:
+    dest: /usr/src/openstreamingplatform
+    repo: 'https://gitlab.com/Deamos/flask-nginx-rtmp-manager'
+    update: no
+    version: "{{ openstreamingplatform_version }}"
+  register: cloned
+- name: Installs OpenStreamingPlatform Requirements
+  pip:
+    requirements: /usr/src/openstreamingplatform/setup/requirements.txt
+- name: Installs OpenStreamingPlatform Runtime Directory Exists
+  delegate_to: "{{ inventory_hostname }}"
+  synchronize:
+    src: /usr/src/openstreamingplatform
+    dest: /opt/osp
+  when:
+  - clone is defined
+  - clone is changed
+- name: Installs Gunicorn Systemd Units
+  copy:
+    dest: "/etc/systemd/system/{{ i }}"
+    group: root
+    mode: 0644
+    owner: root
+    remote_src: yes
+    src: "/usr/src/openstreamingplatform/setup/gunicorn/{{ i }}"
+  loop:
+  - osp-worker@.service
+  - osp-worker.target
+  loop_control:
+    loop_var: i
+  register: unicorn_unit
+- name: Reloads Systemd Configuration
+  shell: systemctl daemon-reload
+  when:
+  - unicorn_unit is defined
+  - unicorn_unit is changed

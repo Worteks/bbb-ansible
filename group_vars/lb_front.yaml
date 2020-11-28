@@ -1,5 +1,3 @@
-scalelite_fqdn: scalelite.example.com
-
 # when lb_front == lb_back, define in group_vars/lb.yaml
 # when lb_front != lb_back, define here:
 #firehol_app_opened_ports:

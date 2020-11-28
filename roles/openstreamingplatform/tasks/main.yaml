@@ -1,0 +1,5 @@
+- include_tasks: install.yaml
+- include_tasks: nginx-from-sources.yaml
+- include_tasks: web.yaml
+- include_tasks: ejabberd.yaml
+- include_tasks: configure.yaml

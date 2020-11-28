@@ -1,0 +1,69 @@
+- name: Installs Ejabber Configuration
+  copy:
+    dest: "/usr/local/ejabberd/conf/{{ i }}"
+    group: root
+    mode: 0644
+    owner: root
+    remote_src: yes
+    src: "/opt/osp/setup/ejabberd/{{ i }}"
+  loop:
+  - ejabberd.yml
+  - inetrc
+  loop_control:
+    loop_var: i
+  register: ejbcf
+- name: Fixes Ejabberd Configuration
+  args:
+    chdir: /usr/local/ejabberd/conf
+  shell: >
+    sed -i "s|CHANGEME|{{ openstreamingplatform_fqdn | default(ansible_fqdn) }}|" ejabberd.yml
+  when:
+  - ejbcf is defined
+  - ejbcf is changed
+- name: Installs Nginx Configuration
+  copy:
+    dest: "/usr/local/nginx/conf/{{ i }}.conf"
+    group: root
+    mode: 0644
+    owner: root
+    remote_src: yes
+    src: "/usr/src/openstreamingplatform/setup/nginx/{{ i }}.conf"
+  loop:
+  - nginx
+  - osp-redirects
+  - osp-rtmp
+  - osp-socketio
+  loop_control:
+    loop_var: i
+  register: nxcf
+- name: Installs OpenStreamingPlatform Configuration
+  register: ospcf
+  template:
+    dest: /opt/osp/conf/config.py
+    group: www-data
+    mode: 0644
+    owner: www-data
+    src: osp.j2
+
+- name: Ensures Ejabberd Running & Starts on Boot
+  service:
+    enabled: yes
+    name: ejabberd
+    state: started
+- name: Initializes Ejabberd Admin Account
+  args:
+    chdir: /root
+    creates: /root/ejbd-init.log
+  environment:
+    PATH: /usr/local/ejabberd/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+  shell: "ejabberdctl register admin localhost {{ openstreamingplatform_ejabberd_admin_pass }} >ejbd-init.log"
+
+- name: Ensures OSP Enabled
+  service:
+    enabled: yes
+    name: osp.target
+- name: Ensures Nginx-OSP Running & Starts on Boot
+  service:
+    enabled: yes
+    name: nginx-osp
+    state: started

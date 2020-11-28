@@ -1,5 +1,2 @@
 ansible_user: root
 timezone: Europe/Paris
-
-# Main service FQDN
-bigbluebutton_fqdn: bbb.example.com

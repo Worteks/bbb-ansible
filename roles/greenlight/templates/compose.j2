@@ -19,12 +19,17 @@ services:
     - BIGBLUEBUTTON_ENDPOINT=https://{{ hostvars[groups['bbb'][0]]['ansible_fqdn'] }}/bigbluebutton/api/
     - BIGBLUEBUTTON_SECRET={{ bbb_secret.stdout_lines[0] }}
 {% endif %}
+{% if groups['postgres'] | length > 0 %}
     - DB_ADAPTER=postgresql
     - DB_HOST={{ greenlight_postgres_host if (greenlight_postgres_host | default(False)) else hostvars[groups['postgres'][0]]['ansible_fqdn'] }}
     - DB_NAME={{ greenlight_postgres_database }}
     - DB_PASSWORD={{ greenlight_postgres_password }}
     - DB_PORT={{ greenlight_postgres_port }}
     - DB_USERNAME={{ greenlight_postgres_user }}
+{% else %}
+    - DB_ADAPTER=sqlite3
+    - DB_NAME=db/production/greenlight.sqlite
+{% endif %}
     - DEFAULT_REGISTRATION={{ greenlight_registrations }}
     - ENABLE_SSL=true
     - HELP_URL={{ greenlight_help_url }}
@@ -88,5 +93,8 @@ services:
 {% if bbb_uses_selfsigned | default(True) %}
     - /etc/ssl/certs:/etc/ssl/certs
     - /usr/local/share/ca-certificates:/usr/local/share/ca-certificates
+{% endif %}
+{% if groups['postgres'] | length == 0 %}
+    - /var/lib/greenlight-db:/usr/src/app/db/production
 {% endif %}
     - /var/lib/greenlight:/usr/src/app/storage

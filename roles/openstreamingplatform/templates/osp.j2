@@ -1,0 +1,19 @@
+# Set Database Location and Type
+# For MySQL Connections add ?charset=utf8mb4 for full Unicode Support
+dbLocation="sqlite:///db/database.db"
+
+redisHost="localhost"
+redisPort=6379
+redisPassword=''
+
+secretKey="{{ openstreamingplatform_flask_secret_key }}"
+passwordSalt="{{ openstreamingplatform_password_salt }}"
+allowRegistration={{ openstreamingplatform_allow_registrations | bool }}
+requireEmailRegistration={{ openstreamingplatform_require_email_registration | bool }}
+debugMode = False
+
+# EJabberD Configuration
+ejabberdAdmin = "admin"
+ejabberdPass = "{{ openstreamingplatform_ejabberd_admin_pass }}"
+ejabberdHost = "localhost"
+#ejabberdServer ="127.0.0.1"

@@ -26,3 +26,12 @@
   when:
   - groups['lb_front'] | length > 0
   - groups['scalelite'] | length > 1
+- name: Gather Facts from OpenStreamingPlatform
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['openstreamingplatform'] }}"
+  loop_control:
+    loop_var: srv
+  setup:
+  when:
+  - groups['openstreamingplatform'] | length > 0

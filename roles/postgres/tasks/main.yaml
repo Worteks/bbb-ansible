@@ -9,7 +9,12 @@
 - include_tasks: moodle-db.yaml
   when:
   - groups['moodle'] | length > 0
+#- include_tasks: openstreamingplatform-db.yaml
+#  when:
+#  - groups['openstreamingplatform'] | length > 0
 - include_tasks: scalelite-db.yaml
+  when:
+  - groups['scalelite'] | length > 0
 - include_tasks: prometheus.yaml
   when:
   - >

@@ -1,0 +1,23 @@
+- name: Installs OpenStreamingPlatform Postgres Database
+  become: yes
+  become_user: postgres
+  postgresql_db:
+    encoding: UTF-8
+    name: "{{ openstreamingplatform_postgres_database }}"
+    template: template0
+- name: Installs Coturn Postgres User
+  become: yes
+  become_user: postgres
+  postgresql_user:
+    db: "{{ openstreamingplatform_postgres_database }}"
+    name: "{{ openstreamingplatform_postgres_user }}"
+    password: "{{ openstreamingplatform_postgres_password }}"
+- name: Grants Coturn User Privileges over its database
+  become: yes
+  become_user: postgres
+  postgresql_privs:
+    admin_option: yes
+    db: "{{ openstreamingplatform_postgres_database }}"
+    privs: ALL
+    type: database
+    role: "{{ openstreamingplatform_postgres_user }}"

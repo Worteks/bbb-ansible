@@ -4,6 +4,7 @@
 - include_tasks: sentinel.yaml
   when:
   - groups['redis'] | length > 1
+  - redis_standalone is not defined
 - include_tasks: prometheus.yaml
   when:
   - >

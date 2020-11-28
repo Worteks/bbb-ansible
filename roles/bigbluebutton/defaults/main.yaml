@@ -11,3 +11,15 @@ bigbluebutton_exporter_images_repo: greenstatic/bigbluebutton-exporter
 bigbluebutton_exporter_images_release: v0.5.1
 bigbluebutton_exporter_port: 9688
 freeswitch_exporter_port: 9725
+
+#freeswitch_trunk_dids:
+#- 0033xxxxxx
+#- 0033xxxxxy
+#- 0033xxxxxz
+freeswitch_trunk_expire: 1800
+freeswitch_trunk_name: trunk-ovh
+#freeswitch_trunk_password: secret
+freeswitch_trunk_proxy: siptrunk.ovh.net
+freeswitch_trunk_realm: siptrunk.ovh.net
+freeswitch_trunk_register: "true"
+#freeswitch_trunk_username: 0033xxxxxx

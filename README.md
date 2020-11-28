@@ -23,6 +23,7 @@
       * [Moodle](#moodle)
         * [Moodle Server](#moodle-server)
         * [Moodle BigBlueButton Plugin](#moodle-bigbluebutton-plugin)
+      * [Open Streaming Platform](#openstreamingplatform)
     * [TODOs](#todos)
     * [FIXMEs](#fixmes)
 
@@ -36,9 +37,6 @@ Deploying BigBlueButton at scale with Ansible
  * Debian Buster for everything else (ubuntu might work, though untested so far)
 
 The rest depends on your context.
-
-Note: this is still a work in progress. Feel free to file an issue on GitHub, if
-there's anything you need help fixing.
 
 ### Standalone BBB
 
@@ -107,6 +105,7 @@ works. On the other hand:
  * https://docs.bigbluebutton.org/2.2/setup-turn-server.html
  * https://www.amazonaws.cn/en/solutions/big-blue-button-solution/
  * https://github.com/aws-samples/big-blue-button-on-aws-cn
+ * https://docs.bigbluebutton.org/2.2/customize.html
 
 #### 2.3-dev
 
@@ -120,9 +119,12 @@ works. On the other hand:
 #### RTMP LiveStream
 
  * https://github.com/aau-zid/BigBlueButton-liveStreaming
+ * https://github.com/aau-zid/BigBlueButton-liveStreaming/issues/78#issuecomment-729534249
  * https://github.com/bigbluebutton/bigbluebutton/issues/8295
  * https://groups.google.com/g/bigbluebutton-dev/c/vZli5bhB1ZQ
  * https://opensource.com/article/19/1/basic-live-video-streaming-server
+ * https://github.com/SeleniumHQ/selenium/wiki/Untrusted-SSL-Certificates
+ * https://unix.stackexchange.com/questions/122753/chrome-certificate
 
 #### RTSP LiveStream
 
@@ -238,6 +240,13 @@ freeswitch:
  * https://moodle.org/plugins/mod_bigbluebuttonbn
  * https://github.com/blindsidenetworks/moodle-mod_bigbluebuttonbn
 
+### OpenStreamingPlatform
+
+ * https://openstreamingplatform.com
+ * https://wiki.openstreamingplatform.com
+ * https://wiki.openstreamingplatform.com/Install/Standard
+ * https://wiki.openstreamingplatform.com/Usage/Streaming
+
 ## TODOs
 
  - monitoring bbb services
@@ -253,6 +262,12 @@ freeswitch:
  - monitoring rtmp server
  - monitoring bbb-livestream workers. beware a known limitation is that the
    livestream process doesn't reconnect, if connection to bbb is lost ...
+ - monitoring openstreamingplatform
+ - scaling openstreamingplatform
+   => postgres not documented, look into mysql replacing the default sqlite db
+   => external redis (? osp conf doesn't mention a redis DB ID, though)
+   => to ensure all clients may see all RTMP streams - regardless of who serves
+      a given client requests, and who receives a given stream
  - WIP NFS storage
    => sharing the spool directory might lead multiple Scalelite replicas
       processing a same recording (?)
@@ -290,8 +305,13 @@ freeswitch:
    another time...
  - Greenlight does not seem to trust our custom CA (OIDC), despite its
    being trusted on the system (?)
- - Starting up BBB LiveStream, systemd unit first
-   appears to fail starting our container, while further check would
+ - OpenStreaming should store recordings in /var/www/videos, apparently
+   using mp4 files. though I found flv files in some /tmp/systemd-private
+   directory, for the nginx-osp service. Unclear what went wrong. Having run
+   several short tests, I don't always find the resulting mp4 files, nor
+   do I understand what's going wrong under the hood
+ - Starting up BBB LiveStream, systemd unit might
+   first appear to fail starting our container, while further check would
    confirm it was/is properly running
  - creating a BBB room with the "Automatically join me into the room"
    option selected, we sometimes end up with a 500. The room was

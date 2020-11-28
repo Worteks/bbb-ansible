@@ -25,6 +25,15 @@
     mode: 0755
     owner: root
     state: directory
+- name: Installs Greenlight Sqlite Directory
+  file:
+    dest: /var/lib/greenlight-db
+    group: root
+    mode: 0755
+    owner: root
+    state: directory
+  when:
+  - groups['postgres'] | length == 0
 - name: Fetches BigBlueButton API Secret
   changed_when: False
   delegate_to: "{{ groups['bbb'][0] }}"

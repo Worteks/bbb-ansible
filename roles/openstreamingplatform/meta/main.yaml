@@ -1,0 +1,4 @@
+dependencies:
+- role: redis
+  vars:
+    redis_standalone: FIXME

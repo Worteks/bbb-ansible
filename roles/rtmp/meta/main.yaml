@@ -8,3 +8,4 @@ dependencies:
   - >
      not (ansible_hostname in groups['bbb']
           and ansible_hostname in groups['greenlight'])
+  - groups['openstreamingplatform'] | length == 0

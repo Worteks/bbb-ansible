@@ -1,5 +1,3 @@
-scalelite_fqdn: scalelite.example.com
-
 # ideally, scalelite services should be spread on several servers
 scalelite_has_roles:
 - api

@@ -1,0 +1,20 @@
+- name: Creates Website Directories
+  file:
+    dest: "/var/www{{ i }}"
+    group: www-data
+    mode: 0755
+    owner: www-data
+  loop:
+  - /
+  - /images
+  - /live
+  - /live-adapt
+  - /stream-thumb
+  - /videos
+  loop_control:
+    loop_var: i
+- name: Ensures OpenStreamingPlatform Runtime Directory owned by Apache
+  args:
+    warn: False
+  changed_when: False
+  shell: chown -R www-data:www-data /opt/osp

@@ -1,0 +1,35 @@
+- name: Fetches Ejabberd Installer
+  get_url:
+    dest: /usr/src/ejabberd.run
+    group: root
+    mode: 0755
+    owner: root
+    url: "https://www.process-one.net/downloads/downloads-action.php?file=/20.04/ejabberd-20.04-linux-x64.run"
+- name: Installs Ejabberd
+  args:
+    chdir: /usr/src
+    creates: /usr/src/ejabberd-install.out
+  environment:
+    PATH: /usr/src/:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+  shell: ejabberd.run ----unattendedmodeui none --mode unattended --prefix /usr/local/ejabberd --cluster 0 >ejabberd-install.out 2>&1
+- name: Prepares Ejabberd Configuration Directory
+  file:
+    dest: /usr/local/ejabberd/conf
+    group: root
+    mode: 0755
+    owner: root
+    state: directory
+- name: Installs Ejabber Systemd Unit
+  copy:
+    dest: /etc/systemd/system/ejabberd.service
+    group: root
+    mode: 0644
+    owner: root
+    remote_src: yes
+    src: /usr/local/ejabberd/bin/ejabberd.service
+  register: ejbd_unit
+- name: Reloads Systemd Configuration
+  shell: systemctl daemon-reload
+  when:
+  - ejbd_unit is defined
+  - ejbd_unit is changed

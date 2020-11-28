@@ -1,4 +1,11 @@
-- name: Makes Sure known_hosts Exist
+- name: Makes Sure .ssh Exists
+  file:
+    dest: /home/bigbluebutton/.ssh
+    group: bigbluebutton
+    mode: 0700
+    owner: bigbluebutton
+    state: directory
+- name: Makes Sure known_hosts Exists
   copy:
     content: ""
     dest: /home/bigbluebutton/.ssh/known_hosts

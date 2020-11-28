@@ -1,0 +1,6 @@
+openstreamingplatform_allow_registrations: True
+openstreamingplatform_ejabberd_admin_pass: 4242STRONGSTRONG4242
+openstreamingplatform_flask_secret_key: 4242STRONGSTRONG4242
+openstreamingplatform_password_salt: 4242STRONGSTRONG4242
+openstreamingplatform_require_email_registration: True
+openstreamingplatform_version: 0.7.9

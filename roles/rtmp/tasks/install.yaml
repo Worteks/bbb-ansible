@@ -1,9 +1,3 @@
-- name: Installs Nginx RTMP Module
-  apt:
-    name:
-    - libnginx-mod-rtmp
-    - libnginx-mod-stream
-    state: present
 - name: Installs BBB LiveStream Working Directories
   file:
     dest: "/var/{{ f }}"
@@ -16,6 +10,14 @@
   - "bbb-stream/{{ stream_meeting_id }}"
   loop_control:
     loop_var: f
+- name: Fetches BigBlueButton LiveStream Sources
+  git:
+    dest: /usr/src/bbb-livestream
+    repo: "{{ bigbluebutton_livestream_source_repo }}"
+    update: no
+    version: "{{ bigbluebutton_livestream_source_ref }}"
+  when:
+  - bbb_uses_selfsigned | default(True)
 - name: Installs BigBlueButton LiveStream Docker-Compose Directory
   file:
     dest: "/etc/docker-compose/bbb-livestream-{{ stream_meeting_id }}"

@@ -56,7 +56,7 @@ hz 10
 dynamic-hz yes
 aof-rewrite-incremental-fsync yes
 rdb-save-incremental-fsync yes
-{% if groups['redis'] | length > 1 %}
+{% if groups['redis'] | length > 1 and redis_standalone is not defined %}
 {% if groups['redis'] | length > 2 %}
 min-slaves-to-write {{ redis_min_slave_to_write }}
 {% else %}
@@ -73,6 +73,6 @@ appendonly no
 {% else %}
 appendonly yes
 appendfilename "appendonly.aof"
-appendfsync everysec
+appendfsync {{ redis_appendfsync }}
 {% endif %}
 no-appendfsync-on-rewrite no

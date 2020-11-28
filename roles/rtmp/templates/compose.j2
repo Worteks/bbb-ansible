@@ -1,30 +1,46 @@
 version: '3.3'
 services:
   bbb-streamer:
+{% if bbb_uses_selfsigned | default(True) %}
+    build:
+      context: /usr/src/bbb-livestream
+      dockerfile: Dockerfile
+{% endif %}
     container_name: {{ stream_meeting_id }}
     environment:
-{% if groups['scalelite'] | length > 1 and groups['lb_front'] | length > 0 %}
-    - BBB_URL=https://{{ hostvars[groups['lb_front'][0]]['scalelite_fqdn'] | default(hostvars[groups['lb_front'][0]]['ansible_fqdn']) }}/bigbluebutton/api
-    - BBB_SECRET={{ hostvars[groups['scalelite'][0]]['scalelite_lb_secret'] }}
-{% elif groups['scalelite'] | length > 0 %}
-    - BBB_URL=https://{{ hostvars[groups['scalelite'][0]]['scalelite_fqdn'] | default(hostvars[groups['scalelite'][0]]['ansible_fqdn']) }}/bigbluebutton/api
-    - BBB_SECRET={{ hostvars[groups['scalelite'][0]]['scalelite_lb_secret'] }}
-{% else %}
-    - BBB_URL=https://{{ hostvars[groups['bbb'][0]]['ansible_fqdn'] }}/bigbluebutton/api
-    - BBB_SECRET={{ bbb_secret.stdout_lines[0] }}
-{% endif %}
-    - BBB_MEETING_ID={{ bbb_meeting.stdout_lines[0] }}
 {% if stream_attendee_password | default(False) %}
     - BBB_ATTENDEE_PASSWORD={{ stream_attendee_password }}
 {% endif %}
-{% if stream_moderator_password | default(False) %}
-    - BBB_START_MEETING=true
-    - BBB_MODERATOR_PASSWORD={{ stream_moderator_password }}
-{% endif %}
     - BBB_DOWNLOAD_MEETING=false
-    - BBB_INTRO=false
+    - BBB_MEETING_ID={{ bbb_meeting.stdout_lines[0] }}
+{% if stream_moderator_password | default(False) %}
+    - BBB_MODERATOR_PASSWORD={{ stream_moderator_password }}
+    - BBB_START_MEETING=true
+{% endif %}
+{% if groups['scalelite'] | length > 1 and groups['lb_front'] | length > 0 %}
+    - BBB_SECRET={{ hostvars[groups['scalelite'][0]]['scalelite_lb_secret'] }}
+    - BBB_URL=https://{{ hostvars[groups['lb_front'][0]]['scalelite_fqdn'] | default(hostvars[groups['lb_front'][0]]['ansible_fqdn']) }}/bigbluebutton/api
+{% elif groups['scalelite'] | length > 0 %}
+    - BBB_SECRET={{ hostvars[groups['scalelite'][0]]['scalelite_lb_secret'] }}
+    - BBB_URL=https://{{ hostvars[groups['scalelite'][0]]['scalelite_fqdn'] | default(hostvars[groups['scalelite'][0]]['ansible_fqdn']) }}/bigbluebutton/api
+{% else %}
+    - BBB_SECRET={{ bbb_secret.stdout_lines[0] }}
+    - BBB_URL=https://{{ hostvars[groups['bbb'][0]]['ansible_fqdn'] }}/bigbluebutton/api
+{% endif %}
+{% if stream_chat %}
+    - BBB_SHOW_CHAT=true
+{% endif %}
+{% if groups['openstreamingplatform'] | length > 0 %}
+    - BBB_STREAM_URL=rtmp://{{ hostvars[groups['openstreamingplatform'][0]]['openstreamingplatform_fqdn'] | default(hostvars[groups['openstreamingplatform'][0]]['ansible_fqdn']) }}/stream/{{ osp_stream_key | default('changme') }}
+{% else %}
     - BBB_STREAM_URL=rtmp://127.0.0.1:{{ rtmp_port }}/stream/{{ stream_meeting_id }}
+{% endif %}
+{% if bbb_uses_selfsigned | default(True) %}
+    - SKIP_TLS_VERIFICATION=true
+    image: custom-bbb-livestreaming:system-ca
+{% else %}
     image: {{ bigbluebutton_livestream_images_repo }}:{{ bigbluebutton_livestream_images_release }}
+{% endif %}
     volumes:
 {% if bbb_uses_selfsigned | default(True) %}
     - /etc/ssl/certs:/etc/ssl/certs

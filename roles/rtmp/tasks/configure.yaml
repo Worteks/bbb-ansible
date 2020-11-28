@@ -16,6 +16,13 @@
         | grep -A1 "<meetingName>{{ stream_meeting_id }}</meetingName>" \
         | grep '<meetingID>' \
         | sed -e 's|.*<meetingID>||' -e 's|</meetingID>.*||'
+- name: "Installs BigBlueButton LiveStream {{ stream_meeting_id }} Docker Configuration Directory"
+  file:
+    dest: "/etc/docker-compose/bbb-livestream-{{ stream_meeting_id }}"
+    group: root
+    mode: 0755
+    owner: root
+    state: directory
 - name: "Installs BigBlueButton LiveStream {{ stream_meeting_id }} Configuration"
   register: should_reload
   template:

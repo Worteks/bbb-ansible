@@ -1,4 +1,6 @@
 - include_tasks: facts.yaml
 - include_tasks: install.yaml
 - include_tasks: nginx.yaml
+  when:
+  - groups['openstreamingplatform'] | length == 0
 - include_tasks: configure.yaml
