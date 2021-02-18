@@ -15,6 +15,33 @@
   - "{{ ansible_fqdn }}"
   loop_control:
     loop_var: h
+- block:
+  - name: Checks for previous configuration involving BBB public IP
+    args:
+      chdir: /etc/network
+    changed_when: False
+    failed_when: False
+    register: dummychk
+    shell: "grep {{ bigbluebutton_dummy_address }} interfaces"
+  - block:
+    - name: Adds Loopback Configuration if NAT-ed
+      blockinfile:
+        block: |
+              post-up ip addr add {{ bigbluebutton_dummy_address }}/32 dev lo
+              pre-down ip addr del {{ bigbluebutton_dummy_address }}/32 dev lo
+        insertafter: iface lo inet loopback
+        path: /etc/network/interfaces
+      register: dummycfg
+    - name: Installs Dummy Route
+      shell: ip addr add {{ bigbluebutton_dummy_address }}/32 dev lo
+      when:
+      - dummycfg is defined
+      - dummycfg is changed
+    when:
+    - dummychk is defined
+    - (dummychk.rc | default(0)) != 0
+  when:
+  - bigbluebutton_dummy_address | default(False)
 - name: Installs BigBlueButton (self-signed)
   args:
     chdir: /root

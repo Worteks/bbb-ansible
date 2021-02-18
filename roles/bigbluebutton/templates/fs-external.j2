@@ -7,6 +7,9 @@
 	<param name="register" value="{{ freeswitch_trunk_register }}" />
 	<param name="caller-id-in-from" value="true" />
 	<param name="expire-seconds" value="{{ freeswitch_trunk_expire }}" />
+{% if bigbluebutton_dummy_address | default(False) %}
+	<param name="wss-binding"  value="{{ bigbluebutton_dummy_address }}:7443" />
+{% endif %}
     </gateway>
 </include>
 

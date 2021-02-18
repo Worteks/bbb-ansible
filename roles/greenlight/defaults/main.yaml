@@ -33,8 +33,8 @@ greenlight_postgres_user: greenlightusr
 
 #SHA1 fingerprint for SAML provider, generate with:
 greenlight_saml_cert_fingerprint: CH:AN:GE:ME:...
-greenlight_saml_commonname_field: name
-greenlight_saml_email_field: email
+greenlight_saml_commonname_field: uid
+greenlight_saml_email_field: mail
 #greenlight_saml_endpoint: https://auth.example.com/saml/singleSignOn
 greenlight_saml_nameid_format: "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"
 greenlight_saml_issuer: greenlight

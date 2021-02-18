@@ -10,6 +10,7 @@ bigbluebutton_version: 22
 bigbluebutton_exporter_images_repo: greenstatic/bigbluebutton-exporter
 bigbluebutton_exporter_images_release: v0.5.1
 bigbluebutton_exporter_port: 9688
+
 freeswitch_exporter_port: 9725
 
 #freeswitch_trunk_dids:
@@ -23,3 +24,6 @@ freeswitch_trunk_proxy: siptrunk.ovh.net
 freeswitch_trunk_realm: siptrunk.ovh.net
 freeswitch_trunk_register: "true"
 #freeswitch_trunk_username: 0033xxxxxx
+
+turn_default_plain_port: 3478
+turn_default_tls_port: 443

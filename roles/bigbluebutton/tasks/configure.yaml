@@ -64,9 +64,21 @@
     turn_fqdn: "{{ external_turn_fqdn
                      if (external_turn_fqdn | default(False))
                      else hostvars[groups['coturn'][0]]['coturn_fqdn'] | default(hostvars[groups['coturn'][0]]['ansible_fqdn']) }}"
+    turn_plain_port: "{{ coturn_plain_port
+                           if (coturn_plain_port | default(0) | int > 0)
+                           else (hostvars[groups['coturn'][0]]['coturn_plain_port']
+                                 if (hostvars[groups['coturn'][0]]['coturn_plain_port'] | default(0) | int > 0)
+                                 else (turn_default_plain_port)) }}"
+    turn_plain_proto: "{{ external_turn_proto | default('tcp') }}"
     turn_secret: "{{ external_turn_secret
                        if (external_turn_fqdn | default(False))
                        else hostvars[groups['coturn'][0]]['coturn_auth_secret'] }}"
+    turn_tls_port: "{{ coturn_tls_port
+                         if (coturn_tls_port | default(0) | int > 0)
+                         else (hostvars[groups['coturn'][0]]['coturn_tls_port']
+                               if (hostvars[groups['coturn'][0]]['coturn_tls_port'] | default(0) | int > 0)
+                               else (turn_default_tls_port)) }}"
+    turn_tls_proto: "{{ external_turns_proto | default(external_turn_proto | default('tcp')) }}"
   when:
   - >
       (external_turn_fqdn | default(False))

@@ -11,13 +11,13 @@
 
     <bean id="turn0" class="org.bigbluebutton.web.services.turn.TurnServer">
 	<constructor-arg index="0" value="{{ turn_secret }}"/>
-	<constructor-arg index="1" value="turns:{{ turn_fqdn }}:443?transport=tcp"/>
+	<constructor-arg index="1" value="turns:{{ turn_fqdn }}:{{ turn_tls_port }}?transport={{ turn_tls_proto }}"/>
 	<constructor-arg index="2" value="86400"/>
     </bean>
     
     <bean id="turn1" class="org.bigbluebutton.web.services.turn.TurnServer">
 	<constructor-arg index="0" value="{{ turn_secret }}"/>
-	<constructor-arg index="1" value="turn:{{ turn_fqdn }}:443?transport=tcp"/>
+	<constructor-arg index="1" value="turn:{{ turn_fqdn }}:{{ turn_plain_port }}?transport={{ turn_plain_proto }}"/>
 	<constructor-arg index="2" value="86400"/>
     </bean>
 

@@ -1,5 +1,5 @@
-listening-port=3478
-tls-listening-port=443
+listening-port={{ coturn_plain_port }}
+tls-listening-port={{ coturn_tls_port }}
 {% if coturn_bind_addresses | length > 0 %}
 {% for remote in coturn_bind_addresses %}
 listening-ip={{ remote }}

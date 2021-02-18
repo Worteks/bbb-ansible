@@ -8,8 +8,8 @@ greenlight_registrations: open
 
 greenlight_allow_local_accounts: True
 
-#greenlight_saml_commonname_field: name
-#greenlight_saml_email_field: email
+#greenlight_saml_commonname_field: uid
+#greenlight_saml_email_field: mail
 #greenlight_saml_endpoint: https://auth.example.com/saml/singleSignOn
 #greenlight_saml_nameid_format: "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"
 #greenlight_saml_issuer: bigbluebutton

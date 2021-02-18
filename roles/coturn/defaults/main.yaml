@@ -21,3 +21,5 @@ coturn_external_addresses: []
 #  out: 1.2.3.0
 #- in: 10.2.3.4
 #  out: 2.3.4.0
+coturn_plain_port: 3478
+coturn_tls_port: 443
