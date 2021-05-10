@@ -1,0 +1,3 @@
+{% if apt_bw_limit_kb | default(False) %}
+APT::Acquire::http::Dl-Limit "{{ apt_bw_limit_kb }}";
+{% endif %}

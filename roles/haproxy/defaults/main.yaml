@@ -37,8 +37,9 @@ haproxy_timeout_tarpit: 1m
 haproxy_timeout_tunnel: 360m
 
 haproxy_alertmanager_maxconn: 10240
-haproxy_grafana_maxconn: 1024
+haproxy_grafana_maxconn: 10240
 haproxy_greenlight_maxconn: 10240
+haproxy_kibana_maxconn: 10240
 haproxy_prometheus_maxconn: 10240
 haproxy_redis_maxconn: 102400
 haproxy_scalelite_maxconn: 512
@@ -47,6 +48,7 @@ alertmanager_plain_port: 9093
 alertmanager_port: 443
 grafana_port: 443
 greenlight_port: 443
+kibana_port: 443
 prometheus_plain_port: 9090
 prometheus_port: 443
 redis_port: 6379

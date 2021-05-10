@@ -1,0 +1,6 @@
+dependencies:
+- role: docker
+- role: nginx
+  vars:
+    nginx_stats_port: 8083
+- role: nodejs

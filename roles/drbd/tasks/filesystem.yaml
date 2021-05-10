@@ -1,0 +1,15 @@
+- name: Checks LV {{ fs['name'] }}
+  changed_when: False
+  failed_when: False
+  register: hasvg
+  shell: |
+    lvs | grep {{ fs['name'] }}
+- block:
+  - name: "Creates LV {{ fs['name'] }}"
+    shell: |
+      lvcreate -n {{ fs['name'] }} -L {{ fs['size'] }} data \
+      && mkfs.{{ fs['type'] | default('xfs') }} /dev/data/{{ fs['name'] }}
+  when:
+  - haslv is defined
+  - haslv.rc is defined
+  - (haslv.rc | default(0)) != 0

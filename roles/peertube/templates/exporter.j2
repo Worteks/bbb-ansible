@@ -1,0 +1,14 @@
+version: '3'
+services:
+  peertube-exporter:
+    container_name: peertube-exporter
+    environment:
+    - EXPORTER_PORT=9113
+    - PEERTUBE_URL=http://127.0.0.1:9000
+    image: {{ peertubeexporter_images_repo }}:{{ peertubeexporter_images_release }}
+    logging:
+      driver: journald
+    network_mode: host
+    ports:
+    - "9113:9113"
+    restart: unless-stopped

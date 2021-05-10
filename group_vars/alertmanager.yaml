@@ -1,5 +1,3 @@
-alertmanager_fqdn: bbb-am.example.com
-
 firehol_app_opened_ports:
 - name: ssh
   value: tcp/22
@@ -9,3 +7,7 @@ firehol_app_opened_ports:
   value: tcp/9142
 - name: nginxxp
   value: tcp/9143
+- name: nginxluaxp
+  value: tcp/9145
+- name: systemdxp
+  value: tcp/9147

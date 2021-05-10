@@ -1,0 +1,13 @@
+[Unit]
+Description=Kurento Exporter
+Requires=kurento-media-server.service
+
+[Service]
+User=kurentoexporter
+Group=kurentoexporter
+WorkingDirectory=/usr/src/kurento-monitor
+ExecStart=/usr/bin/node server.js
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

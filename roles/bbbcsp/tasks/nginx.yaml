@@ -1,0 +1,14 @@
+- name: Installs BigBlueButton Conferences Streaming Platform Virtualhost
+  notify: Reloads Nginx
+  template:
+    dest: /etc/nginx/sites-available/bbb-csp.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: vhost.j2
+- name: Enables BigBlueButton Conferences Streaming Platform Virtualhost
+  file:
+    dest: /etc/nginx/sites-enabled/bbb-csp.conf
+    src: /etc/nginx/sites-available/bbb-csp.conf
+    state: link
+  notify: Reloads Nginx

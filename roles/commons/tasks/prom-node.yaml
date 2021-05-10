@@ -1,0 +1,48 @@
+- name: Installs Node Exporter Textfile Collector Directory
+  file:
+    dest: /var/lib/node-exporter
+    group: root
+    mode: 0755
+    owner: root
+    state: directory
+- name: Fetches Node Exporter
+  get_url:
+    dest: "/usr/src/node-exporter-{{ node_exporter_release }}.tar.gz"
+    group: root
+    mode: 0644
+    owner: root
+    url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_release }}/node_exporter-{{ node_exporter_release }}.linux-amd64.tar.gz"
+- name: Extracts Node Exporter
+  args:
+    chdir: /usr/src
+    creates: "/usr/src/node_exporter-{{ node_exporter_release }}.linux-amd64"
+    warn: False
+  shell: "tar -xzf /usr/src/node-exporter-{{ node_exporter_release }}.tar.gz && rm -f /usr/bin/node_exporter"
+- name: Installs Node Exporter
+  copy:
+    dest: /usr/bin/node_exporter
+    group: root
+    mode: 0755
+    owner: root
+    remote_src: yes
+    src: "/usr/src/node_exporter-{{ node_exporter_release }}.linux-amd64/node_exporter"
+  notify: Reloads Node Exporter
+- name: Installs Node Exporter Unit
+  notify: Reloads Node Exporter
+  register: exporter_unit
+  template:
+    dest: /etc/systemd/system/node-exporter.service
+    group: root
+    mode: 0644
+    owner: root
+    src: node-xp.j2
+- name: Reloads Systemd Configuration
+  shell: systemctl daemon-reload
+  when:
+  - exporter_unit is defined
+  - exporter_unit is changed
+- name: Ensures Node Exporter is Running & Starts on Boot
+  service:
+    enabled: yes
+    name: node-exporter
+    state: started

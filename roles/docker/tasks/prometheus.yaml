@@ -1,0 +1,25 @@
+- name: Checks Docker Version
+  changed_when: False
+  register: dkrmajor
+  shell: "docker version | grep -A1 Engine: | awk '/Version:/{print $2}' | cut -d. -f1"
+- block:
+  - name: Installs Docker Daemon Configuration
+    register: dkrrst
+    template:
+      dest: /etc/docker/daemon.json
+      group: root
+      mode: 0644
+      owner: root
+      src: daemon.j2
+  - name: Restarts Docker
+    service:
+      name: docker
+      state: restarted
+    when:
+    - dkrrst is defined
+    - dkrrst is changed
+  when:
+  - dkrmajor is defined
+  - dkrmajor.stdout_lines is defined
+  - dkrmajor.stdout_lines | length > 0
+  - (dkrmajor.stdout_lines[0] | int) > 16

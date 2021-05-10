@@ -1,0 +1,28 @@
+- name: "Installs Postgres Backup Script for {{ database }}"
+  template:
+    dest: "/usr/local/sbin/postgres-backup-{{ database }}"
+    group: root
+    mode: 0750
+    owner: root
+    src: backup-db.j2
+- name: "Installs Postgres Backup Job for {{ database }}"
+  loop:
+  - service
+  - timer
+  register: bkpunit
+  template:
+    dest: "/etc/systemd/system/postgres-backup-{{ database }}.{{ item }}"
+    group: root
+    mode: 0644
+    owner: root
+    src: "backup-{{ item }}.j2"
+- name: Reloads Systemd Configuration
+  shell: systemctl daemon-reload
+  when:
+  - bkpunit is defined
+  - bkpunit is changed
+- name: "Enables Postgres Backup Job for {{ database }}"
+  service:
+    enabled: yes
+    name: "postgres-backup-{{ database }}.timer"
+    state: started

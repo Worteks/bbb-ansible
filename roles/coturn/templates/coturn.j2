@@ -1,36 +1,83 @@
 listening-port={{ coturn_plain_port }}
 tls-listening-port={{ coturn_tls_port }}
+min-port={{ coturn_min_port }}
+max-port={{ coturn_max_port }}
 {% if coturn_bind_addresses | length > 0 %}
 {% for remote in coturn_bind_addresses %}
+# doesn't seem to work:
 listening-ip={{ remote }}
 {% endfor %}
+{% elif coturn_bind_interface %}
+# doesn't seem to work:
+listening-device={{ coturn_bind_interface }}
+relay-device={{ coturn_bind_interface }}
+{% elif coturn_bind_default | default(True) %}
+listening-ip={{ ansible_default_ipv4['address'] }}
+{% else %}
+# implicit bind any
 {% endif %}
 {% if coturn_external_address %}
 external-ip={{ coturn_external_address }}
+relay-ip={{ coturn_external_address }}
 {% elif coturn_external_addresses | length > 0 %}
 {% for remote in coturn_external_addresses if remote['in'] is defined and remote['out'] is defined %}
 external-ip={{ remote['out'] }}/{{ remote['in'] }}
 {% endfor %}
+relay-ip={{ coturn_external_addresses[0]['out'] }}
 {% endif %}
-psql-userdb="host={{ scalelite_postgres_host if (scalelite_postgres_host | default(False)) else hostvars[groups['postgres'][0]]['ansible_fqdn'] }} dbname={{ scalelite_postgres_database }} user={{ scalelite_postgres_user }} password={{ scalelite_postgres_password }} connect_timeout=30 sslmode=disable"
+{% if groups['postgres_coturn'] | length > 0 %}
+{% if ansible_nodename in groups['postgres_coturn'] or ansible_fqdn in groups['postgres_coturn'] or ansible_hostname in groups['postgres_coturn'] %}
+psql-userdb="host={{ coturn_postgres_host if (coturn_postgres_host | default(False)) else '127.0.0.1' }} dbname={{ coturn_postgres_database }} user={{ coturn_postgres_user }} password={{ coturn_postgres_password }} connect_timeout=30 sslmode=disable"
+{% else %}
+psql-userdb="host={{ coturn_postgres_host if (coturn_postgres_host | default(False)) else (hostvars[groups['postgres_coturn'][0]]['corosync_vip'] | default(hostvars[groups['postgres_coturn'][0]]['ansible_fqdn'])) }} dbname={{ coturn_postgres_database }} user={{ coturn_postgres_user }} password={{ coturn_postgres_password }} connect_timeout=30 sslmode=disable"
+{% endif %}
+{% else %}
+userdb=/var/lib/turn/turndb
+{% endif %}
+{% for peer in coturn_denied_peers | default([]) %}
+denied-peer-ip={{ peer }}
+{% endfor %}
 fingerprint
-lt-cred-mech
 use-auth-secret
 static-auth-secret={{ coturn_auth_secret }}
 realm={{ coturn_fqdn | default(ansible_fqdn) }}
-cert=/etc/letsencrypt/live/{{ ansible_fqdn }}/fullchain.pem
-pkey=/etc/letsencrypt/live/{{ ansible_fqdn }}/privkey.pem
+{% if bbb_uses_selfsigned | default(True) %}
+cert=/etc/nginx/ssl/fullchain.pem
+pkey=/etc/nginx/ssl/privkey.pem
+{% else %}
+cert=/etc/letsencrypt/live/{{ coturn_fqdn | default(ansible_fqdn) }}/fullchain.pem
+pkey=/etc/letsencrypt/live/{{ coturn_fqdn | default(ansible_fqdn) }}/privkey.pem
+{% endif %}
 cipher-list="{{ coturn_ciphers | join(':') }}"
+#lt-cred-mech
+no-loopback-peers
+no-multicast-peers
+#keep-address-family
 dh2066
 no-tlsv1
 no-tlsv1_1
-log-file=/var/log/coturn.log
-simple-log
-{% if do_debugs | default(False) %}
-web-admin
-web-admin-ip={{ ansible_default_ipv4['address'] }}
-web-admin-port=8080
-{% endif %}
-{% if groups['prometheus'] | length > 0 or do_prometheus | default(False) %}
+syslog
+verbose
+{% if 0 == 1 and (groups['prometheus'] | length > 0 or do_prometheus | default(False)) %}
+# disable that option, as it is not yet recognized (deb10 / coturn-4.5.1.1-1.1)
+# requires 4.5.2+, see https://github.com/coturn/coturn/blob/master/ChangeLog
 prometheus
+{% endif %}
+{% if coturn_cli_password | default(False) %}
+{% if coturn_cli_interface | default(False) %}
+cli-ip={{ hostvars[ansible_nodename]['ansible_' ~ coturn_cli_interface]['ipv4']['address'] }}
+{% else %}
+cli-ip=127.0.0.1
+{% endif %}
+cli-password={{ coturn_cli_password }}
+cli-port={{ coturn_cli_port }}
+{% endif %}
+{% if coturn_webadmin | default(False) %}
+web-admin
+{% if coturn_webadmin_interface | default(False) %}
+web-admin-ip={{ hostvars[ansible_nodename]['ansible_' ~ coturn_webadmin_interface]['ipv4']['address'] }}
+{% else %}
+web-admin-ip=127.0.0.1
+{% endif %}
+web-admin-port=8080
 {% endif %}

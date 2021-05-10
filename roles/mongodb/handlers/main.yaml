@@ -1,0 +1,4 @@
+- name: Reloads MongoDB Exporter
+  service:
+    name: mongodb-exporter
+    state: restarted

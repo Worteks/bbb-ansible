@@ -1,0 +1,33 @@
+- name: Checks for Nginx Logs
+  args:
+    chdir: /var/log/nginx
+  changed_when: False
+  failed_when: False
+  register: nginx_logs
+  shell: ls *access*.log 2>/dev/null
+- name: Installs Fluentd Configuration
+  notify: Reloads Fluentd
+  template:
+    dest: /etc/td-agent/td-agent.conf
+    group: td-agent
+    mode: 0640
+    owner: td-agent
+    src: td-agent.j2
+- name: Installs Fluentd Custom Rsyslog Configuration
+  notify: Reloads Rsyslog
+  template:
+    dest: /etc/rsyslog.d/zz-fluentd.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: td-forward.j2
+- name: Ensures Fluentd Enabled
+  service:
+    enabled: yes
+    name: td-agent
+    state: started
+- name: Ensures Rsyslog Enabled
+  service:
+    enabled: yes
+    name: rsyslog
+    state: started

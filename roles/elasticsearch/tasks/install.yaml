@@ -1,0 +1,19 @@
+- name: Creates ElasticSearch Group
+  group:
+    name: elasticsearch
+    state: present
+- name: Creates ElasticSearch User
+  user:
+    groups: elasticsearch
+    name: elasticsearch
+- name: Resolves ElasticSearch User ID
+  changed_when: False
+  register: elasticsearch_user_id
+  shell: "getent passwd elasticsearch | awk -F: '{print $3;exit;}'"
+- name: Installs ElasticSearch Database Directory
+  file:
+    dest: /var/lib/elasticsearch
+    group: elasticsearch
+    mode: 0755
+    owner: elasticsearch
+    state: directory

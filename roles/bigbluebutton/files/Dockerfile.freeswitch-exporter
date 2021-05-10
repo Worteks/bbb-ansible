@@ -3,3 +3,5 @@ FROM python:3-slim-buster
 RUN pip install prometheus-freeswitch-exporter
 
 USER 1000
+
+ENTRYPOINT [ "/bin/sh", "-c", "/usr/local/bin/freeswitch_exporter /config/esl.yaml 9724 0.0.0.0" ]

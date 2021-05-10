@@ -2,19 +2,49 @@
   apt:
     name: redis-server
     state: present
-- block:
-  - name: Installs Sentinel Unit
-    register: sentinel_unit
-    copy:
-      dest: /etc/systemd/system/redis-sentinel.service
-      group: root
-      mode: 0644
-      owner: root
-      src: sentinel.systemd
-  - name: Reloads Systemd Configuration
-    shell: systemctl daemon-reload
-    when:
-    - sentinel_unit is defined
-    - sentinel_unit is changed
+- name: Installs Sentinel Unit
+  copy:
+    dest: /etc/systemd/system/redis-sentinel.service
+    group: root
+    mode: 0644
+    owner: root
+    src: sentinel.systemd
+  register: sentinel_unit
   when:
-  - groups['redis'] | length > 1
+  - groups[my_hostgroup] | length > 1
+  - redis_standalone is not defined
+  - ansible_fqdn not in groups['drbd']
+- name: Removes Sentinel Unit
+  file:
+    dest: /etc/systemd/system/redis-sentinel.service
+    state: absent
+  register: sentinel_unit_clean
+  when:
+  - >
+     redis_standalone is defined
+     or groups[my_hostgroup] | length < 2
+     or ansible_fqdn in groups['drbd']
+     or ansible_hostname in groups['drbd']
+     or ansible_nodename in groups['drbd']
+- name: Reloads Systemd Configuration
+  shell: systemctl daemon-reload
+  when:
+  - >
+      (sentinel_unit_clean is defined
+       and sentinel_unit_clean is changed)
+      or (sentinel_unit is defined
+          and sentinel_unit is changed)
+
+- block:
+  - name: Ensures Redis is Disabled on DRBD Members
+    service:
+      enabled: no
+      name: redis-server
+  - name: Ensures Redis is Stopped on DRBD Backup Members
+    service:
+      name: redis-server
+      state: stopped
+    when:
+    - not (drbd_is_primary | default(False))
+  when:
+  - ansible_nodename in groups['drbd']

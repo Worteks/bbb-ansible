@@ -7,6 +7,7 @@
     owner: bigbluebutton
     state: directory
   register: fixed_home
+
 - name: Installs BigBlueButton Demo
   apt:
     name: bbb-demo
@@ -14,6 +15,7 @@
   register: has_demo
   when:
   - groups['scalelite'] | length == 0
+
 - name: Installs BigBlueButton WebHoooks
   apt:
     name: bbb-webhooks
@@ -22,15 +24,33 @@
   - >
       groups['rocketchat'] | length > 0
       or do_bbb_webhooks | default(False)
+
 - block:
-  - name: Installs BigBlueButton Recordings Post Process Configuration
+  - name: Installs BigBlueButton/Scalelite Recordings Post Process Configuration
     template:
       dest: /usr/local/bigbluebutton/core/scripts/scalelite.yml
       group: root
       mode: 0644
       owner: root
       src: scalelite.j2
-  - name: Installs BigBlueButton Recordings Post Process Script
+  - block:
+    - name: Installs BigBlueButton SSH Configuration Directory
+      file:
+        dest: /home/bigbluebutton/.ssh
+        group: bigbluebutton
+        mode: 0700
+        owner: bigbluebutton
+        state: directory
+    - name: Installs BigBlueButton SSH Configuration
+      template:
+        dest: /home/bigbluebutton/.ssh/config
+        group: bigbluebutton
+        mode: 0600
+        owner: bigbluebutton
+        src: ssh-config.j2
+    when:
+    - hostvars[groups['scalelite'][0]]['corosync_vip'] is defined
+  - name: Installs BigBlueButton/Scalelite Recordings Post Process Script
     get_url:
       dest: /usr/local/bigbluebutton/core/scripts/post_publish/scalelite_post_publish.rb
       group: root
@@ -38,7 +58,7 @@
       owner: root
       url: https://raw.githubusercontent.com/blindsidenetworks/scalelite/master/bigbluebutton/scalelite_post_publish.rb
     register: has_postpublish
-  - name: Installs BigBlueButton Recordings Migration Script
+  - name: Installs BigBlueButton/Scalelite Recordings Migration Script
     get_url:
       dest: /root/scalelite_batch_import.sh
       group: root
@@ -52,6 +72,62 @@
       ssh_user: bigbluebutton
   when:
   - groups['scalelite'] | length > 0
+
+- block:
+  - block:
+    - name: Clones BigBlueButton/MP4 Recordings Post Process Assets
+      git:
+        dest: /usr/src/bbb-download
+        repo: 'https://github.com/createwebinar/bbb-download'
+        update: no
+      register: bbbmp4
+    - name: Installs BigBlueButton/MP4 Recordings Post Process Assets
+      args:
+        chdir: /usr/src/bbb-download
+        creates: /var/bigbluebutton/published/presentation
+      shell: sh install.sh
+    when:
+    - bigbluebutton_version in [ 22, '22' ]
+  - block:
+    - name: Clones BigBlueButton/MP4 Recordings Post Process Assets
+      git:
+        dest: /var/www/bbb-mp4
+        repo: 'https://github.com/manishkatyan/bbb-mp4'
+        update: no
+      register: bbbmp4
+    - name: Creates BigBlueButton/MP4 Working Directories
+      file:
+        dest: "{{ fl }}"
+        group: root
+        mode: 0755
+        owner: root
+        state: directory
+      loop:
+      - /var/www
+      - /var/www/bigbluebutton-default
+      - /var/www/bigbluebutton-default/recording
+      - /var/www/bbb-mp4/webm
+      - /var/www/bbb-mp4/download
+      loop_control:
+        loop_var: fl
+    - name: Installs BigBlueButton/MP4 environment configuration
+      template:
+        dest: /var/www/bbb-mp4/.env
+        group: root
+        mode: 0644
+        owner: root
+        src: bbb-mp4.j2
+    - name: Installs BigBlueButton/MP4 Recordings Post Process Assets
+      args:
+        chdir: /var/www/bbb-mp4
+      environment:
+        PATH: /usr/sbin:/usr/bin:/sbin:/bin:/var/www/bbb-mp4
+      shell: ./bbb-mp4-install.sh
+    when:
+    - not (bigbluebutton_version in [ 22, '22' ])
+  when:
+  - do_bbb_mp4_convert | default(False)
+
 - name: Configures BigBlueButton TURN Integration
   register: turn_conf
   template:
@@ -60,29 +136,6 @@
     mode: 0640
     owner: root
     src: turn.j2
-  vars:
-    turn_fqdn: "{{ external_turn_fqdn
-                     if (external_turn_fqdn | default(False))
-                     else hostvars[groups['coturn'][0]]['coturn_fqdn'] | default(hostvars[groups['coturn'][0]]['ansible_fqdn']) }}"
-    turn_plain_port: "{{ coturn_plain_port
-                           if (coturn_plain_port | default(0) | int > 0)
-                           else (hostvars[groups['coturn'][0]]['coturn_plain_port']
-                                 if (hostvars[groups['coturn'][0]]['coturn_plain_port'] | default(0) | int > 0)
-                                 else (turn_default_plain_port)) }}"
-    turn_plain_proto: "{{ external_turn_proto | default('tcp') }}"
-    turn_secret: "{{ external_turn_secret
-                       if (external_turn_fqdn | default(False))
-                       else hostvars[groups['coturn'][0]]['coturn_auth_secret'] }}"
-    turn_tls_port: "{{ coturn_tls_port
-                         if (coturn_tls_port | default(0) | int > 0)
-                         else (hostvars[groups['coturn'][0]]['coturn_tls_port']
-                               if (hostvars[groups['coturn'][0]]['coturn_tls_port'] | default(0) | int > 0)
-                               else (turn_default_tls_port)) }}"
-    turn_tls_proto: "{{ external_turns_proto | default(external_turn_proto | default('tcp')) }}"
-  when:
-  - >
-      (external_turn_fqdn | default(False))
-      or (groups['coturn'] | length > 0)
 
 # TODO / FIXME
 # Meteor does not seem to trust our custom CA
@@ -102,7 +155,7 @@
 
 - block:
   - name: Installs FreeSwitch SIP Trunk Configuration
-    regster fcf1
+    register: fcf1
     template:
       dest: "/opt/freeswitch/conf/sip_profiles/external/{{ freeswitch_trunk_name }}.xml"
       group: daemon
@@ -110,7 +163,7 @@
       owner: freeswitch
       src: fs-external.j2
   - name: Installs FreeSwitch SIP DIDs Configuration
-    regster fcf2
+    register: fcf2
     template:
       dest: "/opt/freeswitch/conf/dialplan/public/{{ freeswitch_trunk_name }}.xml"
       group: daemon

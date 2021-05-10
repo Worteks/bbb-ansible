@@ -1,10 +1,13 @@
-version: '3'
+version: '2.0'
 services:
   grafana:
     container_name: grafana
     image: {{ grafana_images_repo }}:{{ grafana_images_release }}
     logging:
       driver: journald
+{% if docker_hostnetwork | default(False) or ansible_fqdn in groups['postgres_grafana'] or ansible_nodename in groups['postgres_grafana'] or ansible_hostname in groups['postgres_grafana'] %}
+    network_mode: host
+{% endif %}
     ports:
     - "3000:3000"
     restart: unless-stopped

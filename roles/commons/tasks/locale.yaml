@@ -8,8 +8,8 @@
 - name: Configures Locales Generation
   lineinfile:
     dest: /etc/locale.gen
-    regexp: "^{{ locale }}"
-    line: "{{ locale }}"
+    regexp: "^{{ localegen }}"
+    line: "{{ localegen }}"
   register: regen_locales
 - name: Ensures locale.alias Present
   changed_when: False
@@ -25,5 +25,15 @@
 - name: Sets LANG
   lineinfile:
     dest: /etc/default/locale
-    regexp: "^export LANG="
     line: "export LANG={{ locale }}"
+    regexp: "^export LANG="
+- name: Sets LANGUAGE
+  lineinfile:
+    dest: /etc/default/locale
+    line: "export LANGUAGE={{ lang }}"
+    regexp: "^export LANGUAGE="
+- name: Sets LANG
+  lineinfile:
+    dest: /etc/default/locale
+    line: export LC_ALL=C
+    regexp: "^export LC_ALL="

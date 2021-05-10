@@ -1,5 +1,5 @@
 - name: Installs Redis Configuration
-  notify: Reload Redis
+  notify: Reloads Redis
   template:
     dest: /etc/redis/redis.conf
     group: root
@@ -11,3 +11,7 @@
     enabled: yes
     name: redis-server
     state: started
+  when:
+  - ansible_fqdn not in groups['drbd']
+  - ansible_hostname not in groups['drbd']
+  - ansible_nodename not in groups['drbd']

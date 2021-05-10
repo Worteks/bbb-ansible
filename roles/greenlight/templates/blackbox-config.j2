@@ -9,7 +9,8 @@ modules:
       fail_if_not_ssl: true
       fail_if_ssl: false
       headers:
-        Host: {{ bigbluebutton_fqdn | default(ansible_fqdn) }}
+        Host: {{ greenlight_fqdn | default(ansible_fqdn) }}
+        X-Forwarded-Proto: https
       ip_protocol_fallback: false
       method: GET
       no_follow_redirects: false

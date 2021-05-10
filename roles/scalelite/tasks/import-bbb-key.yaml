@@ -8,5 +8,11 @@
   shell: cat id_rsa.pub
 - name: "Ensures {{ srv }} Key is Trusted"
   lineinfile:
-    dest: /home/scalelite-spool/.ssh/authorized_keys
+    create: yes
+    dest: "/home/scalelite-spool/.ssh/{{ keyfile }}"
     line: "{{ has_key.stdout_lines[0] }}"
+  loop:
+  - authorized_keys
+  - instance_keys
+  loop_control:
+    loop_var: keyfile

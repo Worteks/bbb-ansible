@@ -1,0 +1,44 @@
+FROM alpine:3.13 AS base
+RUN apk add --no-cache \
+    libpq \
+    libxml2 \
+    libxslt \
+    ruby \
+    ruby-irb \
+    ruby-bigdecimal \
+    ruby-bundler \
+    ruby-json \
+    tini \
+    tzdata \
+    shared-mime-info \
+    && addgroup scalelite --gid 1000 \
+    && adduser -u 1000 -h /srv/scalelite -G scalelite -D scalelite
+WORKDIR /srv/scalelite
+
+FROM base as builder
+RUN apk add --no-cache \
+    build-base \
+    libxml2-dev \
+    libxslt-dev \
+    pkgconf \
+    postgresql-dev \
+    ruby-dev \
+    && ( echo 'install: --no-document' ; echo 'update: --no-document' ) >>/etc/gemrc
+USER scalelite:scalelite
+COPY --chown=scalelite:scalelite Gemfile* ./
+RUN bundle config build.nokogiri --use-system-libraries \
+    && bundle install --deployment --without development:test -j4 \
+    && rm -rf vendor/bundle/ruby/*/cache \
+    && find vendor/bundle/ruby/*/gems/ \( -name '*.c' -o -name '*.o' \) -delete
+COPY --chown=scalelite:scalelite . ./
+RUN rm -rf nginx
+
+FROM base
+USER scalelite:scalelite
+ENV RAILS_ENV=production RAILS_LOG_TO_STDOUT=1
+COPY --from=builder --chown=scalelite:scalelite /srv/scalelite ./
+
+ARG BUILD_NUMBER
+ENV BUILD_NUMBER=${BUILD_NUMBER}
+EXPOSE 3000
+CMD [ "bin/start" ]

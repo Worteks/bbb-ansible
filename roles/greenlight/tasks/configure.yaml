@@ -4,7 +4,7 @@
     line: "{{ ansible_default_ipv4['address'] }} {{ h }}"
     regexp: "^{{ ansible_default_ipv4['address'] }} {{ h }}"
   loop:
-  - "{{ bigbluebutton_fqdn | default(ansible_fqdn) }}"
+  - "{{ greenlight_fqdn | default(ansible_fqdn) }}"
   - "{{ ansible_fqdn }}"
   loop_control:
     loop_var: h
@@ -33,12 +33,12 @@
     owner: root
     state: directory
   when:
-  - groups['postgres'] | length == 0
+  - groups['postgres_greenlight'] | length == 0
 - name: Fetches BigBlueButton API Secret
   changed_when: False
   delegate_to: "{{ groups['bbb'][0] }}"
   register: bbb_secret
-  run_once: True
+  run_once: yes
   shell: bbb-conf --secret | awk '/Secret:/{print $2}'
   when:
   - groups['scalelite'] | length == 0

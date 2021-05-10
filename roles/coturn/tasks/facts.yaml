@@ -1,0 +1,13 @@
+- name: Gather Facts from Postgres
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['postgres_coturn'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+  when:
+  - groups['postgres_coturn'] | length > 0
+  - ansible_fqdn not in groups['postgres_coturn']
+  - ansible_hostname not in groups['postgres_coturn']
+  - ansible_nodename not in groups['postgres_coturn']

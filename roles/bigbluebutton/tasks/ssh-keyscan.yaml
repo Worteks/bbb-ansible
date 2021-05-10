@@ -1,3 +1,4 @@
+- include_tasks: facts.yaml
 - name: Makes Sure .ssh Exists
   file:
     dest: /home/bigbluebutton/.ssh
@@ -21,6 +22,8 @@
     loop_var: ssh_remote
   vars:
     ssh_homedir: /home/bigbluebutton
+  when:
+  - hostvars[ssh_remote]['corosync_vip'] is not defined
 - name: Ensures known_hosts Has Proper Permissions
   file:
     dest: /home/bigbluebutton/.ssh/known_hosts

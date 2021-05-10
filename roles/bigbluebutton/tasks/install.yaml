@@ -1,3 +1,41 @@
+- block:
+  # https://github.com/bigbluebutton/bbb-install/issues/303
+  # https://github.com/mikefarah/yq/issues/217
+  # might not be limited to xenial
+  # definitely doesn't affect all xenials
+  # in doubt, only fixing bbb-2.2 deployments ATM
+  - name: Installs Roberto Mescandon Repository Source
+    copy:
+      dest: /etc/apt/sources.list.d/rmescandon-ubuntu-yq-xenial.list
+      group: root
+      mode: 0644
+      owner: root
+      src: yq.list
+    register: hasrrepo
+  - block:
+    - name: Pre-Installs Roberto Mescandon GPG Key
+      failed_when: False
+      shell: apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6657DBE0CC86BB64
+    - name: Installs yq
+      apt:
+        name: yq
+        state: present
+        update_cache: yes
+    when:
+    - hasrrepo is defined
+    - hasrrepo is changed
+  when:
+  - ansible_distribution_release == 'xenial'
+- name: Ensures English LangPack Present
+  apt:
+    name: language-pack-en
+    state: present
+  register: haslangpack
+- name: Fixes Locales
+  shell: update-locale LANG=en_US.UTF-8
+  when:
+  - haslangpack is defined
+  - haslangpack is changed
 - name: Fetches BigBlueButton Installer
   get_url:
     dest: /root/bbb-install.sh
@@ -12,6 +50,7 @@
     regexp: "^{{ ansible_default_ipv4['address'] }} {{ h }}"
   loop:
   - "{{ bigbluebutton_fqdn | default(ansible_fqdn) }}"
+  - "{{ greenlight_fqdn | default(ansible_fqdn) }}"
   - "{{ ansible_fqdn }}"
   loop_control:
     loop_var: h
@@ -46,14 +85,27 @@
   args:
     chdir: /root
     creates: /root/bbb-install.out
-  shell: "/root/bbb-install.sh -v {{ ansible_distribution_release }}-{{ bigbluebutton_version }} -d -s {{ ansible_fqdn }} >bbb-install.out 2>&1"
+  shell: "/root/bbb-install.sh -v {{ ansible_distribution_release }}-{{ bigbluebutton_version }} -d -s {{ bigbluebutton_fqdn | default(ansible_fqdn) }} >bbb-install.out 2>&1"
   when:
   - bbb_uses_selfsigned | default(True)
 - name: Installs BigBlueButton (letsencrypt)
   args:
     chdir: /root
     creates: /root/bbb-install.out
-  shell: "/root/bbb-install.sh -v {{ ansible_distribution_release }}-{{ bigbluebutton_version }} -e {{ bigbluebutton_letsencrypt_address }} -s {{ ansible_fqdn }} >bbb-install.out 2>&1"
+  shell: "/root/bbb-install.sh -v {{ ansible_distribution_release }}-{{ bigbluebutton_version }} -e {{ bigbluebutton_letsencrypt_address }} -s {{ bigbluebutton_fqdn | default(ansible_fqdn) }} >bbb-install.out 2>&1"
   when:
   - not (bbb_uses_selfsigned | default(True))
   - bigbluebutton_letsencrypt_address | default(False)
+- name: Removes dummy-nic Unit installed by BigBlueButton
+  file:
+    dest: "{{ item }}"
+    state: absent
+  loop:
+  - /lib/systemd/system/dummy-nic.service
+  - /etc/systemd/system/multi-user.target.wants/dummy-nic.service
+  register: dnconf
+- name: Reloads Systemctl Configuration
+  shell: systemctl daemon-reload
+  when:
+  - dnconf is defined
+  - dnconf is changed

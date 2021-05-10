@@ -1,0 +1,61 @@
+#peertube_images_release: production-buster
+peertube_images_release: v3.1.0-buster
+peertube_images_repo: docker.io/chocobozzz/peertube
+
+peertubeexporter_images_release: master
+peertubeexporter_images_repo: registry.gitlab.com/synacksynack/opsperator/docker-peertubeexporter
+
+peertube_initial_root_password: SomeS7rongseCr3t
+peertube_instance_businessmodel: "Collect underpants...... step 2, ... and then profit!"
+peertube_instance_codeofconduct: "Don't be evil"
+peertube_instance_createreason: Streaming BigBlueButton Conferences
+peertube_instance_description: Welcome to this PeerTube instance'
+peertube_instance_name: BigBlueButtonTube
+peertube_instance_short_description: PeerTube, a federated (ActivityPub) video streaming platform using P2P (BitTorrent) directly in the web browser with WebTorrent and Angular.
+peertube_instance_terms: No terms for now
+peertube_is_nsfw: true
+
+peertube_languages:
+- en
+- es
+- fr
+
+peertube_max_body_size: 8G
+
+peertube_ldap_base: dc=demo,dc=local
+peertube_ldap_bind_dn: cn=admin,dc=demo,dc=local
+peertubet_ldap_endpoint: ldap://directory.example.com:1636
+peertube_ldap_password: changeme
+peertube_ldap_uid: uid
+
+peertube_oidc_client_id: greenlight
+peertube_oidc_client_secret: changeme
+#peertube_oidc_site: https://auth.example.com
+peertube_oidc_scope: openid email profile
+peertube_oidc_uid_field: preferred_username
+peertube_oidc_mail_field: email
+
+#peertube_postgres_host: False -- detected from inventory
+peertube_postgres_password: peertubepw
+peertube_postgres_user: peertubeusr
+
+peertube_redis_database: 2
+#peertube_redis_host: False -- detected from inventory
+
+#peertube_saml_endpoint: https://auth.example.com/saml/singleSignOn
+peertube_saml_issuer: greenlight
+peertube_saml_username_field: preferred_username
+
+#peertube_smtp_domain: "{{ ansible_fqdn }}"
+peertube_smtp_password: False
+peertube_smtp_port: 25
+peertube_smtp_server: False
+peertube_smtp_starttls: False
+peertube_smtp_tls: False
+peertube_smtp_username: False
+
+peertube_trust_proxies:
+- 127.0.0.1
+- 10.0.0.0/8
+- 172.16.0.0/12
+- 192.168.0.0/16

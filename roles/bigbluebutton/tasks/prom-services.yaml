@@ -1,0 +1,28 @@
+- name: Installs BigBlueButton Services Probe Script
+  copy:
+    dest: /usr/local/bin/bigbluebutton-prometheus-servicestatus
+    group: root
+    mode: 0755
+    owner: root
+    src: bbb-services.sh
+- name: Installs BigBlueButton Services Probe Service
+  copy:
+    dest: "/etc/systemd/system/bigbluebutton-prometheus-servicestatus.{{ item }}"
+    group: root
+    mode: 0644
+    owner: root
+    src: "bbb-services.{{ item }}"
+  loop:
+  - service
+  - timer
+  register: punit
+- name: Reloads Systemd Configuration
+  shell: systemctl daemon-reload
+  when:
+  - punit is defined
+  - punit is changed
+- name: Enables BigBlueButton Services Prometheus Collection Job
+  service:
+    enabled: yes
+    name: bigbluebutton-prometheus-servicestatus.timer
+    state: started

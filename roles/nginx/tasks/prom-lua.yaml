@@ -1,0 +1,49 @@
+- name: Installs Nginx Lua Module
+  apt:
+    name: libnginx-mod-http-lua
+    state: present
+  notify: Reloads Nginx
+- name: Installs Nginx Lua Package Directories
+  file:
+    dest: "/etc/nginx/{{ d }}"
+    group: root
+    mode: 0755
+    owner: root
+    state: directory
+  loop:
+  - lua.d
+  - lua.d/prometheus
+  loop_control:
+    loop_var: d
+- name: Install Nginx Lua Prometheus Package
+  get_url:
+    dest: /etc/nginx/lua.d/prometheus/prometheus.lua
+    group: root
+    mode: 0644
+    owner: root
+    url: https://raw.githubusercontent.com/knyar/nginx-lua-prometheus/master/prometheus.lua
+  notify: Reloads Nginx
+- name: Install Nginx Lua Prometheus Package
+  get_url:
+    dest: /etc/nginx/lua.d/prometheus/prometheus_keys.lua
+    group: root
+    mode: 0644
+    owner: root
+    url: https://raw.githubusercontent.com/knyar/nginx-lua-prometheus/master/prometheus_keys.lua
+  notify: Reloads Nginx
+- name: Install Nginx Lua Prometheus Package
+  get_url:
+    dest: /etc/nginx/lua.d/prometheus/prometheus_resty_counter.lua
+    group: root
+    mode: 0644
+    owner: root
+    url: https://raw.githubusercontent.com/knyar/nginx-lua-prometheus/master/prometheus_resty_counter.lua
+  notify: Reloads Nginx
+- name: Install Prometheus Nginx Lua
+  notify: Reloads Nginx
+  template:
+    dest: /etc/nginx/conf.d/prometheus.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: prometheus-lua.j2

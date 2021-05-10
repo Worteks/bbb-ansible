@@ -1,0 +1,44 @@
+- name: Installs ElasticSearch Sysctl Configuration
+  copy:
+    dest: /etc/sysctl.d/99-es.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: sysctl.conf
+  register: essyscf
+- name: Applies ElasticSearch Sysctl Configuration
+  args:
+    chdir: /etc/sysctl.d
+  shell: |
+    cat 99-es.conf | while read p; do sysctl -w "$p"; done
+  when:
+  - essysct is defined
+  - essysct is changed
+- name: Installs ElasticSearch CLI
+  copy:
+    dest: /usr/local/bin/escli
+    group: root
+    mode: 0755
+    owner: root
+    src: escli.sh
+- name: Installs ElasticSearch Docker-Compose Directory
+  file:
+    dest: /etc/docker-compose/elasticsearch
+    group: root
+    mode: 0750
+    owner: root
+    state: directory
+- name: Installs ElasticSearch Docker-Compose Configuration
+  register: should_reload
+  template:
+    dest: /etc/docker-compose/elasticsearch/docker-compose.yaml
+    group: root
+    mode: 0640
+    owner: root
+    src: compose.j2
+- include_role:
+    name: docker
+    tasks_from: service.yaml
+  vars:
+    service_description: ElasticSearch
+    service_name: elasticsearch

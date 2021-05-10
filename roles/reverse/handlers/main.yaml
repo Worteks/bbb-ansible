@@ -1,0 +1,8 @@
+- name: Reloads Nginx
+  shell: |
+    if nginx -t; then
+        systemctl restart nginx
+    else
+        echo FATAL - invalid nginx configuration
+        exit 1
+    fi

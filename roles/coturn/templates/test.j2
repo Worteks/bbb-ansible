@@ -1,0 +1,24 @@
+#!/bin/sh
+
+HOST={{ coturn_fqdn | default(ansible_fqdn) }}
+SECRET="{{ coturn_auth_secret }}"
+
+time=`date +%s`
+expiry=8400
+username=`expr $time + $expiry`
+password=`echo -n $username | openssl dgst -binary -sha1 -hmac "$SECRET" | openssl base64`
+
+cat <<EOF
+
+  1/ Go to:
+  https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/"
+
+  2/ Configure turns relay
+ tls  URI: turns:$HOST:{{ coturn_tls_port }}
+plain URI: turn:$HOST:{{ coturn_plain_port }}
+ username: $username 
+ password: $password
+
+EOF
+
+exit 0

@@ -1,0 +1,18 @@
+version: '2.0'
+services:
+  peertube:
+    image: {{ peertube_images_repo }}:{{ peertube_images_release }}
+    environment:
+    - PEERTUBE_ADMIN_EMAIL=root@{{ peertube_fqdn | default(ansible_fqdn) }}
+    - PT_INITIAL_ROOT_PASSWORD={{ peertube_initial_root_password }}
+    ports:
+    - "1935:1935"
+    - "9000:9000"
+    user: "999:0"
+    volumes:
+{% if bbb_uses_selfsigned | default(True) %}
+    - /etc/ssl/certs:/etc/ssl/certs
+    - /usr/local/share/ca-certificates:/usr/local/share/ca-certificates
+{% endif %}
+    - /var/lib/peertube:/data
+    - /etc/peertube:/config

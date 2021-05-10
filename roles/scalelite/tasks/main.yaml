@@ -1,3 +1,8 @@
+- include_role:
+    name: drbd
+    tasks_from: facts.yaml
+  when:
+  - "'drbd1' in ansible_devices"
 - include_tasks: facts.yaml
 - include_tasks: ssh.yaml
 - include_tasks: storage.yaml
@@ -12,16 +17,9 @@
   - "'recording-importer' in scalelite_has_roles"
 - block:
   - include_tasks: nginx.yaml
-  - include_tasks: certbot.yaml
-    when:
-    - not (bbb_uses_selfsigned | default(True))
-  - include_role:
-      name: pki
-      tasks_from: install-cert.yaml
-    when:
-    - bbb_uses_selfsigned | default(True)
+  - include_tasks: utils.yaml
   when:
-  - "'nginx' in scalelite_has_roles"
+  - "'api' in scalelite_has_roles"
 - include_tasks: compose.yaml
 - include_tasks: init-setup.yaml
 - include_tasks: prometheus.yaml

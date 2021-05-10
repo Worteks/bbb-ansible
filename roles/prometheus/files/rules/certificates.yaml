@@ -1,0 +1,43 @@
+groups:
+- name: x509Certificates
+  rules:
+  - alert: CertificateNotRunning
+    expr: certificate_last_run < time() - 86400
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Certificates TTL Check not running (instance {{ $labels.instance }})"
+      description: "Did not refresh certificates TTL check in the last 24h\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: LetsEncryptCertificateExpiresSoon
+    expr: certificate_ttl{path=~"/etc/letsencrypt/live/.+"} - time() <= (30 * 24 * 60 * 60) and certificate_ttl{path=~"/etc/letsencrypt/live/.+"} - time() > (15 * 24 * 60 * 60)
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "LetsEncrypt Certificate Expires within 30 days (instance {{ $labels.instance }})"
+      description: "LetsEncrypt Certificate should be renewed within the next 30 days\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: LetsEncryptCertificateExpiresVerySoon
+    expr: certificate_ttl{path=~"/etc/letsencrypt/live/.+"} - time() <= (15 * 24 * 60 * 60)
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "LetsEncrypt Certificate Expires within 15 days (instance {{ $labels.instance }})"
+      description: "LetsEncrypt Certificate should be renewed within the next 15 days\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: CertificateExpiresSoon
+    expr: certificate_ttl{path!~"/etc/letsencrypt/live/.+"} - time() <= (6 * 30 * 24 * 60 * 60) and certificate_ttl{path!~"/etc/letsencrypt/live/.+"} - time() > (2 * 30 * 24 * 60 * 60)
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Certificate Expires within 6 months (instance {{ $labels.instance }})"
+      description: "Certificate should be renewed within the next 6 months\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: CertificateExpiresVerySoon
+    expr: certificate_ttl{path!~"/etc/letsencrypt/live/.+"} - time() <= (2 * 24 * 60 * 60)
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Certificate Expires within 2 months (instance {{ $labels.instance }})"
+      description: "Certificate should be renewed within the next 2 months\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"

@@ -1,0 +1,14 @@
+- name: "Installs {{ site_fqdn }} Virtualhost"
+  notify: Reloads Nginx
+  template:
+    dest: /etc/nginx/sites-available/{{ site_fqdn }}.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: "{{ tplate }}.j2"
+- name: "Enables {{ site_fqdn }} Virtualhost"
+  file:
+    dest: /etc/nginx/sites-enabled/{{ site_fqdn }}.conf
+    src: /etc/nginx/sites-available/{{ site_fqdn }}.conf
+    state: link
+  notify: Reloads Nginx

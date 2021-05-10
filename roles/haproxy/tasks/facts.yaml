@@ -19,6 +19,11 @@
                                 and (groups['greenlight'] | length > 1
                                      or do_debugs | default(False)))
                             else False }}"
+    do_kibana: "{{ True if ((ansible_hostname in groups['lb_front']
+                             or ansible_fqdn in groups['lb_front'])
+                            and (groups['kibana'] | length > 1
+                                 or do_debugs | default(False)))
+                        else False }}"
     do_prometheus: "{{ True if ((ansible_hostname in groups['lb_back']
                                  or ansible_fqdn in groups['lb_back'])
                                 and (groups['prometheus'] | length > 1
@@ -40,6 +45,7 @@
   loop: "{{ groups['alertmanager'] }}"
   loop_control:
     loop_var: srv
+  run_once: yes
   setup:
   when:
   - do_alertmanager
@@ -49,6 +55,7 @@
   loop: "{{ groups['grafana'] }}"
   loop_control:
     loop_var: srv
+  run_once: yes
   setup:
   when:
   - do_grafana
@@ -58,15 +65,27 @@
   loop: "{{ groups['greenlight'] }}"
   loop_control:
     loop_var: srv
+  run_once: yes
   setup:
   when:
   - do_greenlight
+- name: Gather Facts from Kibana
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['kibana'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+  when:
+  - do_kibana
 - name: Gather Facts from Prometheus
   delegate_to: "{{ srv }}"
   delegate_facts: True
   loop: "{{ groups['prometheus'] }}"
   loop_control:
     loop_var: srv
+  run_once: yes
   setup:
   when:
   - do_prometheus
@@ -76,6 +95,7 @@
   loop: "{{ groups['redis'] }}"
   loop_control:
     loop_var: srv
+  run_once: yes
   setup:
   when:
   - do_redis
@@ -85,6 +105,7 @@
   loop: "{{ groups['scalelite'] }}"
   loop_control:
     loop_var: srv
+  run_once: yes
   setup:
   when:
   - do_scalelite

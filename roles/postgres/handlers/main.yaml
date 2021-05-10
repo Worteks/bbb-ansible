@@ -1,4 +1,33 @@
-- name: Reload Postgres
+- name: Reloads Postgres
   service:
     name: postgresql
     state: restarted
+  when:
+  - ansible_fqdn not in groups['drbd']
+  - ansible_hostname not in groups['drbd']
+  - ansible_nodename not in groups['drbd']
+- name: Reloads Postgres Exporter
+  service:
+    name: "postgres-exporter-{{ scalelite_postgres_database
+                                   if (do_scalelite_db | default(True))
+                                   else (coturn_postgres_database
+                                         if (do_coturn_db | default(True))
+                                         else (moodle_postgres_database
+                                               if (do_moodle_db | default(True))
+                                               else (openstreamingplatform_postgres_database
+                                                     if (do_openstreamingplatform_db | default(True))
+                                                     else (peertube_postgres_database
+                                                           if (do_peertube_db | default(True))
+                                                           else (greenlight_postgres_database
+                                                                 if (do_greenlight_db | default(True))
+                                                                 else 'postgres'))))) }}"
+    state: restarted
+  when:
+  - >
+       (postgres_exporter_should_run | default(False)
+        and (ansible_fqdn in groups['drbd']
+             or ansible_nodename in groups['drbd']
+             or ansible_hostname in groups['drbd']))
+       or (ansible_fqdn not in groups['drbd']
+          and ansible_nodename not in groups['drbd']
+          and ansible_hostname not in groups['drbd'])

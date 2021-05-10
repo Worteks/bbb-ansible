@@ -1,0 +1,8 @@
+- name: Reloads Fluentd
+  service:
+    name: td-agent
+    state: restarted
+- name: Reloads Rsyslog
+  service:
+    name: rsyslog
+    state: restarted

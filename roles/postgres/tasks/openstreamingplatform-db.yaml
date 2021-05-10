@@ -5,14 +5,14 @@
     encoding: UTF-8
     name: "{{ openstreamingplatform_postgres_database }}"
     template: template0
-- name: Installs Coturn Postgres User
+- name: Installs OpenStreamingPlatform Postgres User
   become: yes
   become_user: postgres
   postgresql_user:
     db: "{{ openstreamingplatform_postgres_database }}"
     name: "{{ openstreamingplatform_postgres_user }}"
     password: "{{ openstreamingplatform_postgres_password }}"
-- name: Grants Coturn User Privileges over its database
+- name: Grants OpenStreamingPlatform User Privileges over its database
   become: yes
   become_user: postgres
   postgresql_privs:
@@ -21,3 +21,12 @@
     privs: ALL
     type: database
     role: "{{ openstreamingplatform_postgres_user }}"
+- include_tasks: backup.yaml
+  vars:
+    database: "{{ openstreamingplatform_postgres_database }}"
+    db_password: "{{ openstreamingplatform_postgres_password }}"
+    db_user: "{{ openstreamingplatform_postgres_user }}"
+  when:
+  - >
+      do_backups | default(False)
+      or do_postgres_backups | default(False)

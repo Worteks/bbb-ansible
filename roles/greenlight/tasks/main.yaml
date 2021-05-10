@@ -11,6 +11,9 @@
      not (ansible_hostname in groups['bbb']
           and ansible_hostname in groups['greenlight'])
 - include_tasks: bbb-proxy.yaml
+  when:
+  - not (skip_bbb | default(False))
+- include_tasks: create-admin.yaml
 - include_tasks: prometheus.yaml
   when:
   - >

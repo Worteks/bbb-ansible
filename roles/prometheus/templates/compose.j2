@@ -1,4 +1,4 @@
-version: '3'
+version: '2.0'
 services:
   prometheus:
     container_name: prometheus
@@ -12,6 +12,9 @@ services:
     image: {{ prometheus_images_repo }}:{{ prometheus_images_release }}
     logging:
       driver: journald
+{% if docker_hostnetwork | default(False) %}
+    network_mode: host
+{% endif %}
     ports:
     - "9090:9090"
     restart: unless-stopped

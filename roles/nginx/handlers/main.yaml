@@ -1,4 +1,21 @@
-- name: Reload Nginx
+- name: Reloads Nginx
   service:
     name: nginx
     state: restarted
+  when:
+  - ansible_fqdn not in groups['drbd']
+  - ansible_hostname not in groups['drbd']
+  - ansible_nodename not in groups['drbd']
+- name: Reloads Nginx Exporter
+  service:
+    name: nginx-exporter
+    state: restarted
+  when:
+  - >
+       (nginx_exporter_should_run | default(False)
+        and (ansible_fqdn in groups['drbd']
+             or ansible_nodename in groups['drbd']
+             or ansible_hostname in groups['drbd']))
+       or (ansible_fqdn not in groups['drbd']
+          and ansible_nodename not in groups['drbd']
+          and ansible_hostname not in groups['drbd'])

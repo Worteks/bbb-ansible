@@ -1,0 +1,327 @@
+<source>
+  @type syslog
+  port {{ tdagent_port }}
+  tag system.rsyslog
+</source>
+
+<source>
+  @type systemd
+  path /run/log/journal
+  read_from_head true
+  tag system.journalctl
+  <entry>
+    fields_lowercase true
+    fields_strip_underscores true
+    field_map {"_PID": ["process", "pid"], "_CMDLINE": "process", "_COMM": "cmd"}
+    field_map_strict false
+  </entry>
+  <storage>
+    @type local
+    path /var/log/td-agent/journald-cursor.json
+  </storage>
+</source>
+{% for nginx_log in nginx_logs.stdout_lines | default([]) %}
+
+<source>
+  @type tail
+  path /var/log/nginx/{{ nginx_log }}
+  pos_file /var/log/td-agent/nginx-{{ nginx_log }}.pos
+  tag nginx.access
+  <parse>
+    @type regexp
+    expression /^(?<remote>[^ ]*) (?<host>[^ ]*) (?<user>[^ ]*) \[(?<time>[^\]]*)\] "(?<method>\S+)(?: +(?<path>[^\"]*?)(?: +\S*)?)?" (?<code>[^ ]*) (?<size>[^ ]*)(?: "(?<referer>[^\"]*)" "(?<agent>[^\"]*)"(?:\s+(?<http_x_forwarded_for>[^ ]+))?)?$/
+    null_empty_string true
+    null_value_pattern "-"
+    time_format %d/%b/%Y:%H:%M:%S %z
+  </parse>
+</source>
+{% endfor %}
+{% if ansible_fqdn in groups['redis'] or ansible_hostname in groups['redis'] or ansible_fqdn in groups['bbb'] or ansible_hostname in groups['bbb'] %}
+
+<source>
+  @type tail
+  path /var/log/redis/redis-server.log
+  pos_file /var/log/td-agent/redis-server.pos
+  tag database.redis
+  <parse>
+    @type regexp
+    expression /^(?<rediscommandid>[^ ]*) (?<time>[^\*]*)\* (?<message>.*)$/
+    time_format %d %b %Y %H:%M:%S.%N
+  </parse>
+</source>
+{% endif %}
+{% if ansible_fqdn in groups['bbb'] or ansible_hostname in groups['bbb'] %}
+
+<source>
+  @type tail
+  path /var/log/mongodb/mongodb.log
+  pos_file /var/log/td-agent/mongodb.pos
+  tag database.mongodb
+  <parse>
+    @type regexp
+    expression /^(?<time>[^\*]*) (?<severitycode>[A-Z]) (?<message>.*)$/
+    time_format %Y-%m-%dT%H:%M:%S.%N%z
+  </parse>
+</source>
+
+<source>
+  @type tail
+  path /opt/freeswitch/log/freeswitch.log
+  pos_file /var/log/td-agent/freeswitch.pos
+  tag bigbluebutton.freeswitch
+  <parse>
+    @type regexp
+    expression /^(?:(?<sessionid>[^ ]+))?[ ]*(?:(?<time>20[0-9 :\.-]*) \[(?<severity>[^\]]*)\])? (?<message>.*)$/
+    time_format %Y-%m-%d %H:%M:%S.%N
+  </parse>
+</source>
+
+<source>
+  @type tail
+  path /var/log/bbb-apps-akka/bbb-apps-akka.log
+  pos_file /var/log/td-agent/bbb-apps-akka.pos
+  tag bigbluebutton.apps-akka
+  <parse>
+    @type regexp
+    expression /^(?<time>[^\*]*) (?<severity>[a-zA-Z]*) (?<message>.*)$/
+    time_format %Y-%m-%dT%H:%M:%S.%N%:z
+  </parse>
+</source>
+
+<source>
+  @type tail
+  path /var/log/bbb-fesl-akka/bbb-fesl-akka.log
+  pos_file /var/log/td-agent/bbb-fesl-akka.pos
+  tag bigbluebutton.fesl
+  <parse>
+    @type regexp
+    expression /^(?<time>[^\*]*) (?<severity>[a-zA-Z]*) (?<message>.*)$/
+    time_format %Y-%m-%dT%H:%M:%S.%N%:z
+  </parse>
+</source>
+
+<source>
+  @type tail
+  path /var/log/bbb-transcode-akka/bbb-transcode.log
+  pos_file /var/log/td-agent/bbb-transcode.pos
+  tag bigbluebutton.transcode
+  <parse>
+    @type regexp
+    expression /^(?<time>[^\*]*) (?<severity>[a-zA-Z]*) (?<message>.*)$/
+    time_format %Y-%m-%dT%H:%M:%S.%N%:z
+  </parse>
+</source>
+
+<source>
+  @type tail
+  path /var/log/bbb-webrtc-sfu/bbb-webrtc-sfu.log
+  pos_file /var/log/td-agent/bbb-webrtc-sfu.pos
+  tag bigbluebutton.webrtc
+  <parse>
+    @type json
+  </parse>
+</source>
+
+<source>
+  @type tail
+  path /var/log/bigbluebutton/bbb-web.log
+  pos_file /var/log/td-agent/bbb-web.pos
+  tag bigbluebutton.web
+  <parse>
+    @type regexp
+    expression /^(?<time>[^\*]*) (?<severity>[a-zA-Z]*) (?<message>.*)$/
+    time_format %Y-%m-%dT%H:%M:%S.%N%:z
+  </parse>
+</source>
+
+<source>
+  @type tail
+  path /var/log/red5/bigbluebutton.log
+  pos_file /var/log/td-agent/red5-bigbluebutton.pos
+  tag bigbluebutton.red5.bbb
+  <parse>
+    @type regexp
+    expression /^(?<time>[^\*]*) (?<severity>[a-zA-Z]*) (?<message>.*)$/
+    time_format %Y-%m-%dT%H:%M:%S.%N%:z
+  </parse>
+</source>
+
+<source>
+  @type tail
+  path /var/log/red5/red5.log
+  pos_file /var/log/td-agent/red5-main.pos
+  tag bigbluebutton.red5.main
+  <parse>
+    @type regexp
+    expression /^(?<time>[^\*]*) (?<severity>[a-zA-Z]*) (?<message>.*)$/
+    time_format %Y-%m-%dT%H:%M:%S.%N%:z
+  </parse>
+</source>
+
+<source>
+  @type tail
+  path /var/log/red5/screenshare-slf.log
+  pos_file /var/log/td-agent/red5-screenshare.pos
+  tag bigbluebutton.red5.screenshare
+  <parse>
+    @type regexp
+    expression /^(?<time>[^\*]*) (?<severity>[a-zA-Z]*) (?<message>.*)$/
+    time_format %Y-%m-%dT%H:%M:%S.%N%:z
+  </parse>
+</source>
+
+<source>
+  @type tail
+  path /var/log/red5/sip.log
+  pos_file /var/log/td-agent/red5-sip.pos
+  tag bigbluebutton.red5.sip
+  <parse>
+    @type regexp
+    expression /^(?<time>[^\*]*) (?<severity>[a-zA-Z]*) (?<message>.*)$/
+    time_format %Y-%m-%dT%H:%M:%S.%N%:z
+  </parse>
+</source>
+
+<source>
+  @type tail
+  path /var/log/red5/video-broadcast.log
+  pos_file /var/log/td-agent/red5-video-broadcast.pos
+  tag red5.video.broadcast
+  <parse>
+    @type regexp
+    expression /^(?<time>[^\*]*) (?<severity>[a-zA-Z]*) (?<message>.*)$/
+    time_format %Y-%m-%dT%H:%M:%S.%N%:z
+  </parse>
+</source>
+
+<source>
+  @type tail
+  path /var/log/red5/video.log
+  pos_file /var/log/td-agent/red5-video.pos
+  tag bigbluebutton.red5.video.main
+  <parse>
+    @type regexp
+    expression /^(?<time>[^\*]*) (?<severity>[a-zA-Z]*) (?<message>.*)$/
+    time_format %Y-%m-%dT%H:%M:%S.%N%:z
+  </parse>
+</source>
+{% endif %}
+{% if ansible_nodename in groups['postgres'] or  ansible_fqdn in groups['postgres'] or ansible_hostname in groups['postgres'] %}
+
+<source>
+  @type tail
+  path /var/log/postgresql/postgresql-{{ postgres_version }}-main.log
+  pos_file /var/log/td-agent/postgresql-{{ postgres_version }}.pos
+  tag database.postgres
+  <parse>
+    @type regexp
+    expression /^(?<time>[^\[]*) \[(?<pgprocessid>[^\]]*)\] (?<loglevel>[A-Z]*): (?<message>.*)$/
+    time_format %Y-%m-%d %H:%M:%S.%N %Z
+  </parse>
+</source>
+{% endif %}
+{% if 0 == 1 %}
+# up, up, down, down, left, right, left, right, B, A
+# https://fluentular.herokuapp.com/parse
+# https://docs.ruby-lang.org/en/2.4.0/Time.html
+{% endif %}
+
+{% if groups['prometheus'] | length > 0 or do_prometheus | default(False) %}
+<source>
+  @type prometheus
+  bind 0.0.0.0
+  port {{ tdagent_exporter_port }}
+  metrics_path /metrics
+</source>
+
+<source>
+  @type prometheus_output_monitor
+  interval 10
+  <labels>
+    hostname ${hostname}
+  </labels>
+</source>
+
+<filter **>
+  @type prometheus
+  <metric>
+    name fluentd_input_status_num_records_total
+    type counter
+    desc The total number of incoming records
+    <labels>
+      tag ${tag}
+      hostname ${hostname}
+    </labels>
+  </metric>
+</filter>
+{% endif %}
+{% if geoip_database_url | default(False) and (nginx_logs.stdout_lines | default([])) | length > 0 %}
+
+<filter nginx.access>
+  @type record_transformer
+  enable_ruby
+  <record>
+     real_client_ip ${(record["http_x_forwarded_for"] || record["remote"] || '0.0.0.0').split(',')[0]}
+  </record>
+</filter>
+
+<filter nginx.access>
+  @type geoip
+  geoip_lookup_keys real_client_ip
+  skip_adding_null_record true
+  @log_level info
+  geoip2_database "/etc/td-agent/GeoLite2-City.mmdb"
+  backend_library geoip2_c
+  <record>
+    city                ${city.names.en["real_client_ip"]}
+    country             ${country.iso_code["real_client_ip"]}
+    country_name        ${country.names.en["real_client_ip"]}
+    latitude            ${location.latitude["real_client_ip"]}
+    location_properties '{ "lat" : ${location.latitude["real_client_ip"]}, "lon" : ${location.longitude["real_client_ip"]} }'
+    location_string     ${location.latitude["real_client_ip"]},${location.longitude["real_client_ip"]}
+    location_array      '[${location.longitude["real_client_ip"]},${location.latitude["real_client_ip"]}]'
+    longitude           ${location.longitude["real_client_ip"]}
+    postal_code         ${postal.code["real_client_ip"]}
+  </record>
+</filter>
+{% endif %}
+
+<filter **>
+  @type record_transformer
+  <record>
+    hostname {{ ansible_fqdn }}
+  </record>
+</filter>
+
+<match *.**>
+  @type copy
+  <store>
+    @type elasticsearch
+    flush_interval 10s
+{% if td_agent_es_host | default(False) %}
+    host {{ tdagent_es_host }}
+{% elif es_nodes | length == 1 %}
+    host {{ es_nodes[0] }}
+{% else %}
+    hosts {{ es_nodes | join(',') }}
+{% endif %}
+    include_tag_key true
+    logstash_format true
+    port {{ tdagent_es_port }}
+    tag_key @log_name
+  </store>
+{% if groups['prometheus'] | length > 0 or do_prometheus | default(False) %}
+  <store>
+    @type prometheus
+    <metric>
+      name fluentd_output_status_num_records_total
+      type counter
+      desc The total number of outgoing records
+      <labels>
+        tag ${tag}
+        hostname ${hostname}
+      </labels>
+    </metric>
+  </store>
+{% endif %}
+</match>

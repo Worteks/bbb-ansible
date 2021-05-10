@@ -1,0 +1,29 @@
+#!/bin/sh
+
+REMOTES="
+{% for node in groups['peertube'] if node not in [ ansible_hostname, ansible_fqdn ] %}
+    {{ node }}
+{% endfor %}
+"
+
+if systemctl show -p ActiveState --value peertube | grep inactive >/dev/null; then
+    echo "WARNING: PeerTube service is inactive"
+    echo "Cowardly refusing to sync data: assuming server is in standby"
+    exit 0
+fi
+
+for remote in $REMOTES
+do
+    rsync -avx /var/lib/peertube/* \
+	root@$remote:/var/lib/peertube/
+    rsync -avx /etc/peertube/* \
+	root@$remote:/etc/peertube/
+done
+
+# NOTE:
+# Peertube runs as UID 999
+# which overlaps with systemd-coredump user/group
+# should change that UID first, then would look into creating proper user/group
+# and exchanging ssh public keys. in the meatime, go as root...
+
+exit 0

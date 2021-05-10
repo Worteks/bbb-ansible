@@ -1,0 +1,14 @@
+[Unit]
+Description=BigBlueButton Conferences Stremaing Platform
+Requires=docker.service
+
+[Service]
+Environment="DO_NOT_LOG_TIME=true"
+User=bbbcsp
+Group=bbbcsp
+WorkingDirectory=/usr/src/bbb-csp
+ExecStart=/usr/bin/node workers/index.js
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

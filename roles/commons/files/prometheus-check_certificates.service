@@ -1,0 +1,6 @@
+[Unit]
+Description=Collect x509 Certificates TTL Metrics
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/certificates-prometheus

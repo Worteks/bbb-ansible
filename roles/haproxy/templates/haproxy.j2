@@ -92,6 +92,19 @@ backend bbb_greenlight_backend
     server {{ hostvars[back]['ansible_hostname'] }} {{ hostvars[back]['ansible_default_ipv4']['address'] }}:{{ greenlight_port }} check maxconn {{ haproxy_greenlight_maxconn }}
 {% endfor %}
 {% endif %}
+{% if do_kibana %}
+
+backend bbb_kibana_backend
+    mode tcp
+    option ssl-hello-chk
+{% if check_group and groups[check_group] | length > 1 %}
+    stick-table type ip size {{ haproxy_sync_table_size | default('20k') }} peers bbb
+    stick on src
+{% endif %}
+{% for back in groups['kibana'] %}
+    server {{ hostvars[back]['ansible_hostname'] }} {{ hostvars[back]['ansible_default_ipv4']['address'] }}:{{ kibana_port }} check maxconn {{ haproxy_kibana_maxconn }}
+{% endfor %}
+{% endif %}
 {% if do_prometheus %}
 
 backend bbb_prometheus_backend
@@ -146,7 +159,7 @@ backend bbb_scalelite_backend
 {% endfor %}
 {% endif %}
 {% endif %}
-{% if do_scalelite or do_greenlight or do_alertmanager or do_grafana or do_prometheus %}
+{% if do_scalelite or do_greenlight or do_alertmanager or do_grafana or do_kibana or do_prometheus %}
 
 frontend bbb_http
     bind {{ haproxy_bind_address | default(ansible_default_ipv4['address']) }}:80
@@ -203,16 +216,19 @@ frontend bbb_https
     option tcplog
     option contstats
 {% if do_alertmanager %}
-    acl alertmanager req.ssl_sni -i {{ hostvars[groups['alertmanager'][0]]['bigbluebutton_fqdn'] | default(hostvars[groups['alertmanager'][0]]['ansible_fqdn']) }}
+    acl alertmanager req.ssl_sni -i {{ hostvars[groups['alertmanager'][0]]['alertmanager_fqdn'] | default(hostvars[groups['alertmanager'][0]]['ansible_fqdn']) }}
 {% endif %}
 {% if do_grafana %}
-    acl grafana req.ssl_sni -i {{ hostvars[groups['grafana'][0]]['bigbluebutton_fqdn'] | default(hostvars[groups['grafana'][0]]['ansible_fqdn']) }}
+    acl grafana req.ssl_sni -i {{ hostvars[groups['grafana'][0]]['grafana_fqdn'] | default(hostvars[groups['grafana'][0]]['ansible_fqdn']) }}
 {% endif %}
 {% if do_greenlight %}
-    acl greenlight req.ssl_sni -i {{ hostvars[groups['greenlight'][0]]['bigbluebutton_fqdn'] | default(hostvars[groups['greenlight'][0]]['ansible_fqdn']) }}
+    acl greenlight req.ssl_sni -i {{ hostvars[groups['greenlight'][0]]['greenlight_fqdn'] | default(hostvars[groups['greenlight'][0]]['ansible_fqdn']) }}
+{% endif %}
+{% if do_kibana %}
+    acl kibana req.ssl_sni -i {{ hostvars[groups['kibana'][0]]['kibana_fqdn'] | default(hostvars[groups['kibana'][0]]['ansible_fqdn']) }}
 {% endif %}
 {% if do_prometheus %}
-    acl prometheus req.ssl_sni -i {{ hostvars[groups['prometheus'][0]]['bigbluebutton_fqdn'] | default(hostvars[groups['prometheus'][0]]['ansible_fqdn']) }}
+    acl prometheus req.ssl_sni -i {{ hostvars[groups['prometheus'][0]]['prometheus_fqdn'] | default(hostvars[groups['prometheus'][0]]['ansible_fqdn']) }}
 {% endif %}
 {% if do_scalelite %}
     acl scalelite req.ssl_sni -i {{ hostvars[groups['scalelite'][0]]['scalelite_fqdn'] | default(hostvars[groups['scalelite'][0]]['ansible_fqdn']) }}
@@ -229,7 +245,7 @@ frontend bbb_https
 {% endif %}
 {% endif %}
     tcp-request inspect-delay 2s
-    tcp-request content reject if{% if do_alertmanager %} !alertmanager{% endif %}{% if do_grafana %} !grafana{% endif %}{% if do_greenlight %} !greenlight{% endif %}{% if do_prometheus %} !prometheus{% endif %}{% if do_scalelite %} !scalelite{% endif %}
+    tcp-request content reject if{% if do_alertmanager %} !alertmanager{% endif %}{% if do_grafana %} !grafana{% endif %}{% if do_greenlight %} !greenlight{% endif %}{% if do_kibana %} !kibana{% endif %}{% if do_prometheus %} !prometheus{% endif %}{% if do_scalelite %} !scalelite{% endif %}
 
 {% if do_alertmanager and (haproxy_backends_ipfilter | default([])) | length > 0 %}
     tcp-request content reject if alertmanager !network_allowed
@@ -246,6 +262,9 @@ frontend bbb_https
 {% endif %}
 {% if do_greenlight %}
     use_backend bbb_greenlight_backend if greenlight
+{% endif %}
+{% if do_kibana %}
+    use_backend bbb_kibana_backend if kibana
 {% endif %}
 {% if do_prometheus %}
     use_backend bbb_prometheus_backend if prometheus

@@ -1,0 +1,23 @@
+- name: Initializes Moodle Site
+  args:
+    chdir: /usr/src/moodle/admin/cli
+    creates: /root/moodle-init.log
+  delegate_to: "{{ groups['moodle'][0] }}"
+  run_once: yes
+  shell: |
+    php install.php --lang={{ moodle_lang }} \
+        --wwwroot=https://{{ moodle_fqdn | default(ansible_fqdn) }} \
+        --db-type=postgres --prefix=mdl_ \
+        --dbhost={{ hostvars[groups['postgres_moodle'][0]]['corosync_vip'] | default(hostvars[groups['postgres_moodle'][0]]['ansible_default_ipv4']['address']) }} \
+        --dbname={{ moodle_postgres_database }} \
+        --dbuser={{ moodle_postgres_user }} \
+        "--dbpass={{ moodle_postgres_password }}" \
+        --dbport={{ moodle_postgres_port }} \
+        "--fullname={{ moodle_site_full_name }}" \
+        "--shortname={{ moodle_site_short_name }}" \
+        "--summary={{ moodle_site_summary }}" \
+        --adminuser={{ moodle_admin_account }} \
+        "--adminpass={{ moodle_admin_password }}" \
+        --adminemail={{ moodle_admin_email }} \
+        "--upgradekey={{ moodle_upgrade_key }}" \
+        --non-interactive --agree-license >/root/moodle-init.log 2>&1

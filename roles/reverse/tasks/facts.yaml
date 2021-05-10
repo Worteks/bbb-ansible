@@ -1,0 +1,107 @@
+- name: Initializes Nginx Reverse Facts
+  changed_when: False
+  set_fact:
+    do_alertmanager: "{{ True if (groups['alertmanager'] | length > 0
+                                  or do_debugs | default(False))
+                              else False }}"
+    do_bbbcsp: "{{ True if (groups['bbbcsp'] | length > 0
+                            or do_debugs | default(False))
+                        else False }}"
+    do_grafana: "{{ True if (groups['grafana'] | length > 0
+                             or do_debugs | default(False))
+                         else False }}"
+    do_greenlight: "{{ True if (groups['greenlight'] | length > 0
+                                or do_debugs | default(False))
+                            else False }}"
+    do_kibana: "{{ True if (groups['kibana'] | length > 0
+                            or do_debugs | default(False))
+                        else False }}"
+    do_peertube: "{{ True if (groups['peertube'] | length > 0
+                              or do_debugs | default(False))
+                          else False }}"
+    do_prometheus: "{{ True if (groups['prometheus'] | length > 0
+                                or do_debugs | default(False))
+                            else False }}"
+    do_scalelite: "{{ True if (groups['scalelite'] | length > 0
+                               or do_debugs | default(False))
+                           else False }}"
+- name: Gather Facts from AlertManager
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['alertmanager'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+  when:
+  - do_alertmanager
+- name: Gather Facts from CSP
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['bbbcsp'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+  when:
+  - do_bbbcsp
+- name: Gather Facts from Grafana
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['grafana'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+  when:
+  - do_grafana
+- name: Gather Facts from Greenlight
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['greenlight'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+  when:
+  - do_greenlight
+- name: Gather Facts from Kibana
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['kibana'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+  when:
+  - do_kibana
+- name: Gather Facts from Peertube
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['peertube'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+  when:
+  - do_peertube
+- name: Gather Facts from Prometheus
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['prometheus'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+  when:
+  - do_prometheus
+- name: Gather Facts from Scalelite
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['scalelite'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+  when:
+  - do_scalelite

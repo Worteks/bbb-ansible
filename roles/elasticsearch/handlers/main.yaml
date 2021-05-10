@@ -1,0 +1,4 @@
+- name: Reloads ElasticSearch Exporter
+  service:
+    name: elasticsearch-exporter
+    state: restarted

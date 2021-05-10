@@ -10,4 +10,4 @@
     dest: /etc/nginx/sites-enabled/stats.conf
     src: /etc/nginx/sites-available/stats.conf
     state: link
-  notify: Reload Nginx
+  notify: Reloads Nginx

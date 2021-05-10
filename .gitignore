@@ -1,4 +1,14 @@
-.pki
+/.ansible-logs
+/facts-*
+/group_vars/private.yaml
+/test*.yaml
+/wip
+.pki*
+*.log
 *.[0-9]
-*.tar.gz
-test.yaml
+.*.sw[a-z]
+*.crt
+*.key
+*.pem
+*.tar
+*.gz

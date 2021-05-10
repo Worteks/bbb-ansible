@@ -1,0 +1,6 @@
+#tdagent_es_host: elastic	< default to first elasticsearch host address
+tdagent_es_port: 9200
+tdagent_port: 5140
+tdagent_exporter_port: 9149
+
+postgres_version: 13

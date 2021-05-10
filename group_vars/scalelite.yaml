@@ -1,17 +1,10 @@
 # ideally, scalelite services should be spread on several servers
-scalelite_has_roles:
-- api
-- nginx
-- poller
-- recording-importer
+#scalelite_has_roles:
+#- api
+#- poller
+#- recording-importer
 
-scalelite_images_release: v1
-
-# scalelite_base_secret generated with openssl rand -hex 64
-scalelite_base_secret: 4061b75be452e096b08071045f46b1b1387f1cccba51df3ae7ed66669f24aeb86f905ab2cb1e5c587b146eb8de73ccb79b67458c9664d21988cb9f48ca45c4b3
-
-# scalelite_lb_secret generated with openssl rand -hex 24
-scalelite_lb_secret: 9568cb1e1f15cd61b2dbdd96ba36520d46a715c37dcacbe9
+#scalelite_images_release: v1
 
 firehol_app_opened_ports:
 - name: ssh
@@ -24,5 +17,9 @@ firehol_app_opened_ports:
   value: tcp/9142
 - name: nginxxp
   value: tcp/9143
-- name: greenlightxp
+- name: nginxluaxp
+  value: tcp/9145
+- name: systemdxp
+  value: tcp/9147
+- name: bbbxp
   value: tcp/9688

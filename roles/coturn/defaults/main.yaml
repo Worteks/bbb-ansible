@@ -1,7 +1,13 @@
-coturn_auth_secret: 2bb5e9e3ff1737e8e4c9240bcb8dc887
+coturn_auth_secret: changemechangemechangemechangeme
 coturn_bind_addresses: []
 #- 10.1.2.3
 #- 10.2.3.4
+coturn_bind_interface: False
+
+#coturn_cli_interface: eth1 / defaults loopback
+#coturn_cli_password: secret
+coturn_cli_port: 5766
+
 coturn_ciphers:
 - ECDH+AESGCM
 - ECDH+CHACHA20
@@ -15,11 +21,28 @@ coturn_ciphers:
 - '!aNULL'
 - '!MD5'
 - '!DSS'
+
+coturn_denied_peers:
+- 10.0.0.0-10.255.255.255
+- 172.16.0.0-172.31.255.255
+- 192.168.0.0-192.168.255.255
+
 coturn_external_address: False
 coturn_external_addresses: []
 #- in: 10.1.2.3
 #  out: 1.2.3.0
 #- in: 10.2.3.4
 #  out: 2.3.4.0
+
+#coturn_postgres_host: False -- detected from inventory
+coturn_postgres_database: coturn
+coturn_postgres_password: coturnpw
+coturn_postgres_user: coturnusr
+
+coturn_min_port: 32769
+coturn_max_port: 65535
 coturn_plain_port: 3478
 coturn_tls_port: 443
+
+#coturn_webadmin_interface: eth1 / defaults loopback
+coturn_webadmin_port: 8080

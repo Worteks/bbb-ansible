@@ -1,6 +1,14 @@
 groups:
 - name: MongoDB
   rules:
+  - alert: MongodbDown
+    expr: mongodb_up == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "MongoDB Down (instance {{ $labels.instance }})"
+      description: "MongoDB instance is down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
   - alert: MongodbReplicationLag
     expr: avg(mongodb_mongod_replset_member_optime_date{state="PRIMARY"}) - avg(mongodb_mongod_replset_member_optime_date{state="SECONDARY"}) > 10
     for: 5m
@@ -58,29 +66,29 @@ groups:
       summary: "MongoDB replication Status 10 (instance {{ $labels.instance }})"
       description: "MongoDB Replication set member was once in a replica set but was subsequently removed\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
   - alert: MongodbNumberCursorsOpen
-    expr: mongodb_mongod_metrics_cursor_open{state="total_open"} > 10000
-    for: 5m
+    expr: mongodb_mongod_metrics_cursor_open{state="total"} > 10000
+    for: 2m
     labels:
       severity: warning
     annotations:
       summary: "MongoDB number cursors open (instance {{ $labels.instance }})"
       description: "Too many cursors opened by MongoDB for clients (> 10k)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
   - alert: MongodbCursorsTimeouts
-    expr: increase(mongodb_mongod_metrics_cursor_timed_out_total[10m]) > 100
-    for: 5m
+    expr: increase(mongodb_mongod_metrics_cursor_timed_out_total[1m]) > 100
+    for: 2m
     labels:
       severity: warning
     annotations:
       summary: "MongoDB cursors timeouts (instance {{ $labels.instance }})"
       description: "Too many cursors are timing out\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
   - alert: MongodbTooManyConnections
-    expr: mongodb_connections{state="current"} > 500
-    for: 5m
+    expr: avg by(instance) (rate(mongodb_connections{state="current"}[1m])) / avg by(instance) (sum (mongodb_connections) by (instance)) * 100 > 80
+    for: 2m
     labels:
       severity: warning
     annotations:
       summary: "MongoDB too many connections (instance {{ $labels.instance }})"
-      description: "Too many connections\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+      description: "More than 80% of MongoDB connections are in use on {{ $labels.instance }}\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
   - alert: MongodbVirtualMemoryUsage
     expr: (sum(mongodb_memory{type="virtual"}) by (instance) / sum(mongodb_memory{type="mapped"} > 0) by (instance)) > 3
     for: 5m

@@ -10,7 +10,7 @@
 # openssl_dhparam always re-generates dh.pem
 # doc suggests force=no is the default, and should preserve prior existing DH
   - name: "Generates DH Params (sit tight: this WILL take a while)"
-    notify: Reload Nginx
+    notify: Reloads Nginx
     openssl_dhparam:
       group: root
       mode: 0640
@@ -28,16 +28,33 @@
   args:
     chdir: /etc/nginx/ssl
     creates: /etc/nginx/ssl/dh.pem
-  notify: Reload Nginx
+  notify: Reloads Nginx
   shell: openssl dhparam -dsaparam -out dh.pem 4096
   when:
   - do_unsafe_dhparam | default(False)
 
 - name: Installs Nginx Names Hash Bucket Size Configuration
-  notify: Reload Nginx
+  notify: Reloads Nginx
   template:
     dest: /etc/nginx/conf.d/names.conf
     group: root
     mode: 0644
     owner: root
     src: names.j2
+- block:
+  - name: Installs Nginx Custom Log Format Configuration
+    #notify: Reloads Nginx
+    template:
+      dest: /etc/nginx/conf.d/logfmt.conf
+      group: root
+      mode: 0644
+      owner: root
+      src: logfmt.j2
+  - name: Sets Custom Log Format Fact
+    set_fact:
+      nginx_log_fmt: customfmt
+  when:
+  - groups['reverse'] | length > 0
+  - ansible_fqdn not in groups['reverse']
+  - ansible_hostname not in groups['reverse']
+  - ansible_nodename not in groups['reverse']

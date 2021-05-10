@@ -1,16 +1,20 @@
-- include_tasks: sshfs.yaml
-  when:
-  - groups['sshfs'] | length > 0
+- block:
+  - include_tasks: sshfs.yaml
+    when:
+    - groups['sshfs'] | length > 0
 
-- include_tasks: nfs-client.yaml
+  - include_tasks: nfs-client.yaml
+    when:
+    - groups['sshfs'] | length == 0
+    - groups['nfs'] | length > 0
+  #TODO:
+  #- include_tasks: cephfs-client.yaml
+  #  when:
+  #  - groups['cephfs'] | length > 0
   when:
-  - groups['sshfs'] | length == 0
-  - groups['nfs'] | length > 0
-
-#TODO:
-#- include_tasks: cephfs-client.yaml
-#  when:
-#  - groups['cephfs'] | length > 0
+  - ansible_fqdn not in groups['drbd']
+  - ansible_hostname not in groups['drbd']
+  - ansible_nodename not in groups['drbd']
 
 - name: Ensures Scalelite Working Directories Exist
   file:
@@ -27,6 +31,14 @@
   when:
   - groups['nfs'] | length == 0
   - groups['sshfs'] | length == 0
+  - >
+      (ansible_fqdn not in groups['drbd']
+       and ansible_hostname not in groups['drbd']
+       and ansible_nodename not in groups['drbd'])
+      or ((ansible_fqdn in groups['drbd']
+           or ansible_hostname in groups['drbd']
+           or ansible_nodename in groups['drbd'])
+          and drbd_is_primary | default(False))
 
 - include_role:
     name: commons

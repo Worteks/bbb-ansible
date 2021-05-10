@@ -3,10 +3,19 @@
   stat:
     path: /root/.ansible/bbb-mark
 - block:
-  - name: Upgrades System
+  - name: Upgrades System (deb)
     apt:
       upgrade: dist
     register: sysupgrade
+    when:
+    - ansible_distribution in [ 'Debian', 'Devuan', 'Ubuntu' ]
+  - name: Upgrades System (rhel)
+    yum:
+      name: '*'
+      state: latest
+    register: sysupgradetoo
+    when:
+    - ansible_distribution in [ 'CentOS', 'Fedora', 'RedHat' ]
   - name: Marks Up-to-Date
     args:
       chdir: /root/.ansible
@@ -16,8 +25,11 @@
     - wait_for_connection:
         delay: 10
     when:
-    - sysupgrade is defined
-    - sysupgrade is changed
+    - >
+        (sysupgradetoo is defined
+         and sysupgradetoo is changed)
+        or (sysupgrade is defined
+            and sysupgrade is changed)
   when:
   - was_provisioned is defined
   - was_provisioned.stat is defined

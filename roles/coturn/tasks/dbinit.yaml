@@ -1,0 +1,97 @@
+- name: Creates Schema Root Directory
+  file:
+    dest: "{{ playbook_dir }}/.schema"
+    group: root
+    mode: 0755
+    owner: root
+    state: directory
+- name: Patches Schema - WTF permission denied
+  lineinfile:
+    dest: /usr/share/doc/coturn/schema.sql
+    line: "GRANT ALL PRIVILEGES ON {{ table }} TO {{ coturn_postgres_user }};"
+    regex: "^GRANT ALL PRIVILEGES ON {{ table }} TO"
+  loop:
+  - admin_user
+  - allowed_peer_ip
+  - denied_peer_ip
+  - oauth_key
+  - turn_origin_to_realm
+  - turn_realm_option
+  - turn_secret
+  - turnusers_lt
+  loop_control:
+    loop_var: table
+- name: Fetches Coturn Schema From Coturn Host
+  run_once: yes
+  synchronize:
+    dest: "{{ playbook_dir }}/roles/coturn/files/schema.sql"
+    mode: pull
+    src: /usr/share/doc/coturn/schema.sql
+- block:
+  - name: Copies Coturn Schema
+    copy:
+      dest: /usr/src/coturn.sql
+      group: root
+      mode: 0644
+      owner: root
+      src: schema.sql
+    register: pginit
+  - block:
+    - name: Initializes Coturn Local Database
+      args:
+        chdir: /usr/src
+      become: yes
+      become_user: postgres
+      shell: "psql {{ coturn_postgres_database }} <./coturn.sql"
+    - name: Grants Coturn User Privileges over its database
+      become: yes
+      become_user: postgres
+      postgresql_privs:
+        admin_option: yes
+        db: "{{ coturn_postgres_database }}"
+        privs: ALL
+        type: database
+        role: "{{ coturn_postgres_user }}"
+    when:
+    - pginit is defined
+    - pginit is changed
+  when:
+  - >
+      ansible_fqdn in groups['postgres_coturn']
+      or ansible_hostname in groups['postgres_coturn']
+      or ansible_nodename in groups['postgres_coturn']
+- block:
+  - name: Copies Coturn Schema to Postgres Host
+    copy:
+      dest: /usr/src/coturn.sql
+      group: root
+      mode: 0644
+      owner: root
+      src: schema.sql
+    delegate_to: "{{ groups['postgres_coturn'][0] }}"
+    register: pginit
+  - block:
+    - name: Initializes Coturn Remote Database
+      args:
+        chdir: /usr/src
+      become: yes
+      become_user: postgres
+      delegate_to: "{{ groups['postgres_coturn'][0] }}"
+      shell: "psql {{ coturn_postgres_database }} <./coturn.sql"
+    - name: Grants Coturn User Privileges over its database
+      become: yes
+      become_user: postgres
+      delegate_to: "{{ groups['postgres_coturn'][0] }}"
+      postgresql_privs:
+        admin_option: yes
+        db: "{{ coturn_postgres_database }}"
+        privs: ALL
+        type: database
+        role: "{{ coturn_postgres_user }}"
+    when:
+    - pginit is defined
+    - pginit is changed
+  when:
+  - ansible_fqdn not in groups['postgres_coturn']
+  - ansible_nodename not in groups['postgres_coturn']
+  - ansible_hostname not in groups['postgres_coturn']

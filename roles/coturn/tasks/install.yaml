@@ -2,5 +2,84 @@
   apt:
     name: coturn
     state: present
-# FIXME:
-# provisions DB with /usr/share/doc/coturn/schema.sql
+- block:
+  - name: Creates Coturn Database Directory
+    file:
+      dest: /var/lib/coturn
+      group: turnserver
+      mode: 0755
+      owner: turnserver
+      state: directory
+    register: fixed_perms
+    when:
+    - (coturn_plain_port | int) > 1024
+    - (coturn_tls_port | int) > 1024
+  - name: Fixes Coturn Database Permissions
+    args:
+      chdir: /var/lib/coturn
+    shell: chown -R turnserver:turnserver .
+    when:
+    - fixed_perms is defined
+    - fixed_perms is changed
+  when:
+  - groups['postgres_coturn'] | length == 0
+- name: Ensures Turnserver User Member of certs-trusted Group
+  user:
+    append: yes
+    groups: certs-trusted
+    name: turnserver
+  when:
+  - (coturn_tls_port | int) > 1024
+  - (coturn_plain_port | int) > 1024
+- name: Configures Turn User
+  lineinfile:
+    dest: /lib/systemd/system/coturn.service
+    line: "{{ item }}={{ 'root' if ((coturn_tls_port | int) < 1025 or (coturn_plain_port | int < 1025)) else 'turnserver' }}"
+    regex: "^{{ item }}="
+  loop:
+  - Group
+  - User
+  register: turnunit
+- name: Configures Turn LimitNOFILE
+  lineinfile:
+    dest: /lib/systemd/system/coturn.service
+    insertafter: ^User=
+    line: LimitNOFILE=1048576
+    regex: ^LimitNOFILE=
+  register: turnunit2
+- name: Reloads Systemd Configuration
+  register: unit_configured
+  shell: systemctl daemon-reload
+  when:
+  - >
+      (turnunit is defined
+       and turnunit is changed)
+      or (turnunit2 is defined
+          and turnunit2 is changed)
+- block:
+  - name: Checks for previous configuration involving Turn public IP
+    args:
+      chdir: /etc/network
+    changed_when: False
+    failed_when: False
+    register: dummychk
+    shell: "grep {{ coturn_dummy_address }} interfaces"
+  - block:
+    - name: Adds Loopback Configuration if NAT-ed
+      blockinfile:
+        block: |
+              post-up ip addr add {{ coturn_dummy_address }}/32 dev lo
+              pre-down ip addr del {{ coturn_dummy_address }}/32 dev lo
+        insertafter: iface lo inet loopback
+        path: /etc/network/interfaces
+      register: dummycfg
+    - name: Installs Dummy Route
+      shell: ip addr add {{ coturn_dummy_address }}/32 dev lo
+      when:
+      - dummycfg is defined
+      - dummycfg is changed
+    when:
+    - dummychk is defined
+    - (dummychk.rc | default(0)) != 0
+  when:
+  - coturn_dummy_address | default(False)

@@ -1,0 +1,36 @@
+#FIXME:
+# - get SAML server public key (/etc/peertube/idp.crt)
+# - generate local SAML public/private keys (/etc/peertube/saml.crt, saml.key)
+- block:
+  - name: Sends Custom OIDC CA to PeerTube
+    synchronize:
+      dest: /root/pki/oidc-ca.crt
+      src: "{{ peertube_oidc_ca_path }}"
+  - include_role:
+      name: pki
+      tasks_from: install-ca.yaml
+    vars:
+      ca_path: /root/pki/oidc-ca.crt
+      install_as: oidc
+  when:
+  - peertube_oidc_ca_path | default(False)
+  - peertube_oidc_endpoint | default(False)
+- block:
+  - name: Sends Custom LDAP CA to PeerTube
+    synchronize:
+      dest: /root/pki/ldap-ca.crt
+      src: "{{ peertube_ldap_ca_path }}"
+  - include_role:
+      name: pki
+      tasks_from: install-ca.yaml
+    vars:
+      ca_path: /root/pki/ldap-ca.crt
+      install_as: ldap
+  - include_role:
+      name: commons
+      tasks_from: ldap.yaml
+    vars:
+      ldap_endpoint: "{{ peertube_ldap_endpoint }}"
+  when:
+  - peertube_ldap_ca_path | default(False)
+  - peertube_ldap_endpoint | default(False)

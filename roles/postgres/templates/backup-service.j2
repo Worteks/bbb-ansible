@@ -1,0 +1,6 @@
+[Unit]
+Description=Backups Postgres Databases {{ database }}
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/postgres-backup-{{ database }}

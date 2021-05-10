@@ -4,3 +4,11 @@
   vars:
     image_tag: "{{ scalelite_images_release }}-recording-importer"
     image_url: "{{ scalelite_images_repo }}"
+- include_tasks: sync.yaml
+  when:
+  - ansible_fqdn not in groups['drbd']
+  - ansible_hostname not in groups['drbd']
+  - ansible_nodename not in groups['drbd']
+  - groups['scalelite'] | length > 1
+  - groups['sshfs'] | length == 0
+  - groups['nfs'] | length == 0

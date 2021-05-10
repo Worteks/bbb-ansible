@@ -21,18 +21,18 @@ groups:
     expr: pg_exporter_last_scrape_error > 0
     for: 5m
     labels:
-      severity: warning
+      severity: critical
     annotations:
       summary: "Postgresql exporter error (instance {{ $labels.instance }})"
       description: "Postgresql exporter is showing errors. A query may be buggy in query.yaml\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
   - alert: PostgresqlReplicationLag
-    expr: (pg_replication_lag) > 10 and ON(instance) (pg_replication_is_replica == 1)
+    expr: pg_replication_lag > 30 and ON(instance) pg_replication_is_replica == 1
     for: 5m
     labels:
       severity: warning
     annotations:
       summary: "Postgresql replication lag (instance {{ $labels.instance }})"
-      description: "PostgreSQL replication lag is going up (> 10s)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+      description: "PostgreSQL replication lag is going up (> 30s)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
   - alert: PostgresqlTableNotVaccumed
     expr: time() - pg_stat_user_tables_last_autovacuum > 60 * 60 * 24
     for: 5m
@@ -50,16 +50,16 @@ groups:
       summary: "Postgresql table not analyzed (instance {{ $labels.instance }})"
       description: "Table has not been analyzed for 24 hours\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
   - alert: PostgresqlTooManyConnections
-    expr: sum by (datname) (pg_stat_activity_count{datname!~"template.*|postgres"}) > pg_settings_max_connections * 0.9
-    for: 5m
+    expr: sum by (datname) (pg_stat_activity_count{datname!~"template.*|postgres"}) > pg_settings_max_connections * 0.8
+    for: 2m
     labels:
       severity: warning
     annotations:
       summary: "Postgresql too many connections (instance {{ $labels.instance }})"
-      description: "PostgreSQL instance has too many connections\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+      description: "More than 80% of PostgreSQL connections are in use on {{ $labels.instance }}\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
   - alert: PostgresqlDeadLocks
-    expr: rate(pg_stat_database_deadlocks{datname!~"template.*|postgres"}[1m]) > 0
-    for: 5m
+    expr: increase(pg_stat_database_deadlocks{datname!~"template.*|postgres"}[1m]) > 5
+    for: 2m
     labels:
       severity: warning
     annotations:
@@ -67,7 +67,7 @@ groups:
       description: "PostgreSQL has dead-locks\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
   - alert: PostgresqlSlowQueries
     expr: pg_slow_queries > 0
-    for: 5m
+    for: 2m
     labels:
       severity: warning
     annotations:
@@ -90,7 +90,7 @@ groups:
       summary: "Postgresql WALE replication stopped (instance {{ $labels.instance }})"
       description: "WAL-E replication seems to be stopped\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
   - alert: PostgresqlHighRateStatementTimeout
-    expr: rate(postgresql_errors_total{type="statement_timeout"}[5m]) > 3
+    expr: rate(postgresql_errors_total{type="statement_timeout"}[1m]) > 3
     for: 5m
     labels:
       severity: critical
@@ -98,7 +98,7 @@ groups:
       summary: "Postgresql high rate statement timeout (instance {{ $labels.instance }})"
       description: "Postgres transactions showing high rate of statement timeouts\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
   - alert: PostgresqlHighRateDeadlock
-    expr: rate(postgresql_errors_total{type="deadlock_detected"}[1m]) * 60 > 1
+    expr: increase(postgresql_errors_total{type="deadlock_detected"}[1m]) > 1
     for: 5m
     labels:
       severity: critical
@@ -107,7 +107,7 @@ groups:
       description: "Postgres detected deadlocks\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
   - alert: PostgresqlUnusedReplicationSlot
     expr: pg_replication_slots_active == 0
-    for: 5m
+    for: 1m
     labels:
       severity: warning
     annotations:
@@ -115,7 +115,7 @@ groups:
       description: "Unused Replication Slots\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
   - alert: PostgresqlTooManyDeadTuples
     expr: ((pg_stat_user_tables_n_dead_tup > 10000) / (pg_stat_user_tables_n_live_tup + pg_stat_user_tables_n_dead_tup)) >= 0.1 unless ON(instance) (pg_replication_is_replica == 1)
-    for: 5m
+    for: 2m
     labels:
       severity: warning
     annotations:
@@ -139,7 +139,7 @@ groups:
       description: "Database connections with SSL compression enabled. This may add significant jitter in replication delay. Replicas should turn off SSL compression via `sslcompression=0` in `recovery.conf`.\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
   - alert: PostgresqlTooManyLocksAcquired
     expr: ((sum (pg_locks_count)) / (pg_settings_max_locks_per_transaction * pg_settings_max_connections)) > 0.20
-    for: 5m
+    for: 2m
     labels:
       severity: critical
     annotations:

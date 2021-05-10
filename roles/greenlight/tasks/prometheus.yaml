@@ -10,7 +10,7 @@
     chdir: /usr/src
     creates: "/usr/src/blackbox_exporter-{{ blackbox_exporter_release }}.linux-amd64"
     warn: False
-  shell: "tar -xzf /usr/src/blackbox-exporter-{{ blackbox_exporter_release }}.tar.gz"
+  shell: "tar -xzf /usr/src/blackbox-exporter-{{ blackbox_exporter_release }}.tar.gz && rm -f /usr/bin/blackbox_exporter"
 - name: Installs BlackBox Exporter
   copy:
     dest: /usr/bin/blackbox_exporter
@@ -19,6 +19,7 @@
     owner: root
     remote_src: yes
     src: "/usr/src/blackbox_exporter-{{ blackbox_exporter_release }}.linux-amd64/blackbox_exporter"
+  notify: Reloads BlackBox Exporter
 - name: Installs BlackBox Exporter Configuration Directory
   file:
     dest: /etc/blackbox
@@ -27,6 +28,7 @@
     owner: root
     state: directory
 - name: Installs BlackBox Exporter Configuration
+  notify: Reloads BlackBox Exporter
   template:
     dest: /etc/blackbox/config.yaml
     group: root
@@ -42,6 +44,7 @@
     groups: blackboxexporter
     name: blackboxexporter
 - name: Installs BlackBox Exporter Unit
+  notify: Reloads BlackBox Exporter
   register: exporter_unit
   template:
     dest: /etc/systemd/system/blackbox-exporter.service

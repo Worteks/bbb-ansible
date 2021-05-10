@@ -1,4 +1,4 @@
-version: '3'
+version: '2.0'
 services:
   scalelite-exporter:
     container_name: scalelite-exporter
@@ -10,13 +10,25 @@ services:
     - DEBUG=true
 {% endif %}
     - RECORDINGS_METRICS=true
+{% if 0 == 1 %}
+    - RECORDINGS_METRICS_READ_FROM_DISK=true
+{% endif %}
     - PORT={{ scalelite_exporter_port }}
+{% if bbb_uses_selfsigned | default(True) %}
     - TLS_VERIFY=false
+{% endif %}
     extra_hosts:
     - {{ scalelite_fqdn | default(ansible_fqdn) }}:{{ ansible_default_ipv4['address'] }}
     image: {{ scalelite_exporter_images_repo }}:{{ scalelite_exporter_images_release }}
     logging:
       driver: journald
+{% if docker_hostnetwork | default(False) %}
+    network_mode: host
+{% endif %}
     ports:
     - "{{ scalelite_exporter_port }}:{{ scalelite_exporter_port }}"
     restart: unless-stopped
+{% if 0 == 1 %}
+    volumes:
+    - /var/scalelite-recordings:/var/bigbluebutton:ro
+{% endif %}

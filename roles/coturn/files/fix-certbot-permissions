@@ -1,0 +1,11 @@
+#!/bin/sh
+
+chown -R root:certs-trusted /etc/letsencrypt/archives /etc/letsencrypt/live
+for subdir in archives live
+do
+    find /etc/letsencrypt/$subdir -type d -exec chmod g+rx {} \;
+    find /etc/letsencrypt/$subdir -type f -exec chmod g+r {} \;
+done
+systemctl kill -sUSR2 coturn.service
+
+exit 0

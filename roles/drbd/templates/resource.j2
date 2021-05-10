@@ -1,0 +1,16 @@
+resource {{ drbd_resource_name }} {
+  meta-disk internal;
+  device {{ drbd_child_device }};
+  syncer {
+    verify-alg sha1;
+  }
+  net {
+    allow-two-primaries;
+  }
+{% for node in drbd_members %}
+  on {{ hostvars[node]['ansible_fqdn'] }} {
+    disk {{ hostvars[node]['drbd_parent_device'] | default(drbd_parent_device) }};
+    address {{ hostvars[node]['drbd_address'] | default(hostvars[node]['ansible_default_ipv4']['address']) }}:{{ drbd_port }};
+  }
+{% endfor %}
+}

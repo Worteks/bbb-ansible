@@ -1,0 +1,28 @@
+- name: Installs Scalelite Filesystem Probe Script
+  copy:
+    dest: /usr/local/bin/scalelite-prometheus-recordings
+    group: root
+    mode: 0755
+    owner: root
+    src: prometheus-recordings.sh
+- name: Installs Scalelite Filesystem Probe Service
+  copy:
+    dest: "/etc/systemd/system/scalelite-prometheus-recordings.{{ item }}"
+    group: root
+    mode: 0644
+    owner: root
+    src: "prometheus-recordings.{{ item }}"
+  loop:
+  - service
+  - timer
+  register: punit
+- name: Reloads Systemd Configuration
+  shell: systemctl daemon-reload
+  when:
+  - punit is defined
+  - punit is changed
+- name: Enables Scalelite Recordings Prometheus Collection Job
+  service:
+    enabled: yes
+    name: scalelite-prometheus-recordings.timer
+    state: started

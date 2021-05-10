@@ -22,7 +22,7 @@ server {
     ssl_ciphers "ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+3DES:!aNULL:!MD5:!DSS:!AES256";
     ssl_prefer_server_ciphers on;
     ssl_dhparam /etc/nginx/ssl/dh.pem;
-    access_log /var/log/nginx/alertmanager.access.log;
+    access_log /var/log/nginx/alertmanager.access.log {{ nginx_log_fmt | default('combined') }};
 
     location / {
 	proxy_pass http://127.0.0.1:9093;

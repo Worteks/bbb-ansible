@@ -1,0 +1,11 @@
+groups:
+- name: BigBlueButtonConferencesStreamingPlatform
+  rules:
+  - alert: BigBlueButtonConferencesStreamingPlatformDown
+    expr: absent(up{prometheus_service_group="bbbcsp"})
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "BigBlueButtonConferencesStreamingPlatform down (instance {{ $labels.instance }})"
+      description: "BigBlueButtonConferencesStreamingPlatform down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"

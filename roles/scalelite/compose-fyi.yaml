@@ -1,0 +1,68 @@
+version: '2.0'
+services:
+  scalelite-api:
+    container_name: scalelite-api
+    environment:
+    - DATABASE_URL=postgres://scaleliteusr:scalelitepw@bbb-postgres.example.com:5432/scalelite?pool=5&sslmode=disable
+    - LOADBALANCER_SECRET=<arbitrary-secret-for-clients-to-query-API>
+    - REDIS_URL=redis://bbb-lb-1.example.com:6379
+    - SECRET_KEY_BASE=<arbitrary-secret-only-used-by-scalelite>
+    - URL_HOST=scalelite.example.com
+    image: docker.io/blindsidenetwks/scalelite:v1-api
+    logging:
+      driver: journald
+    ports:
+    - "3000:3000"
+    restart: unless-stopped
+    volumes:
+    - /etc/ssl/certs:/etc/ssl/certs
+    - /usr/local/share/ca-certificates:/usr/local/share/ca-certificates
+    - /var/log/scalelite-api:/app/log
+    - /var/scalelite-recordings:/var/bigbluebutton
+  scalelite-nginx:
+    container_name: scalelite-nginx
+    environment:
+    - NGINX_SSL=true
+    - URL_HOST=scalelite.example.com
+    depends_on:
+    - scalelite-api
+    image: docker.io/blindsidenetwks/scalelite:v1-nginx
+    ports:
+    - "80:80"
+    - "443:443"
+    - "8080:8080"
+    restart: unless-stopped
+    volumes:
+    - /etc/nginx/ssl:/etc/nginx/ssl/live/scalelite.example.com
+    - /etc/ssl/certs:/etc/ssl/certs
+    - /usr/local/share/ca-certificates:/usr/local/share/ca-certificates
+    - /var/log/nginx:/var/log/nginx
+    - /var/scalelite-recordings/published:/var/bigbluebutton/published
+  scalelite-poller:
+    container_name: scalelite-poller
+    depends_on:
+    - scalelite-api
+    environment:
+    - DATABASE_URL=postgres://scaleliteusr:scalelitepw@bbb-postgres.example.com:5432/scalelite?pool=5&sslmode=disable
+    - REDIS_URL=redis://bbb-lb-1.example.com:6379
+    image: docker.io/blindsidenetwks/scalelite:v1-poller
+    logging:
+      driver: journald
+    volumes:
+    - /etc/ssl/certs:/etc/ssl/certs
+    - /usr/local/share/ca-certificates:/usr/local/share/ca-certificates
+  scalelite-recording-importer:
+    container_name: scalelite-recording-importer
+    depends_on:
+    - scalelite-api
+    environment:
+    - DATABASE_URL=postgres://scaleliteusr:scalelitepw@bbb-postgres.example.com:5432/scalelite?pool=5&sslmode=disable
+    - REDIS_URL=redis://bbb-lb-1.example.com:6379
+    image: docker.io/blindsidenetwks/scalelite:v1-recording-importer
+    logging:
+      driver: journald
+    volumes:
+    - /etc/ssl/certs:/etc/ssl/certs
+    - /usr/local/share/ca-certificates:/usr/local/share/ca-certificates
+    - /var/scalelite-recordings:/var/bigbluebutton
+    - /var/scalelite-recordings/spool:/var/bigbluebutton/spool

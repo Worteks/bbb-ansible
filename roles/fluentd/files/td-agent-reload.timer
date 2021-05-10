@@ -1,0 +1,9 @@
+[Unit]
+Description=Restarts Td-Agent
+
+[Timer]
+OnBootSec=360min
+OnCalendar=0/23:30:00
+
+[Install]
+WantedBy=timers.target

@@ -50,6 +50,7 @@ scrape_configs:
     target_label: kubernetes_service_name
 {% endif %}
   - regex: ([^:]+):\d+
+    replacement: "https://${1}"
     source_labels: [__address__]
     target_label: __param_target
   - source_labels: [__param_target]
@@ -86,6 +87,40 @@ scrape_configs:
     source_labels: [__address__]
     target_label: instance
   scheme: http
+{% if groups['kibana'] | length > 0 %}
+
+- job_name: kibana
+  metrics_path: /_prometheus/metrics
+  static_configs:
+  - targets:
+{% for remote in groups['kibana'] %}
+    - {{ hostvars[remote]['ansible_default_ipv4']['address'] }}:5601
+{% endfor %}
+  relabel_configs:
+{% if prometheus_k8s_integration | default(False) %}
+  - action: replace
+    replacement: metal
+    source_labels: [__address__]
+    target_label: kubernetes_cluster
+  - action: replace
+    replacement: {{ prometheus_cluster_name }}
+    source_labels: [__address__]
+    target_label: kubernetes_namespace
+  - regex: ([^:]+):\d+
+    source_labels: [__address__]
+    target_label: kubernetes_node_name
+  - regex: ([^:]+):\d+
+    source_labels: [__address__]
+    target_label: kubernetes_pod_name
+  - regex: ([^:]+):\d+
+    source_labels: [__address__]
+    target_label: kubernetes_service_name
+{% endif %}
+  - regex: ([^:]+):\d+
+    source_labels: [__address__]
+    target_label: instance
+  scheme: http
+{% endif %}
 {% if groups['alertmanager'] | length > 0 %}
 
 alerting:

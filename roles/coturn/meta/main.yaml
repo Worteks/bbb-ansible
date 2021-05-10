@@ -1,0 +1,4 @@
+dependencies:
+- role: certbot
+  when:
+  - not (bbb_uses_selfsigned | default(True))

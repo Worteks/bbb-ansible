@@ -1,0 +1,7 @@
+- name: Installs Coturn Tests Helper
+  template:
+    dest: /usr/local/sbin/test-webrtc-coturn
+    group: root
+    mode: 0700
+    owner: root
+    src: test.j2

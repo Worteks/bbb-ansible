@@ -1,0 +1,12 @@
+[Unit]
+Description=Systemd Exporter
+After=network.target
+
+[Service]
+User=root
+Group=root
+ExecStart=/usr/bin/systemd_exporter --web.listen-address=:{{ systemd_exporter_port }} --collector.unit-blacklist=user-.*\.slice|system\.slice|.*\.socket|.*dfsck\.slice
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

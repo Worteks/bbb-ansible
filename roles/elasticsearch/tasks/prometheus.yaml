@@ -1,0 +1,49 @@
+- name: Creates ElasticSearch Exporter Group
+  group:
+    name: esxp
+    state: present
+- name: Creates ElasticSearch Exporter User
+  user:
+    groups: esxp
+    name: esxp
+- name: Fetches ElasticSearch Exporter
+  get_url:
+    dest: "/usr/src/elasticsearch_exporter-{{ elasticsearch_exporter_release }}.tar.gz"
+    group: root
+    mode: 0644
+    owner: root
+    url: "https://github.com/justwatchcom/elasticsearch_exporter/releases/download/v{{ elasticsearch_exporter_release }}/elasticsearch_exporter-{{ elasticsearch_exporter_release }}.linux-amd64.tar.gz"
+- name: Extracts ElasticSearch Exporter
+  args:
+    chdir: /usr/src
+    creates: "/usr/src/elasticsearch_exporter-{{ elasticsearch_exporter_release }}.linux-amd64"
+    warn: False
+  shell: "tar -xzf /usr/src/elasticsearch_exporter-{{ elasticsearch_exporter_release }}.tar.gz && rm -f /usr/bin/elasticsearch_exporter"
+- name: Installs ElasticSearch Exporter
+  copy:
+    dest: /usr/bin/elasticsearch_exporter
+    group: root
+    mode: 0755
+    owner: root
+    remote_src: yes
+    src: "/usr/src/elasticsearch_exporter-{{ elasticsearch_exporter_release }}.linux-amd64/elasticsearch_exporter"
+  notify: Reloads ElasticSearch Exporter
+- name: Installs ElasticSearch Exporter Unit
+  notify: Reloads ElasticSearch Exporter
+  register: exporter_unit
+  template:
+    dest: /etc/systemd/system/elasticsearch-exporter.service
+    group: root
+    mode: 0644
+    owner: root
+    src: exporter.j2
+- name: Reloads Systemd Configuration
+  shell: systemctl daemon-reload
+  when:
+  - exporter_unit is defined
+  - exporter_unit is changed
+- name: Ensures ElasticSearch Exporter is Running & Starts on Boot
+  service:
+    enabled: yes
+    name: elasticsearch-exporter
+    state: started

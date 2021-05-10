@@ -1,0 +1,39 @@
+- name: Installs Recordings Sync Script
+  template:
+    dest: /usr/local/bin/scalelite-sync-published
+    group: root
+    mode: 0755
+    owner: root
+    src: sync-recordings.j2
+- include_tasks: import-sl-key.yaml
+  loop: "{{ groups['scalelite'] }}"
+  loop_control:
+    loop_var: srv
+  when:
+  - srv not in [ ansible_hostname, ansible_fqdn, ansible_nodename ]
+# FIXME: trust remote hostkeys
+# doesn't seem to be needed ATM, might be thanks to freeipa?
+- block:
+  - name: Installs Scalelite Recordings Sync Job
+    copy:
+      dest: "/etc/systemd/system/scalelite-backup.{{ item }}"
+      group: root
+      mode: 0644
+      owner: root
+      src: "backup-{{ item }}"
+    loop:
+    - service
+    - timer
+    register: bkpunit
+  - name: Reloads Systemd Configuration
+    shell: systemctl daemon-reload
+    when:
+    - bkpunit is defined
+    - bkpunit is changed
+  - name: Enables Scalelite Videos Sync Job
+    service:
+      enabled: yes
+      name: scalelite-backup.timer
+      state: started
+  when:
+  - groups['scalelite'][0] in [ ansible_hostname, ansible_fqdn, ansible_nodename ]

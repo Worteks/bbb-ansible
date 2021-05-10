@@ -353,7 +353,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(sum by (instance_orgs{instance=~\"$instance\"}))",
+          "expr": "sum(grafana_stat_total_orgs{instance=~\"$instance\"})",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,

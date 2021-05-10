@@ -1,0 +1,51 @@
+- name: Gather Facts from PeerTube
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['peertube'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+- name: Gather Facts from BigBlueButton
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['bbb'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+  when:
+  - groups['bbb'] | length == 0
+- name: Gather Facts from Scalelite
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['scalelite'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+  when:
+  - groups['scalelite'] | length > 0
+- name: Gather Facts from LBs
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['lb_front'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+  when:
+  - groups['lb_front'] | length > 0
+  - groups['scalelite'] | length > 1
+- name: Gather Facts from Reverse Proxies
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['reverse'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+  when:
+  - groups['reverse'] | length > 0
+  - groups['lb_front'] | length == 0
+  - groups['scalelite'] | length > 1

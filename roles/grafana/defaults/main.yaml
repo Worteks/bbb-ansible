@@ -1,7 +1,7 @@
-grafana_admin_user: admin
+grafana_admin_account: admin
 grafana_admin_password: secret
 
-grafana_images_release: 7.1.2
+grafana_images_release: 7.5.5
 grafana_images_repo: docker.io/grafana/grafana
 
 grafana_ldap_base: dc=demo,dc=local
@@ -23,3 +23,9 @@ grafana_oidc_client_secret: changeme
 #grafana_oidc_endpoint: https://auth.example.com
 grafana_oidc_token_endpint: /oauth2/token
 grafana_oidc_userinfo_endpint: /oauth2/userinfo
+
+grafana_postgres_database: grafana
+#grafana_postgres_host: False -- detected from inventory
+grafana_postgres_password: grafanapw
+grafana_postgres_port: 5432
+grafana_postgres_user: grafanausr

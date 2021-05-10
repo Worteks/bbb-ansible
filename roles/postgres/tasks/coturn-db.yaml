@@ -21,3 +21,12 @@
     privs: ALL
     type: database
     role: "{{ coturn_postgres_user }}"
+- include_tasks: backup.yaml
+  vars:
+    database: "{{ coturn_postgres_database }}"
+    db_password: "{{ coturn_postgres_password }}"
+    db_user: "{{ coturn_postgres_user }}"
+  when:
+  - >
+      do_backups | default(False)
+      or do_postgres_backups | default(False)

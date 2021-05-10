@@ -1,15 +1,17 @@
-#bigbluebutton_fqdn: {{ ansible_fqdn }}
+#greenlight_fqdn: {{ ansible_fqdn }}
 
 bigbluebutton_letsencrypt_address: r00t@example.com
 
-# ubuntu xenial / stable:
+# ubuntu xenial / old-stable:
 bigbluebutton_version: 22
-# ubuntu bionic / dev:
-#bigbluebutton_version: 230-dev
+# ubuntu bionic / stable:
+#bigbluebutton_version: 23
 
 bigbluebutton_exporter_images_repo: greenstatic/bigbluebutton-exporter
-bigbluebutton_exporter_images_release: v0.5.1
+bigbluebutton_exporter_images_release: v0.6.0
 bigbluebutton_exporter_port: 9688
+
+bigbluebutton_recordings_retention_days: 7
 
 freeswitch_exporter_port: 9725
 
@@ -24,6 +26,8 @@ freeswitch_trunk_proxy: siptrunk.ovh.net
 freeswitch_trunk_realm: siptrunk.ovh.net
 freeswitch_trunk_register: "true"
 #freeswitch_trunk_username: 0033xxxxxx
+
+kurento_exporter_port: 9148
 
 turn_default_plain_port: 3478
 turn_default_tls_port: 443

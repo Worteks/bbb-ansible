@@ -1,0 +1,8 @@
+- name: Reloads Node Exporter
+  service:
+    name: node-exporter
+    state: restarted
+- name: Reloads Systemd Exporter
+  service:
+    name: systemd-exporter
+    state: restarted

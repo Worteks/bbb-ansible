@@ -1,0 +1,32 @@
+- name: Installs Grafana Postgres Database
+  become: yes
+  become_user: postgres
+  postgresql_db:
+    encoding: UTF-8
+    name: "{{ grafana_postgres_database }}"
+    template: template0
+- name: Installs Grafana Postgres User
+  become: yes
+  become_user: postgres
+  postgresql_user:
+    db: "{{ grafana_postgres_database }}"
+    name: "{{ grafana_postgres_user }}"
+    password: "{{ grafana_postgres_password }}"
+- name: Grants Grafana User Privileges over its database
+  become: yes
+  become_user: postgres
+  postgresql_privs:
+    admin_option: yes
+    db: "{{ grafana_postgres_database }}"
+    privs: ALL
+    type: database
+    role: "{{ grafana_postgres_user }}"
+- include_tasks: backup.yaml
+  vars:
+    database: "{{ grafana_postgres_database }}"
+    db_password: "{{ grafana_postgres_password }}"
+    db_user: "{{ grafana_postgres_user }}"
+  when:
+  - >
+      do_backups | default(False)
+      or do_postgres_backups | default(False)

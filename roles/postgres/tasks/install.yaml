@@ -35,6 +35,20 @@
 - name: Installs Postgres
   apt:
     name:
-    - postgresql-12
-    - postgresql-client-12
+    - "postgresql-{{ postgres_version }}"
+    - "postgresql-client-{{ postgres_version }}"
     state: present
+
+- block:
+  - name: Ensures Postgres is Disabled on DRBD Members
+    service:
+      enabled: no
+      name: postgresql
+  - name: Ensures Postgres is Stopped on DRBD Backup Members
+    service:
+      name: postgresql
+      state: stopped
+    when:
+    - not (drbd_is_primary | default(False))
+  when:
+  - ansible_nodename in groups['drbd']

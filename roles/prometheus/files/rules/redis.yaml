@@ -10,7 +10,7 @@ groups:
       summary: "Redis down (instance {{ $labels.instance }})"
       description: "Redis instance is down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
   - alert: RedisMissingMaster
-    expr: count by (redis_replica_set) (redis_instance_info{role="master"}) == 0
+    expr: (count(redis_instance_info{role="master"}) or vector(0)) < 1
     for: 5m
     labels:
       severity: critical
@@ -34,8 +34,8 @@ groups:
       summary: "Redis replication broken (instance {{ $labels.instance }})"
       description: "Redis instance lost a slave\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
   - alert: RedisClusterFlapping
-    expr: changes(redis_connected_slaves[5m]) > 2
-    for: 5m
+    expr: changes(redis_connected_slaves[5m]) > 1
+    for: 2m
     labels:
       severity: critical
     annotations:
@@ -49,25 +49,33 @@ groups:
     annotations:
       summary: "Redis missing backup (instance {{ $labels.instance }})"
       description: "Redis has not been backuped for 24 hours\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
-  - alert: RedisOutOfMemory
+  - alert: RedisOutOfSysMemory
     expr: redis_memory_used_bytes / redis_total_system_memory_bytes * 100 > 90
-    for: 5m
+    for: 2m
     labels:
       severity: warning
     annotations:
-      summary: "Redis out of memory (instance {{ $labels.instance }})"
-      description: "Redis is running out of memory (> 90%)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+      summary: "Redis out of system memory (instance {{ $labels.instance }})"
+      description: "Redis is running out of system memory (> 90%)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: RedisOutOfMemory
+    expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 90 AND redis_memory_max_bytes > 0
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Redis out of configured memory (instance {{ $labels.instance }})"
+      description: "Redis is running out of configured memory (> 90%)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
   - alert: RedisTooManyConnections
     expr: redis_connected_clients > 100
-    for: 5m
+    for: 2m
     labels:
       severity: warning
     annotations:
       summary: "Redis too many connections (instance {{ $labels.instance }})"
       description: "Redis instance has too many connections\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
   - alert: RedisNotEnoughConnections
-    expr: redis_connected_clients < 5
-    for: 5m
+    expr: redis_connected_clients < 2
+    for: 2m
     labels:
       severity: warning
     annotations:
@@ -75,7 +83,7 @@ groups:
       description: "Redis instance should have more connections (> 5)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
   - alert: RedisRejectedConnections
     expr: increase(redis_rejected_connections_total[1m]) > 0
-    for: 5m
+    for: 2m
     labels:
       severity: critical
     annotations:

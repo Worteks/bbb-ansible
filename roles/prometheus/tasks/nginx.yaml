@@ -1,5 +1,5 @@
 - name: Installs Prometheus Virtualhost
-  notify: Reload Nginx
+  notify: Reloads Nginx
   template:
     dest: /etc/nginx/sites-available/prometheus.conf
     group: root
@@ -11,4 +11,4 @@
     dest: /etc/nginx/sites-enabled/prometheus.conf
     src: /etc/nginx/sites-available/prometheus.conf
     state: link
-  notify: Reload Nginx
+  notify: Reloads Nginx

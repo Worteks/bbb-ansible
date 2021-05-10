@@ -7,8 +7,8 @@
   user:
     groups: scalelite-spool
     name: scalelite-spool
-    uid: 1000
-#FIXME: should check/drop/... user with uid=1000, if another exists
+    uid: 2000
+#FIXME: should check/drop/... user with uid=2000, if another exists
 - name: Creates Scalelite Spool Home Directory
   file:
     dest: "{{ fl }}"
@@ -33,6 +33,8 @@
   loop: "{{ groups['bbb'] }}"
   loop_control:
     loop_var: srv
+  when:
+  - not (skip_bbb | default(False))
 - name: Ensures authorized_keys Has Proper Permissions
   file:
     dest: /home/scalelite-spool/.ssh/authorized_keys

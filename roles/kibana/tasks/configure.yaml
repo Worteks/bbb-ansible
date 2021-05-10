@@ -1,0 +1,21 @@
+- name: Installs Kibana Docker-Compose Directory
+  file:
+    dest: /etc/docker-compose/kibana
+    group: root
+    mode: 0750
+    owner: root
+    state: directory
+- name: Installs Kibana Docker-Compose Configuration
+  register: should_reload
+  template:
+    dest: /etc/docker-compose/kibana/docker-compose.yaml
+    group: root
+    mode: 0640
+    owner: root
+    src: compose.j2
+- include_role:
+    name: docker
+    tasks_from: service.yaml
+  vars:
+    service_description: Kibana
+    service_name: kibana

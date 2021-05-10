@@ -17,7 +17,7 @@
     chdir: "/usr/src/mongodb-exporter-v{{ mongodb_exporter_release }}.linux-amd64"
     creates: "/usr/src/mongodb-exporter-v{{ mongodb_exporter_release }}.linux-amd64/mongodb_exporter"
     warn: False
-  shell: "tar -xzf /usr/src/mongodb-exporter-{{ mongodb_exporter_release }}.tar.gz"
+  shell: "tar -xzf /usr/src/mongodb-exporter-{{ mongodb_exporter_release }}.tar.gz && rm -f /usr/bin/mongodb_exporter"
 - name: Installs MongoDB Exporter
   copy:
     dest: /usr/bin/mongodb_exporter
@@ -26,6 +26,7 @@
     owner: root
     remote_src: yes
     src: "/usr/src/mongodb-exporter-v{{ mongodb_exporter_release }}.linux-amd64/mongodb_exporter"
+  notify: Reloads MongoDB Exporter
 - name: Creates MongoDB Exporter Group
   group:
     name: mongodbexporter
@@ -35,6 +36,7 @@
     groups: mongodbexporter
     name: mongodbexporter
 - name: Installs MongoDB Exporter Unit
+  notify: Reloads MongoDB Exporter
   register: exporter_unit
   template:
     dest: /etc/systemd/system/mongodb-exporter.service

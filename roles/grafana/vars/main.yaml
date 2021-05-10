@@ -1,14 +1,23 @@
 grafana_dashboards:
 - BigBlueButton
+- DockerEngine
+- ElasticSearch
+- Fluentd
 - FreeSwitch
 - Go_Applications
 - Grafana
 - HAProxy
+- Kibana
 - MongoDB_Operations
 - MongoDB_Overview
 - MongoDB_WiredTiger
 - Nginx
+- NodeJS_Applications
+- NodeJS_Metrics
 - Nodes
+- PaceMaker
+- PaceMaker_MultiCluster
+- PeerTube
 - Postgres
 - Prometheus
 - Redis

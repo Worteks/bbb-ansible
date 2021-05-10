@@ -1,0 +1,4 @@
+- include_tasks: install.yaml
+- include_tasks: pm2.yaml
+  when:
+  - nodejs_process_manager | default(True)

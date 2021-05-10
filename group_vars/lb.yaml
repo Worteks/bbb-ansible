@@ -15,6 +15,8 @@ firehol_app_opened_ports:
   value: tcp/9093
 - name: nodexp
   value: tcp/9142
+- name: systemdxp
+  value: tcp/9147
 - name: haproxyxp
   value: tcp/9180
 

@@ -461,7 +461,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (instance,device) (100 - ((node_filesystem_avail_bytes{instance=\"$node\",job=\"$job\",mountpoint=\"/\",fstype!=\"rootfs\"} * 100) / node_filesystem_size_bytes{instance=\"$node\",job=\"$job\",mountpoint=\"/\",fstype!=\"rootfs\"}))",
+          "expr": "sum by (instance,device) (100 - ((node_filesystem_free_bytes{instance=\"$node\",job=\"$job\",mountpoint=\"/\"} * 100) / node_filesystem_size_bytes{instance=\"$node\",job=\"$job\",mountpoint=\"/\"}))",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -725,7 +725,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum by (instance) (node_filesystem_size_bytes{instance=\"$node\",job=\"$job\",mountpoint=\"/\",fstype!=\"rootfs\"})",
+          "expr": "sum by (instance) (node_filesystem_size_bytes{instance=\"$node\",job=\"$job\",mountpoint=\"/\"})",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 1,
@@ -1489,7 +1489,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (instance,mountpoint) (100 - ((node_filesystem_avail_bytes{instance=\"$node\",job=\"$job\",device!~'rootfs'} * 100) / node_filesystem_size_bytes{instance=\"$node\",job=\"$job\",device!~'rootfs'}))",
+          "expr": "sum by (instance,mountpoint) (100 - ((node_filesystem_free_bytes{instance=\"$node\",job=\"$job\"} * 100) / node_filesystem_size_bytes{instance=\"$node\",job=\"$job\"}))",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{mountpoint}}",
@@ -2101,7 +2101,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum by (instance,mountpoint) (node_filesystem_size_bytes{instance=\"$node\",job=\"$job\",device!~'rootfs'} - node_filesystem_avail_bytes{instance=\"$node\",job=\"$job\",device!~'rootfs'})",
+              "expr": "sum by (instance,mountpoint) (node_filesystem_size_bytes{instance=\"$node\",job=\"$job\"} - node_filesystem_free_bytes{instance=\"$node\",job=\"$job\"})",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{mountpoint}}",
@@ -9416,7 +9416,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum by (instance,mountpoint) (node_filesystem_avail_bytes{instance=\"$node\",job=\"$job\",device!~'rootfs'})",
+              "expr": "sum by (instance,mountpoint) (node_filesystem_avail_bytes{instance=\"$node\",job=\"$job\"})",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -9426,7 +9426,7 @@
               "step": 4
             },
             {
-              "expr": "sum by (instance,mountpoint) (node_filesystem_free_bytes{instance=\"$node\",job=\"$job\",device!~'rootfs'})",
+              "expr": "sum by (instance,mountpoint) (node_filesystem_free_bytes{instance=\"$node\",job=\"$job\"})",
               "format": "time_series",
               "hide": true,
               "intervalFactor": 2,
@@ -9435,7 +9435,7 @@
               "step": 2
             },
             {
-              "expr": "sum by (instance,mountpoint) (node_filesystem_size_bytes{instance=\"$node\",job=\"$job\",device!~'rootfs'})",
+              "expr": "sum by (instance,mountpoint) (node_filesystem_size_bytes{instance=\"$node\",job=\"$job\"})",
               "format": "time_series",
               "hide": true,
               "intervalFactor": 2,
@@ -9537,7 +9537,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum by (instance,mountpoint) (node_filesystem_files_free{instance=\"$node\",job=\"$job\",device!~'rootfs'})",
+              "expr": "sum by (instance,mountpoint) (node_filesystem_files_free{instance=\"$node\",job=\"$job\"})",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -9745,7 +9745,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum by (instance,mountpoint) (node_filesystem_files{instance=\"$node\",job=\"$job\",device!~'rootfs'})",
+              "expr": "sum by (instance,mountpoint) (node_filesystem_files{instance=\"$node\",job=\"$job\"})",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -9850,7 +9850,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum by (instance,mountpoint) (node_filesystem_readonly{instance=\"$node\",job=\"$job\",device!~'rootfs'})",
+              "expr": "sum by (instance,mountpoint) (node_filesystem_readonly{instance=\"$node\",job=\"$job\"})",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{mountpoint}} - ReadOnly",
@@ -9858,7 +9858,7 @@
               "step": 4
             },
             {
-              "expr": "sum by (instance,mountpoint) (node_filesystem_device_error{instance=\"$node\",job=\"$job\",device!~'rootfs'})",
+              "expr": "sum by (instance,mountpoint) (node_filesystem_device_error{instance=\"$node\",job=\"$job\"})",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 2,

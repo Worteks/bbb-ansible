@@ -1,0 +1,8 @@
+- name: Creates Greenlight initial Admin Account
+  args:
+    chdir: /etc/docker-compose/greenlight
+    creates: /etc/docker-compose/greenlight/greenlight-initial-admin.log
+  delegate_to: "{{ groups['greenlight'][0] }}"
+  run_once: True
+  shell: |
+    docker exec greenlight /bin/sh -c 'bundle exec rake user:create["{{ greenlight_admin_account }}","{{ greenlight_admin_email }}","{{ greenlight_admin_password }}","admin"]' >greenlight-initial-admin.log 2>&1

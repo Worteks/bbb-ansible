@@ -1,0 +1,17 @@
+- name: Installs PHP Runtime
+  apt:
+    name:
+    - "php{{ php_version }}-fpm"
+    - "php{{ php_version }}-cli"
+    - "php{{ php_version }}-curl"
+    - "php{{ php_version }}-gd"
+    - "php{{ php_version }}-intl"
+    - "php{{ php_version }}-pgsql"
+    - "php{{ php_version }}-xml"
+    - "php{{ php_version }}-xmlrpc"
+    - "php{{ php_version }}-ldap"
+    - "php{{ php_version }}-json"
+    - "php{{ php_version }}-opcache"
+    - "php{{ php_version }}-readline"
+    - "php{{ php_version }}-mbstring"
+    state: present

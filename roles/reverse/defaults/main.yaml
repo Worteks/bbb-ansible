@@ -1,0 +1,14 @@
+nginx_backends_ipfilter: []
+
+alertmanager_plain_port: 9093
+alertmanager_port: 443
+bbbcsp_port: 443
+grafana_port: 443
+greenlight_port: 443
+kibana_port: 443
+peertube_port: 443
+prometheus_plain_port: 9090
+prometheus_port: 443
+scalelite_port: 443
+
+peertube_max_body_size: 8G

@@ -1,6 +1,13 @@
 - include_tasks: commons.yaml
 - include_tasks: locale.yaml
+  when:
+  - ansible_distribution in [ 'Debian', 'Devuan', 'Ubuntu' ]
 - include_tasks: time.yaml
+- include_tasks: ipa.yaml
+  when:
+  - groups['freeipa'] | length > 0
+  - ansible_fqdn not in groups['freeipa']
+  - ansible_hostname not in groups['freeipa']
 - include_tasks: update.yaml
 - include_tasks: prometheus.yaml
   when:

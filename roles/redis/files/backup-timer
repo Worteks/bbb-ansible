@@ -1,0 +1,9 @@
+[Unit]
+Description=Run Redis Database Backup
+
+[Timer]
+OnBootSec=30min
+OnCalendar=0/2:00:00
+
+[Install]
+WantedBy=timers.target

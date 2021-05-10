@@ -1,0 +1,11 @@
+groups:
+- name: PeerTube
+  rules:
+  - alert: PeerTubeDown
+    expr: absent(peertube_users_count)
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "PeerTube down (instance {{ $labels.instance }})"
+      description: "PeerTube down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"

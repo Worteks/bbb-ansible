@@ -7,6 +7,10 @@ coturn_postgres_database: coturn
 coturn_postgres_password: coturnpw
 coturn_postgres_user: coturnusr
 
+grafana_postgres_database: grafana
+grafana_postgres_password: grafanapw
+grafana_postgres_user: grafanausr
+
 greenlight_postgres_database: greenlight
 greenlight_postgres_password: greenlightpw
 greenlight_postgres_user: greenlightusr
@@ -19,9 +23,16 @@ openstreamingplatform_postgres_database: osp
 openstreamingplatform_postgres_password: osppw
 openstreamingplatform_postgres_user: ospusr
 
+peertube_postgres_password: peertubepw
+peertube_postgres_user: peertubeusr
+
 postgres_exporter_db: postgres
 postgres_exporter_port: 9144
-postgres_exporter_release: 0.8.0
+postgres_exporter_release: 0.9.0
+
+postgres_max_connections: 300
+postgres_shared_buffers_mbytes: 128
+postgres_version: 13
 
 scalelite_postgres_database: scalelite
 scalelite_postgres_password: scalelitepw

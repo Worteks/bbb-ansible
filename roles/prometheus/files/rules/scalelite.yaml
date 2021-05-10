@@ -1,0 +1,27 @@
+groups:
+- name: Scalelite
+  rules:
+  - alert: ScaleliteRecordingsImporterDown
+    expr: sum(scalelite_recordings_up) < 1
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Scalelite Recordings Importer down (instance {{ $labels.instance }})"
+      description: "Scalelite Recordings Importer down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: ScaleliteRecordingsQueued
+    expr: scalelite_recordings_spool_count > 0
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Scalelite Recordings in Queue (instance {{ $labels.instance }})"
+      description: "Scalelite Recordings Importer has jobs to process\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: ScaleliteRecordingsStale
+    expr: time() - scalelite_recordings_last_run > 300
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Scalelite Recordings Exporter down (instance {{ $labels.instance }})"
+      description: "Scalelite Recordings Exporter down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"

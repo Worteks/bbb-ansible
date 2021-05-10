@@ -17,7 +17,7 @@
     chdir: "/usr/src/nginx-exporter-v{{ nginx_exporter_release }}.linux-amd64"
     creates: "/usr/src/nginx-exporter-v{{ nginx_exporter_release }}.linux-amd64/nginx-prometheus-exporter"
     warn: False
-  shell: "tar -xzf /usr/src/nginx-exporter-{{ nginx_exporter_release }}.tar.gz"
+  shell: "tar -xzf /usr/src/nginx-exporter-{{ nginx_exporter_release }}.tar.gz && rm -f /usr/bin/nginx_exporter"
 - name: Installs Nginx Exporter
   copy:
     dest: /usr/bin/nginx_exporter
@@ -26,6 +26,7 @@
     owner: root
     remote_src: yes
     src: "/usr/src/nginx-exporter-v{{ nginx_exporter_release }}.linux-amd64/nginx-prometheus-exporter"
+  notify: Reloads Nginx Exporter
 - name: Creates Nginx Exporter Group
   group:
     name: nginxexporter
@@ -35,6 +36,7 @@
     groups: nginxexporter
     name: nginxexporter
 - name: Installs Nginx Exporter Unit
+  notify: Reloads Nginx Exporter
   register: exporter_unit
   template:
     dest: /etc/systemd/system/nginx-exporter.service
@@ -52,3 +54,29 @@
     enabled: yes
     name: nginx-exporter
     state: started
+  when:
+  - >
+       (nginx_exporter_should_run | default(False)
+        and (ansible_fqdn in groups['drbd']
+             or ansible_nodename in groups['drbd']
+             or ansible_hostname in groups['drbd']))
+       or (ansible_fqdn not in groups['drbd']
+          and ansible_nodename not in groups['drbd']
+          and ansible_hostname not in groups['drbd'])
+- block:
+  - name: Ensures Nginx Exporter is Disabled on DRBD Members
+    service:
+      enabled: no
+      name: nginx-exporter
+  - name: Ensures Nginx Exporter is Stopped on DRBD Backup Members
+    service:
+      name: nginx-exporter
+      state: stopped
+    when:
+    - not (drbd_is_primary | default(False))
+  when:
+  - not (nginx_exporter_should_run | default(False))
+  - >
+      ansible_fqdn in groups['drbd']
+      or ansible_hostname in groups['drbd']
+      or ansible_nodename in groups['drbd']

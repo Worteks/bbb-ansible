@@ -40,3 +40,12 @@
   when:
   - fix_check is defined
   - fix_check is changed
+- include_tasks: backup.yaml
+  vars:
+    database: "{{ scalelite_postgres_database }}"
+    db_password: "{{ scalelite_postgres_password }}"
+    db_user: "{{ scalelite_postgres_user }}"
+  when:
+  - >
+      do_backups | default(False)
+      or do_postgres_backups | default(False)

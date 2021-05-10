@@ -1,0 +1,4 @@
+- include_tasks: install.yaml
+- include_tasks: corosync.yaml
+- include_tasks: pacemaker.yaml
+- include_tasks: prometheus.yaml

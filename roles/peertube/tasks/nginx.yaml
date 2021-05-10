@@ -1,0 +1,14 @@
+- name: Installs PeerTube Virtualhost
+  notify: Reloads Nginx
+  template:
+    dest: /etc/nginx/sites-available/peertube.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: vhost.j2
+- name: Enables PeerTube Virtualhost
+  file:
+    dest: /etc/nginx/sites-enabled/peertube.conf
+    src: /etc/nginx/sites-available/peertube.conf
+    state: link
+  notify: Reloads Nginx

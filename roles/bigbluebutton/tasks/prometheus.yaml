@@ -1,8 +1,11 @@
 - include_tasks: prom-bbb.yaml
 - include_tasks: prom-freeswitch.yaml
+- include_tasks: prom-kurento.yaml
 - include_role:
     name: nginx
     tasks_from: prometheus.yaml
+  vars:
+    nginx_stats_port: 8083
 - include_role:
     name: redis
     tasks_from: prometheus.yaml
@@ -11,4 +14,5 @@
     tasks_from: prometheus.yaml
   vars:
     mongodb_listen_address: 127.0.1.1
+- include_tasks: prom-services.yaml
 # TODO: completion ..

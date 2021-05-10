@@ -1,0 +1,49 @@
+'use strict';
+
+const config = {
+{% if bbb_uses_selfsigned | default(True) %}
+	bbbStreamImage: 'bbb-livestream:latest',
+	bbbStreamImagePrePull: false,
+{% else %}
+	bbbStreamImage: '{{ bigbluebutton_livestream_images_repo }}:{{ bigbluebutton_livestream_images_release }}',
+{% endif %}
+{% if groups['scalelite'] | length > 1 and groups['lb_front'] | length > 0 %}
+	bbbApiUrl: 'https://{{ hostvars[groups['lb_front'][0]]['scalelite_fqdn'] | default(hostvars[groups['lb_front'][0]]['ansible_fqdn']) }}/bigbluebutton/api/',
+	bbbApiSecret: '{{ hostvars[groups['scalelite'][0]]['scalelite_lb_secret'] }}',
+{% elif groups['scalelite'] | length > 1 and groups['reverse'] | length > 0 %}
+	bbbApiUrl: 'https://{{ hostvars[groups['reverse'][0]]['scalelite_fqdn'] | default(hostvars[groups['reverse'][0]]['ansible_fqdn']) }}/bigbluebutton/api/',
+	bbbApiSecret: '{{ hostvars[groups['scalelite'][0]]['scalelite_lb_secret'] }}',
+{% elif groups['scalelite'] | length > 0 %}
+	bbbApiUrl: 'https://{{ hostvars[groups['scalelite'][0]]['scalelite_fqdn'] | default(hostvars[groups['scalelite'][0]]['ansible_fqdn']) }}/bigbluebutton/api/',
+	bbbApiSecret: '{{ hostvars[groups['scalelite'][0]]['scalelite_lb_secret'] }}',
+{% elif groups['bbb'] | length > 0 %}
+	bbbApiUrl: 'https://{{ hostvars[groups['bbb'][0]]['ansible_fqdn'] }}/bigbluebutton/api/',
+	bbbApiSecret: '{{ bbb_secret.stdout_lines[0] }}',
+{% else %}
+	bbbApiUrl: 'https://{{ greenlight_fqdn }}/bigbluebutton/api/',
+	bbbApiSecret: '{{ bigbluebutton_api_secret }}',
+{% endif %}
+{% if bbb_uses_selfsigned | default(True) %}
+	bbbVerifyTls: false,
+{% endif %}
+	containerDriver: 'docker',
+	kubernetesApiUrl: 'https://kubernetes.default.svc.cluster.local',
+	kubernetesCpuLimit: false,
+	kubernetesCpuRequest: false,
+	kubernetesLabelName: 'managedby',
+	kubernetesLabelValue: 'bbb-csp',
+	kubernetesMemoryLimit: false,
+	kubernetesMemoryRequest: false,
+	kubernetesNamespace: 'default',
+	listenAddr: '{{ '0.0.0.0' if (groups['prometheus'] | length > 0) else '127.0.0.1' }}',
+	listenPort: '8080',
+	peertubeApiUrl: 'https://{{ peertube_fqdn | default(hostvars[groups['peertube'][0]]['peertube_fqdn'] | default(hostvars[groups['peertube'][0]]['ansible_fqdn'])) }}',
+	peertubePassword: '{{ peertube_rtmp_password | default(hostvars[groups['peertube'][0]]['peertube_initial_root_password'] | default(peertube_initial_root_password)) }}',
+	peertubeUsername: '{{ peertube_rtmp_user | default(hostvars[groups['peertube'][0]]['peertube_rtmp_user'] | default('root')) }}',
+{% if bbb_uses_selfsigned | default(True) %}
+	peertubeVerifyTls: false,
+{% endif %}
+	rtmpServerUrlPrefix: 'rtmp://{{ hostvars[groups['peertube'][0]]['corosync_vip'] | default(peertube_fqdn | default(hostvars[groups['peertube'][0]]['ansible_fqdn'])) }}:1935/live'
+    };
+
+module.exports = config;

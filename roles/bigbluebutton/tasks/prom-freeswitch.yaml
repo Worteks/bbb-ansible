@@ -21,6 +21,13 @@
   - has_dkrfile is defined
   - has_dkrfile is changed
 
+- name: Installs FreeSwitch Exporter Docker-Compose Directory
+  file:
+    dest: /etc/docker-compose/freeswitch-exporter
+    group: root
+    mode: 0755
+    owner: root
+    state: directory
 - name: Fetches Freeswitch Event Socket Password
   args:
     chdir: /opt/freeswitch/etc/freeswitch/autoload_configs
@@ -35,15 +42,7 @@
     mode: 0640
     owner: root
     src: esl.j2
-
-- name: Installs FreeSwitch Exporter Docker-Compose Directory
-  file:
-    dest: /etc/docker-compose/freeswitch-exporter
-    group: root
-    mode: 0755
-    owner: root
-    state: directory
-- name: Installs BigBlueButton Exporter Configuration
+- name: Installs FreeSwitch Exporter Configuration
   register: should_reload
   template:
     dest: /etc/docker-compose/freeswitch-exporter/docker-compose.yaml
@@ -60,7 +59,7 @@
     service_name: freeswitch-exporter
 
 - name: Installs FreeSwitch Exporter Proxy Configuration
-  notify: Reload Nginx
+  notify: Reloads Nginx
   template:
     dest: /etc/nginx/sites-available/fs-exporter.conf
     group: root
@@ -68,7 +67,7 @@
     owner: root
     src: fs-vhost.j2
 - name: Enables FreeSwitch Exporter VirtualHost
-  notify: Reload Nginx
+  notify: Reloads Nginx
   file:
     dest: /etc/nginx/sites-enabled/fs-exporter.conf
     src: /etc/nginx/sites-available/fs-exporter.conf

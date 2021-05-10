@@ -1,0 +1,6 @@
+[Unit]
+Description=Backups Redis Database
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/redis-backup

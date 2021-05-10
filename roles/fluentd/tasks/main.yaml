@@ -1,0 +1,7 @@
+- include_tasks: facts.yaml
+- include_tasks: install.yaml
+- include_tasks: geoip.yaml
+  when:
+  - geoip_database_url | default(False)
+- include_tasks: configure.yaml
+- include_tasks: hack.yaml

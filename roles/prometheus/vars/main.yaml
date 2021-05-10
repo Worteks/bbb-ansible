@@ -1,14 +1,21 @@
 prometheus_rules:
 - bigbluebutton
 - blackbox
+- certificates
+- docker
+- elasticsearch
 - freeswitch
 - haproxy
 - jobs
+- kibana
+- kurento
 - mongodb
 - nginx
 - nodes
+- pacemaker
 - pgbouncer
 - postgres
 - prometheus
 - redis
 - thanos
+- turn

@@ -1,0 +1,32 @@
+#!/bin/bash
+
+MAXAGE={{ bigbluebutton_recordings_retention_days }}
+NOW=$(date +%s)
+
+shopt -s nullglob
+
+echo Deleting recordings older than $MAXAGE days
+
+for donefile in /var/bigbluebutton/recording/status/published/*-presentation.done
+do
+    MTIME=$(stat -c %Y "${donefile}")
+    if test $(( ( $NOW - $MTIME ) / 86400 )) -gt $MAXAGE; then
+	MEETING_ID=$(basename "${donefile}")
+	MEETING_ID=${MEETING_ID%-presentation.done}
+	bbb-record --delete "$MEETING_ID" 2>&1
+    fi
+done
+
+for eventsfile in /var/bigbluebutton/recording/raw/*/events.xml
+do
+    MTIME=$(stat -c %Y "${eventsfile}")
+    if test $(( ( $NOW - $MTIME ) / 86400 )) -gt $MAXAGE; then
+	MEETING_ID="${eventsfile%/events.xml}"
+	MEETING_ID="${MEETING_ID##*/}"
+	bbb-record --delete "$MEETING_ID" 2>&1
+    fi
+done
+
+echo Done purging older records
+
+exit 0

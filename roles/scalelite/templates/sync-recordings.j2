@@ -1,0 +1,15 @@
+#!/bin/sh
+
+REMOTES="
+{% for node in groups['scalelite'] if node not in [ ansible_hostname, ansible_fqdn ] %}
+    {{ node }}
+{% endfor %}
+"
+
+for remote in $REMOTES
+do
+    rsync -avx /var/scalelite-recordings/published \
+	scalelite-spool@$remote:/var/scalelite-recordings/
+done
+
+exit 0

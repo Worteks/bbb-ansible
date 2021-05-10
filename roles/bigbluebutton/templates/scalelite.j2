@@ -1,3 +1,9 @@
+{% if hostvars[groups['scalelite'][0]]['corosync_vip'] is defined %}
+extra_rsync_opts:
+- --rsh
+- ssh -i /home/bigbluebutton/.ssh/id_rsa -F /home/bigbluebutton/.ssh/config
+{% else %}
 extra_rsync_opts: []
-spool_dir: scalelite-spool@{{ hostvars[groups['scalelite'][0]]['ansible_fqdn'] }}:/var/scalelite-recordings/spool
+{% endif %}
+spool_dir: scalelite-spool@{{ hostvars[groups['scalelite'][0]]['corosync_vip'] | default(hostvars[groups['scalelite'][0]]['ansible_fqdn']) }}:/var/scalelite-recordings/spool
 work_dir: /var/bigbluebutton/recording/scalelite

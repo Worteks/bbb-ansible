@@ -1,0 +1,27 @@
+#!/bin/sh
+
+BACKUP_PATH=/var/backups/redis
+mkdir -p $BACKUP_PATH
+
+{% if ansible_nodename in groups['drbd'] or ansible_hostname in groups['drbd'] or ansible_fqdn in groups['drbd'] %}
+if ! grep ro:Primary /proc/drbd >/dev/null 2>&1; then
+    echo NOTICE: acting as DRBD backup - can not backup data
+    exit 0
+fi
+{% endif %}
+{% if rolling_backups | default(False) %}
+if test -s $BACKUP_PATH/dump.rdb; then
+    mv $BACKUP_PATH/dump.rdb $BACKUP_PATH/old.rdb
+fi
+cp -p /var/lib/redis/dump.rdb $BACKUP_PATH/
+{% else %}
+cp -p /var/lib/redis/dump.rdb $BACKUP_PATH/dump-$(date +%Y%m%d-%H%M%S).rdb
+{% endif %}
+
+if test $? -ne 0; then
+    echo WARNING: failed backing up redis database
+else
+    echo NOTICE: successfully backed up database
+fi
+
+exit 0

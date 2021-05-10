@@ -1,0 +1,9 @@
+- name: Inits ElasticSearch Facts
+  set_fact:
+    es_nodes: []
+- name: Fetches ElasticSearch Nodes Names
+  loop: "{{ groups['elasticsearch'] }}"
+  loop_control:
+    loop_var: node
+  set_fact:
+    es_nodes: "{{ es_nodes + [ hostvars[node]['ansible_hostname'] ] }}"

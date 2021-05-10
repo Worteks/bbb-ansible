@@ -1,0 +1,14 @@
+- name: Installs Kibana Persisting Directory
+  file:
+    dest: /usr/share/kibana
+    group: root
+    mode: 0755
+    owner: root
+    state: directory
+- name: Installs Kibana Plugins Directory
+  file:
+    dest: /usr/share/kibana/plugins
+    group: 1000
+    mode: 0755
+    owner: 1000
+    state: directory

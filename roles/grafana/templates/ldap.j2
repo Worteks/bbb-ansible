@@ -3,7 +3,7 @@ host = "{{ grafana_ldap_endpoint | urlsplit('hostname') }}"
 port = {{ grafana_ldap_endpoint | urlsplit('port') }}
 use_ssl = {{ 'true' if (grafana_ldap_endpoint | urlsplit('scheme') == 'ldaps') else 'false' }}
 start_tls = {{ 'true' if (grafana_ldap_start_tls | default(False)) else 'false' }}
-{% if bbb_uses_selfsigned | default(False)  or ldap_uses_selfsigned | default(False) %}
+{% if bbb_uses_selfsigned | default(True) or ldap_uses_selfsigned | default(False) %}
 ssl_skip_verify = true
 {% endif %}
 bind_dn = "{{ grafana_ldap_bind_dn }}"

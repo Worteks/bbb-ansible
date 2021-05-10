@@ -4,6 +4,7 @@
   loop: "{{ groups['prometheus'] }}"
   loop_control:
     loop_var: srv
+  run_once: yes
   setup:
   when:
   - ansible_fqdn not in groups['prometheus']
@@ -14,6 +15,7 @@
   loop: "{{ groups['lb_back'] }}"
   loop_control:
     loop_var: srv
+  run_once: yes
   setup:
   when:
   - groups['prometheus'] | length > 1

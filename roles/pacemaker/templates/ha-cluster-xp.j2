@@ -1,0 +1,12 @@
+[Unit]
+Description=HA Cluster Exporter
+After=network.target
+
+[Service]
+User=root
+Group=root
+ExecStart=/usr/bin/ha_cluster_exporter
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

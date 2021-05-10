@@ -1,2 +1,2 @@
-DATA_SOURCE_NAME="postgresql://{{ postgres_exporter_user }}:{{ postgres_exporter_password }}@127.0.0.1:5432/{{ postgres_exporter_db }}?sslmode=disable"
+DATA_SOURCE_NAME="postgresql://{{ postgres_exporter_user }}:{{ postgres_exporter_password }}@{{ '127.0.0.1' if (ansible_fqdn not in groups['drbd'] or postgres_exporter_should_run | default(False)) else (corosync_vip | default('127.0.0.1')) }}:5432/{{ postgres_exporter_db }}?sslmode=disable"
 export DATA_SOURCE_NAME

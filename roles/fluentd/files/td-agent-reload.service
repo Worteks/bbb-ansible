@@ -1,0 +1,6 @@
+[Unit]
+Description=Restarts Td-Agent
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/tdagent-reload

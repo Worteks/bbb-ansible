@@ -21,3 +21,12 @@
     privs: ALL
     type: database
     role: "{{ moodle_postgres_user }}"
+- include_tasks: backup.yaml
+  vars:
+    database: "{{ moodle_postgres_database }}"
+    db_password: "{{ moodle_postgres_password }}"
+    db_user: "{{ moodle_postgres_user }}"
+  when:
+  - >
+      do_backups | default(False)
+      or do_postgres_backups | default(False)

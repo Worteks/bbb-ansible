@@ -5,25 +5,29 @@
       * [Standalone BBB](#standalone-bbb)
       * [BBB Sharding](#bbb-sharding)
       * [BBB HA](#bbb-ha)
+      * [Streaming](#streaming)
+      * [Logging](#logging)
       * [Monitoring](#monitoring)
     * [Usage](#usage)
     * [Third-Party Documentations](#third-party-documentations)
       * [BigBlueButton](#bigbluebutton)
-        * [2.2](#2-2)
-        * [2.3-dev](#2-3-dev)
-        * [API](#api)
+        * [2.2 Old Stable](#2-2-old-stable)
+        * [2.3](#2-3)
         * [RTMP LiveStream](#rtmp-livestream)
+          * [BigBlueButton Conferences Streaming Platform](#bigbluebutton-conferences-streaming-platform)
         * [RTSP LiveStream](#rtsp-livestream)
         * [BigBlueButton Prometheus Exporter](#bigbluebutton-prometheus-exporter)
         * [FreeSwitch Prometheus Exporter](#freeswitch-prometheus-exporter)
         * [Upgrading BigBlueButton](#upgrading-bigbluebutton)
       * [Coturn](#coturn)
       * [Scalelite](#scalelite)
-      * [Geenlight](#greenlight)
+      * [Greenlight](#greenlight)
       * [Moodle](#moodle)
         * [Moodle Server](#moodle-server)
         * [Moodle BigBlueButton Plugin](#moodle-bigbluebutton-plugin)
-      * [Open Streaming Platform](#openstreamingplatform)
+      * [Open Streaming Platform](#open-streaming-platform)
+      * [PeerTube](#peertube)
+      * [Misc](#misc)
     * [TODOs](#todos)
     * [FIXMEs](#fixmes)
 
@@ -32,8 +36,8 @@ Deploying BigBlueButton at scale with Ansible
 
 ## Requirements
 
- * Ansible 2.9+ on your deployment node
- * Ubuntu Xenial on your BigBlueButton nodes (bbb 2.2, or Bionic for bbb 2.3-dev)
+ * Ansible 2.9+ on your deployment node, python-cryptography > 3, rsync
+ * Ubuntu Xenial on your BigBlueButton nodes (bbb 2.2, or Bionic for bbb 2.3)
  * Debian Buster for everything else (ubuntu might work, though untested so far)
 
 The rest depends on your context.
@@ -42,8 +46,7 @@ The rest depends on your context.
 
  * 1 BBB instance, preferably physical, 1+ CPU, 4G+ RAM, 20G+ disk
  * (optional) 1 Greenlight instance, preferably physical, 1+ CPU, 3G+ RAM, 20G+ disk
- * (optional) 1 TURN instance, preferably physical, 0.5+ CPU, 1G+ RAM, 20G+ disk (integrating with 3rd-party TURN possible)
- * (optional) 1+ RTMP instance, preferably physical, 0.5+ CPU, 2G+ RAM, 8G+ disk
+ * (optional) 1 TURN server instance, preferably physical, 0.5+ CPU, 1G+ RAM, 20G+ disk (integrating with 3rd-party TURN possible)
 
 ### BBB Sharding
 
@@ -52,8 +55,7 @@ The rest depends on your context.
  * 1+ Redis instance, could be virtual, 0.5+ CPU, 1G+ RAM, 12G disk
  * 1+ Scalelite instance, preferably physical, 2+ CPU, 4G+ RAM, 30G+ disk
  * (optional) 1+ Greenlight instance, preferably physical, 4+ CPU, 8G+ RAM, 50G+ disk
- * (optional) 1+ TURN instance, preferably physical, 0.5+ CPU, 2G+ RAM, 20G+ disk
- * (optional) 1+ RTMP instance, preferably physical, 0.5+ CPU, 2G+ RAM, 8G+ disk
+ * (optional) 1+ TURN server instance, preferably physical, 0.5+ CPU, 2G+ RAM, 20G+ disk
 
 ### BBB HA
 
@@ -62,10 +64,19 @@ The rest depends on your context.
  * 2+ Redis instance, could be virtual, 0.5+ CPU, 1G+ RAM, 12G disk
  * 2+ Scalelite instance, preferably physical, 4+ CPU, 8G+ RAM, 50G+ disk
  * (optional) 2+ Greenlight instance, preferably physical, 2+ CPU, 4G+ RAM, 30G+ disk
- * (optional) 2+ TURN instance, preferably physical, 0.5+ CPU, 2G+ RAM, 20G+ disk
- * (optional) 1+ RTMP instance, preferably physical, 0.5+ CPU, 2G+ RAM, 8G+ disk
+ * (optional) 2+ TURN server instance, preferably physical, 0.5+ CPU, 2G+ RAM, 20G+ disk
  * 2+ LB instance, could be virtual, 0.5+ CPU, 1G RAM, 8G disk (in front of Redis, Scalelite, Greenlight, Prometheus, AlertManager or Grafana)
  * 1+ NFS server, SSH server (sshfs) or CephFS capable Ceph cluster, offering a shared filesystem (when more than 1 Scalelite)
+
+### Streaming
+
+ * 1+ RTMP server (OpenStreamingPlatform or PeerTube) instance, preferably physical, 1+ CPU, 4G+ RAM, very large disk storing records, the more resources the more concurrent streams & transcodings
+ * (optional) 1+ BBB ContentStreamingPlatform instance, preferably physical/would use docker runtime, 1+ CPU, 4G+ RAM
+
+### Logging
+
+ * 1+ Kibana instance, could be virtual, 0.5+ CPU, 2G+ RAM, 16G disk
+ * 1+ ElasticSearch instance, could be virtual, 1+ CPU, 8G+ RAM, 50G+ disk (depends on retention)
 
 ### Monitoring
 
@@ -76,45 +87,53 @@ The rest depends on your context.
 ## Usage
 
 Edit inventory file (`./hosts`) and deployment variables (in `./group_vars`),
-then bootstrap your setup using Ansible:
+sensitive data could be added to the `group_vars/private.yaml` file - start
+from a copy of the `private.yaml.sample` file, adding your own secrets. We may
+set public service hostnames and other global params in `group_vars/all.yaml`,
+then apply the `bootstrap` playbook:
 
-```
+```sh
+$ cp group_vars/private.yaml.sample group_vars/private.yaml
+$ vi group_vars/private.yaml
+$ vi group_vars/all.yaml
 $ ansible-playbook -i ./hosts bootstrap.yaml
 ```
 
-Deploying a distributed BBB setup, with single Scalelite & single Greenlight
-works. On the other hand:
+Dealing with distributed BBB setup, note that:
 
- - distributing Scalelite should be possible though bear in mind its spool
-   directory being shared, a same recording might be processed multiple times
-   (in theory / to check / did not see anything like this so far). On the other
-   hand, we could make it such as the record-processing worker only works on one
-   node - playbooks would allow for this, though it has not been tested yet. Or
-   just mount the published folder on sshfs, and keep local spools
- - Moodle is in my TODO, as an optional replacement for Greenlight
- - Postgres refactor as well (something HA-capable?).
+ - distributing Scalelite, the poller and recordings-importer container should
+   only run once (use `scalelite_has_roles`, see `./roles/scalelite/defaults`,
+   controlling which workers should run on your nodes).
+ - Postgres could be deployed on top of a DRBD device, though automation remains
+   incomplete and undocumented
+
+Deploying BBB-CSP, until publication to GitHub, make sure to pass the following
+extra vars: `-e gituser=abcdef@worteks.com -e gitpass=mysecret`.
 
 ## Third-Party Documentations
 
 ### BigBlueButton
 
-#### 2.2
+ * https://docs.bigbluebutton.org/dev/api.html
+ * https://github.com/openfun/bbb-stress-test
+ * https://www.aukfood.fr/faire-un-stress-test-sur-bigbluebutton/
+ * https://docs.bigbluebutton.org/dev/recording.html
+ * https://docs.bigbluebutton.org/support/faq.html
 
- * https://docs.bigbluebutton.org/legacy/11install.html#check-server-specs
+#### 2.2 Old Stable
+
+ * https://docs.bigbluebutton.org/2.2/install.html#minimum-server-requirements
  * https://docs.bigbluebutton.org/2.2/install.html
  * https://docs.bigbluebutton.org/2.2/setup-turn-server.html
  * https://www.amazonaws.cn/en/solutions/big-blue-button-solution/
  * https://github.com/aws-samples/big-blue-button-on-aws-cn
  * https://docs.bigbluebutton.org/2.2/customize.html
+ * https://github.com/createwebinar/bbb-download
 
-#### 2.3-dev
+#### 2.3
 
- * https://github.com/bigbluebutton/bbb-install/issues/37
  * https://docs.bigbluebutton.org/dev/dev23.html
-
-#### API
-
- * https://docs.bigbluebutton.org/dev/api.html
+ * https://github.com/manishkatyan/bbb-mp4
 
 #### RTMP LiveStream
 
@@ -126,11 +145,18 @@ works. On the other hand:
  * https://github.com/SeleniumHQ/selenium/wiki/Untrusted-SSL-Certificates
  * https://unix.stackexchange.com/questions/122753/chrome-certificate
 
+##### BigBlueButton Conferences Streaming Platform
+
+Relies on a currently-private repository / nothing to see here.
+Some web UI, streaming BigBlueButton Conferences to PeerTube.
+
+ * https://git.worteks.com/Wsweet/bbb-csp
+
 #### RTSP LiveStream
 
 As an alternative, quick DIY, ... connect from a linux client, then run:
 
-```
+```sh
 ffmpeg -r 30 -f x11grab -draw_mouse 0 -s ${xres}x${yres} -i :0 -c:v libvpx \
     -quality realtime -cpu-used 0 -b:v 384k -qmin 10 -qmax 42 -maxrate 384k \
     -bufsize 1000k -an screen.webm
@@ -143,6 +169,7 @@ output (`rtp`, `rtsp`), select a port and URL path, and start streaming.
 
  * https://groups.google.com/g/bigbluebutton-dev/c/DcIo3hc2Vmc
  * https://bigbluebutton-exporter.greenstatic.dev/faq/
+ * known bug: https://github.com/blindsidenetworks/scalelite/pull/546
 
 #### FreeSwitch Prometheus Exporter
 
@@ -160,16 +187,16 @@ output (`rtp`, `rtsp`), select a port and URL path, and start streaming.
 
 Behind a NAT, make sure the following are set:
 
- * in `/usr/local/bigbluebutton/bbb-webrtc-sfu/config/default.yml`
+ * in `/opt/freeswitch/etc/freeswitch/sip_profiles/external.xml`
 
-```
+```xml
 <param name="ext-rtp-ip" value="$${external_rtp_ip}"/>
 <param name="ext-sip-ip" value="$${external_sip_ip}"/>
 ```
 
- * in `/opt/freeswitch/etc/freeswitch/sip_profiles/external.xml`
+ * in `/usr/local/bigbluebutton/bbb-webrtc-sfu/config/default.yml`
 
-```
+```yaml
 freeswitch:
   ip: <public->
   sip_ip: <private-ip>
@@ -177,7 +204,7 @@ freeswitch:
 
  * in `/usr/share/bbb-web/WEB-INF/classes/spring/turn-stun-servers.xml`
 
-```
+```xml
     <bean id="turn0" class="org.bigbluebutton.web.services.turn.TurnServer">
 	<constructor-arg index="0" value="<turn_secret>"/>
 	<constructor-arg index="1" value="turns:<turn_fqdn>:443?transport=tcp"/>
@@ -240,53 +267,52 @@ freeswitch:
  * https://moodle.org/plugins/mod_bigbluebuttonbn
  * https://github.com/blindsidenetworks/moodle-mod_bigbluebuttonbn
 
-### OpenStreamingPlatform
+### Open Streaming Platform
 
  * https://openstreamingplatform.com
  * https://wiki.openstreamingplatform.com
  * https://wiki.openstreamingplatform.com/Install/Standard
  * https://wiki.openstreamingplatform.com/Usage/Streaming
 
+### PeerTube
+
+ * https://github.com/Chocobozzz/PeerTube
+ * https://joinpeertube.org
+ * https://github.com/Chocobozzz/PeerTube/tree/develop/support/docker/production
+
+### Misc
+
+ * https://developer.cdn.mozilla.net/fr/docs/Web/API/WebRTC_API/Connectivity
+ * https://developer.cdn.mozilla.net/en-US/docs/Web/API/WebRTC_API/Connectivity
+ * https://wiki.debian.org/DrBd
+ * https://www.linux-dev.org/2016/03/debian-jessie-8-3-short-howto-for-corosyncpacemaker-activepassive-cluster-with-two-nodes-and-drbdlvm/
+ * https://documentation.suse.com/sle-ha/12-SP4/html/SLE-HA-all/cha-ha-manual-config.html
+
 ## TODOs
 
+ - nginx rtmp module: https://github.com/aau-zid/live-streaming-server
  - monitoring bbb services
-   - etherpad
-     (patch needed @ https://gitlab.com/synacksynack/opsperator/s2i-etherpad)
-     (also broken dependency / PR accepted, should make sure it was pushed)
-   - kurento-media-server
-     => https://github.com/mariogasparoni/kurento-monitor
-   - bbb-web (?)
-   - soffice
- - monitoring scalelite poller (count items in spool?)
- - monitoring turn
+   - soffice (tends to leave defunct processes)
  - monitoring rtmp server
  - monitoring bbb-livestream workers. beware a known limitation is that the
    livestream process doesn't reconnect, if connection to bbb is lost ...
  - monitoring openstreamingplatform
  - scaling openstreamingplatform
-   => postgres not documented, look into mysql replacing the default sqlite db
-   => external redis (? osp conf doesn't mention a redis DB ID, though)
-   => to ensure all clients may see all RTMP streams - regardless of who serves
-      a given client requests, and who receives a given stream
- - WIP NFS storage
-   => sharing the spool directory might lead multiple Scalelite replicas
-      processing a same recording (?)
- - WIP BBB recordings
-   => bbb would currently push recordings to the "first" scalelite node
-      (following the order of your nodes, as defined in Ansible inventory),
-      which is not HA-friendly. Either patch the bbb post-publish script
-      iterating over several scalelite nodes, if necessary. Or consider using
-      Scalelite shared FQDN (`scalelite_fqdn`) as rsync target (and either
-      disable host keys verification, or have Ansible make sure SSH host
-      keys would be shared on all Scalelite nodes, ... yikes...)
+   - postgres not documented, look into mysql replacing the default sqlite db
+   - external redis (? osp conf doesn't mention a redis DB ID, though)
+   - to ensure all clients may see all RTMP streams - regardless of who serves
+     a given client requests, and who receives a given stream
+ - scaling bbb-csp (requires k8s/okd deployment)
  - implement cephfs storage, as an alternative to NFS/SSHFS
  - implement moodle, as an alternative to greenlight
  - greenlight/ldap integration untested
- - firewalling on hosts with docker-compose
+ - peertube+oidc & peertube+saml & peertube+ldap to test
+ - bbb-csp+oidc & bbb-csp+saml & bbb-csp+ldap TODO
+ - firewalling on hosts with docker, see
+   https://www.grottedubarbu.fr/docker-firewall/
+   https://github.com/firehol/firehol/issues/114
  - setup a blackbox exporter everywhere we have a webserver? Might be nice,
-   at least to check for certificates expiry dates, and some basic http check
- - nginx metrics from https://github.com/knyar/nginx-lua-prometheus
-   -- currently, nginx prometheus rules pretty much all refer to those metrics
+   at least running some basic http checks
 
 ## FIXMEs
 
@@ -294,11 +320,6 @@ freeswitch:
    manual restart fixed, further playbook runs work
    could be due to redis-server being slow to startup?
    or something else? pending further investigations...
- - bbb-install first fails to complete
-   to be fair, problem did occure after my SSH session was closed
-   (inactivity timeout), apt was still running on the bbb hosts,
-   until it didn't, ... might not be reproducible under normal
-   circumstances / in a screen or tmux
  - Playbooks relying on the nginx role would first fail to start their
    nginx exporter (with no error in Ansible/playbook would still
    complete). After initial bootstrap, make sure to run the playbook
@@ -310,9 +331,6 @@ freeswitch:
    directory, for the nginx-osp service. Unclear what went wrong. Having run
    several short tests, I don't always find the resulting mp4 files, nor
    do I understand what's going wrong under the hood
- - Starting up BBB LiveStream, systemd unit might
-   first appear to fail starting our container, while further check would
-   confirm it was/is properly running
  - creating a BBB room with the "Automatically join me into the room"
    option selected, we sometimes end up with a 500. The room was
    properly created though. Joining back would work.
@@ -321,3 +339,11 @@ freeswitch:
       greenlight querying one scalelite creating the room, and
       another while joining in? as I'm using DNS load balancing
       right now...)
+ - Scalelite poller (and arguably, the recordings importer as well) should
+   only be deployed once.
+ - Percona is DELETING releases of their mongodb exporter! we can't even trust
+   a tagged release, ... fml. Also, they've rewrote the whole thing, as of
+   0.20.x: should check how those work. Sticking to 0.11.x in the meantime
+ - systemd exporter missing metrics, known to fail parsing process memory
+   limits on large servers (see
+   https://github.com/povilasv/systemd_exporter/issues/40)

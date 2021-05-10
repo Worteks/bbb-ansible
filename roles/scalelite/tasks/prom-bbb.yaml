@@ -25,3 +25,7 @@
   vars:
     service_description: Scalelite Exporter
     service_name: scalelite-exporter
+    service_standby: "{{ True if (ansible_fqdn in groups['drbd']
+                                  or ansible_hostname in groups['drbd']
+                                  or ansible_nodename in groups['drbd'])
+                              else False }}"

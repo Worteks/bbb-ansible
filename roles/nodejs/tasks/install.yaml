@@ -1,0 +1,28 @@
+- name: Fetches NodeJS Sources Installation Script
+  get_url:
+    dest: /root/setup_node.sh
+    group: root
+    mode: 0750
+    owner: root
+    url: "https://deb.nodesource.com/setup_{{ nodejs_version }}.x"
+- name: Installs NodeJS
+  args:
+    creates: /etc/apt/sources.list.d/nodesource.list
+  environment:
+    PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root
+  register: srcs
+  shell: setup_node.sh
+- name: Updates APT Cache
+  apt:
+    update_cache: yes
+  when:
+  - srcs is defined
+  - srcs is changed
+- name: Installs NodeJS Runtime Dependencies
+  apt:
+    name:
+    - g++
+    - gcc
+    - make
+    - nodejs
+    state: present

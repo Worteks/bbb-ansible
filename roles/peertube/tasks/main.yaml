@@ -1,0 +1,18 @@
+- include_role:
+    name: drbd
+    tasks_from: facts.yaml
+  when:
+  - "'drbd1' in ansible_devices"
+- include_tasks: facts.yaml
+- include_tasks: install.yaml
+- include_tasks: auth.yaml
+- include_tasks: configure.yaml
+- include_tasks: sync.yaml
+  when:
+  - groups['peertube'] | length > 1
+  - ansible_fqdn not in groups['drbd']
+  - ansible_hostname not in groups['drbd']
+  - ansible_nodename not in groups['drbd']
+- include_tasks: nginx.yaml
+- include_tasks: plugins.yaml
+- include_tasks: prometheus.yaml

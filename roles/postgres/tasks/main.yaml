@@ -1,20 +1,65 @@
+- include_role:
+    name: drbd
+    tasks_from: facts.yaml
+  when:
+  - "'drbd1' in ansible_devices"
 - include_tasks: install.yaml
 - include_tasks: configure.yaml
-- include_tasks: coturn-db.yaml
+- block:
+  - include_tasks: coturn-db.yaml
+    when:
+    - groups['coturn'] | length > 0
+    - >
+        ansible_fqdn in groups['postgres_coturn']
+        or ansible_hostname in groups['postgres_coturn']
+        or ansible_nodename in groups['postgres_coturn']
+  - include_tasks: grafana-db.yaml
+    when:
+    - groups['grafana'] | length > 0
+    - >
+        ansible_fqdn in groups['postgres_grafana']
+        or ansible_hostname in groups['postgres_grafana']
+        or ansible_nodename in groups['postgres_grafana']
+  - include_tasks: greenlight-db.yaml
+    when:
+    - groups['greenlight'] | length > 0
+    - >
+        ansible_fqdn in groups['postgres_greenlight']
+        or ansible_hostname in groups['postgres_greenlight']
+        or ansible_nodename in groups['postgres_greenlight']
+  - include_tasks: moodle-db.yaml
+    when:
+    - groups['moodle'] | length > 0
+    - >
+        ansible_fqdn in groups['postgres_moodle']
+        or ansible_hostname in groups['postgres_moodle']
+        or ansible_nodename in groups['postgres_moodle']
+  - include_tasks: openstreamingplatform-db.yaml
+    when:
+    - groups['openstreamingplatform'] | length > 0
+    - >
+        ansible_fqdn in groups['postgres_openstreamingplatform']
+        or ansible_hostname in groups['postgres_openstreamingplatform']
+        or ansible_nodename in groups['postgres_openstreamingplatform']
+  - include_tasks: peertube-db.yaml
+    when:
+    - groups['peertube'] | length > 0
+    - >
+        ansible_fqdn in groups['postgres_peertube']
+        or ansible_hostname in groups['postgres_peertube']
+        or ansible_nodename in groups['postgres_peertube']
+  - include_tasks: scalelite-db.yaml
+    when:
+    - groups['scalelite'] | length > 0
+    - >
+        ansible_fqdn in groups['postgres_scalelite']
+        or ansible_hostname in groups['postgres_scalelite']
+        or ansible_nodename in groups['postgres_scalelite']
   when:
-  - groups['coturn'] | length > 0
-- include_tasks: greenlight-db.yaml
-  when:
-  - groups['greenlight'] | length > 0
-- include_tasks: moodle-db.yaml
-  when:
-  - groups['moodle'] | length > 0
-#- include_tasks: openstreamingplatform-db.yaml
-#  when:
-#  - groups['openstreamingplatform'] | length > 0
-- include_tasks: scalelite-db.yaml
-  when:
-  - groups['scalelite'] | length > 0
+  - >
+      ansible_nodename not in groups['drbd']
+      or (ansible_nodename in groups['drbd']
+          and drbd_is_primary | default(False))
 - include_tasks: prometheus.yaml
   when:
   - >

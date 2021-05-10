@@ -1,7 +1,10 @@
 version 5
 trusted_networks="{{ firehol_trusted_networks | join(' ') }}"
 
-interface any WAN
+interface {{ firehol_public_if | default('any') }} WAN
+{% if firehol_public_open %}
+	policy accept
+{% endif %}
 {% if firehol_allow_icmp %}
 	server icmp accept
 {% endif %}
@@ -9,15 +12,63 @@ interface any WAN
 	server custom {{ entry['name'] }} "{{ entry['value'] }}" default accept
 {% endfor %}
 {% for entry in (firehol_filtered_ports + (firehol_app_filtered_ports | default([]))) if entry['name'] is defined and entry['value'] is defined %}
+{% if entry['name'] in [ 'ssh', 'openssh' ] or (not (firehol_routes_ifaces | default(False)) in ansible_interfaces and not (firehol_private_if | default(False))) in ansible_interfaces %}
 	server custom {{ entry['name'] }} "{{ entry['value'] }}" default accept src "$trusted_networks"
+{% endif %}
 {% endfor %}
 	client all accept
 {% if firehol_docker_if in ansible_interfaces %}
 
 interface {{ firehol_docker_if }} docker
-        policy accept
+	client all accept
+	server all accept
+	policy accept
 
-router docker2lan inface {{ firehol_docker_if }} outface {{ ansible_default_ipv4['interface'] }}
-        masquerade
-        route all accept
+router docker2docker inface {{ firehol_docker_if }} outface {{ firehol_docker_if }}
+	route all accept
+
+router docker2wan inface {{ firehol_docker_if }} outface {{ ansible_default_ipv4['interface'] }}
+	masquerade
+	route all accept
+
+router wan2docker inface {{ ansible_default_ipv4['interface'] }} outface {{ firehol_docker_if }}
+	route all accept
+{% if (firehol_private_if | default(False)) in ansible_interfaces and firehol_private_if != ansible_default_ipv4['interface'] %}
+
+router docker2lan inface {{ firehol_docker_if }} outface {{ firehol_private_if }}
+	masquerade
+	route all accept
+
+router lan2docker inface {{ firehol_private_if }} outface {{ firehol_docker_if }}
+	route all accept
+{% endif %}
+{% endif %}
+{% if firehol_routes_ifaces | default(False) %}
+{% for nic in firehol_routes_ifaces if nic in ansible_interfaces %}
+
+interface {{ nic }} private{{ loop.index0 }}
+	policy accept
+{% for entry in (firehol_opened_ports + (firehol_app_opened_ports | default([]))) if entry['name'] is defined and entry['value'] is defined %}
+	server custom {{ entry['name'] }} "{{ entry['value'] }}" default accept
+{% endfor %}
+{% for entry in (firehol_filtered_ports + (firehol_app_filtered_ports | default([]))) if entry['name'] is defined and entry['value'] is defined %}
+	server custom {{ entry['name'] }} "{{ entry['value'] }}" default accept
+{% endfor %}
+	client all accept
+
+router prvgateway{{ loop.index0 }} ifnface {{ nic }} outface {{ firehol_public_if | default(ansible_default_ipv4['interface']) }}
+	masquerade
+	route all accept
+{% endfor %}
+{% elif (firehol_private_if | default(False)) in ansible_interfaces %}
+
+interface {{ firehol_private_if }} private
+	policy accept
+{% for entry in (firehol_opened_ports + (firehol_app_opened_ports | default([]))) if entry['name'] is defined and entry['value'] is defined %}
+	server custom {{ entry['name'] }} "{{ entry['value'] }}" default accept
+{% endfor %}
+{% for entry in (firehol_filtered_ports + (firehol_app_filtered_ports | default([]))) if entry['name'] is defined and entry['value'] is defined %}
+	server custom {{ entry['name'] }} "{{ entry['value'] }}" default accept
+{% endfor %}
+	client all accept
 {% endif %}

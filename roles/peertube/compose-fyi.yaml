@@ -1,0 +1,16 @@
+version: '2.0'
+services:
+  peertube:
+    image: docker.io/chocobozzz/peertube:production-buster
+    environment:
+    - PEERTUBE_ADMIN_EMAIL=root@peertube.example.com
+    - PT_INITIAL_ROOT_PASSWORD=SomeS7rongseCr3t
+    ports:
+    - "1935:1935"
+    - "9000:9000"
+    user: "999:0"
+    volumes:
+    - /etc/ssl/certs:/etc/ssl/certs
+    - /usr/local/share/ca-certificates:/usr/local/share/ca-certificates
+    - /var/lib/peertube/data:/data
+    - /etc/peertube:/config

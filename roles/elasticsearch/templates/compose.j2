@@ -1,0 +1,31 @@
+version: '2.0'
+services:
+  elasticsearch:
+    container_name: elasticsearch
+    environment:
+    - node.name={{ ansible_hostname }}
+    - cluster.name={{ elasticsearch_cluster_name }}
+{% if es_nodes | length > 1 %}
+    - discovery.seed_hosts={{ es_nodes | difference([ ansible_hostname ]) | join(',') }}
+{% endif %}
+    - cluster.initial_master_nodes={{ es_nodes | join(',') }}
+    - bootstrap.memory_lock=true
+    - "ES_JAVA_OPTS=-Xms{{ elasticsearch_jvm_xms }} -Xmx{{ elasticsearch_jvm_xmx }}"
+    extra_hosts:
+{% for node in groups['elasticsearch'] %}
+    - {{ hostvars[node]['ansible_hostname'] }}:{{ hostvars[node]['ansible_default_ipv4']['address'] }}
+{% endfor %}
+    image: {{ elasticsearch_images_repo }}:{{ elasticsearch_images_release }}
+    logging:
+      driver: journald
+    network_mode: host
+    ports:
+    - 9200:9200
+    restart: unless-stopped
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    user: "{{ elasticsearch_user_id.stdout_lines[0] }}"
+    volumes:
+    - /var/lib/elasticsearch:/usr/share/elasticsearch/data

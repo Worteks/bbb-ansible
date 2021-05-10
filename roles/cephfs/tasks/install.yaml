@@ -1,0 +1,4 @@
+- name: Installs Ceph Fuse Client
+  apt:
+    name: ceph-fuse
+    state: present

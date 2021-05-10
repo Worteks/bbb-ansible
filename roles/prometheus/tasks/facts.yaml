@@ -4,6 +4,7 @@
   loop: "{{ groups['alertmanager'] }}"
   loop_control:
     loop_var: srv
+  run_once: yes
   setup:
   when:
   - groups['alertmanager'] | length > 0
@@ -11,18 +12,80 @@
 - name: Gather Facts from LoadBalancers
   delegate_to: "{{ srv }}"
   delegate_facts: True
-  loop: "{{ groups['lb_back'] }}"
+  loop: "{{ groups['lb'] }}"
   loop_control:
     loop_var: srv
+  run_once: yes
   setup:
   when:
-  - groups['lb_back'] | length > 0
+  - groups['lb'] | length > 0
+- name: Gather Facts from BBB-CSP
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['bbbcsp'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+  when:
+  - groups['bbbcsp'] | length > 0
 - name: Gather Facts from BlackBox Exporters
   delegate_to: "{{ srv }}"
   delegate_facts: True
   loop: "{{ groups['greenlight'] }}"
   loop_control:
     loop_var: srv
+  run_once: yes
   setup:
   when:
   - groups['greenlight'] | length > 0
+- name: Gather Facts from PeerTube
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['peertube'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+  when:
+  - groups['peertube'] | length > 0
+- name: Gather Facts from Postgres
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['postgres'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+  when:
+  - groups['postgres'] | length > 0
+- name: Gather Facts from Reverse
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['reverse'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+  when:
+  - groups['reverse'] | length > 0
+- name: Gather Facts from Scalelite
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['scalelite'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+  when:
+  - groups['scalelite'] | length > 0
+- name: Gather Facts from Kibana
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['kibana'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+  when:
+  - groups['kibana'] | length > 0

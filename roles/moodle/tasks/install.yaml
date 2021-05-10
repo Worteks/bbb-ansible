@@ -1,0 +1,24 @@
+- name: Installs Moodle Dependencies
+  apt:
+    name:
+    - aspell
+    - git
+    - graphviz
+    - "php{{ php_version }}-pspell"
+    - "php{{ php_version }}-soap"
+    - "php{{ php_version }}-zip"
+    state: present
+  notify: Reloads PHP FPM
+- name: Clones Moodle from Git
+  git:
+    dest: /usr/src/moodle
+    repo: "{{ moodle_source_repo }}"
+    update: no
+    version: "{{ moodle_source_ref }}"
+- name: Creates Moodle Data Directory
+  file:
+    dest: /var/lib/moodle
+    group: www-data
+    mode: 0755
+    owner: www-data
+    state: directory

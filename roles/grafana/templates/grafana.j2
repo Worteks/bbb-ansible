@@ -9,7 +9,7 @@ level = info
 format = console
 
 [security]
-admin_user = {{ grafana_admin_user }}
+admin_user = {{ grafana_admin_account }}
 admin_password = {{ grafana_admin_password }}
 {% if grafana_ldap_endpoint | default(False) %}
 
@@ -32,7 +32,7 @@ api_url = {{ grafana_oidc_endpoint }}{{ grafana_oidc_userinfo_endpoint }}
 auth_url = {{ grafana_oidc_endpoint }}{{ grafana_oidc_authorize_endpoint }}
 token_url = {{ grafana_oidc_endpoint }}{{ grafana_oidc_token_endpoint }}
 send_client_credentials_via_post = false
-{% if bbb_uses_selfsigned | default(False) or oidc_uses_selfsigned | default(False)  %}
+{% if bbb_uses_selfsigned | default(True) or oidc_uses_selfsigned | default(False) %}
 tls_skip_verify_insecure = true
 {% endif %}
 {% endif %}
@@ -53,8 +53,22 @@ allow_sign_up = false
 default_theme = dark
 
 [database]
+{% if groups['postgres_grafana'] | length > 0 %}
+type = postgres
+{% if grafan_postgres_host | default(False) %}
+host = {{ grafana_postgre_host }}:{{ grafana_postgres_port }}
+{% elif hostvars[groups['postgres_grafana'][0]]['corosync_vip'] %}
+host = {{ hostvars[groups['postgres_grafana'][0]]['corosync_vip'] }}:{{ grafana_postgres_port }}
+{% else %}
+host = {{ hostvars[groups['postgres_grafana'][0]]['ansible_default_ipv4']['address'] }}:{{ grafana_postgres_port }}
+{% endif %}
+name = {{ grafana_postgres_database }}
+user = {{ grafana_postgres_user }}
+password = {{ grafana_postgres_password }}
+{% else %}
 type = sqlite3
 path = grafana.db
+{% endif %}
 
 [session]
 cookie_name = grafana_sess

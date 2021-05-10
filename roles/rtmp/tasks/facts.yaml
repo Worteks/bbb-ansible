@@ -4,6 +4,7 @@
   loop: "{{ groups['bbb'] }}"
   loop_control:
     loop_var: srv
+  run_once: yes
   setup:
   when:
   - groups['scalelite'] | length == 0
@@ -13,6 +14,7 @@
   loop: "{{ groups['scalelite'] }}"
   loop_control:
     loop_var: srv
+  run_once: yes
   setup:
   when:
   - groups['scalelite'] | length > 0
@@ -22,9 +24,22 @@
   loop: "{{ groups['lb_front'] }}"
   loop_control:
     loop_var: srv
+  run_once: yes
   setup:
   when:
   - groups['lb_front'] | length > 0
+  - groups['scalelite'] | length > 1
+- name: Gather Facts from Reverse Proxies
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['reverse'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+  when:
+  - groups['reverse'] | length > 0
+  - groups['lb_front'] | length == 0
   - groups['scalelite'] | length > 1
 - name: Gather Facts from OpenStreamingPlatform
   delegate_to: "{{ srv }}"
@@ -32,6 +47,7 @@
   loop: "{{ groups['openstreamingplatform'] }}"
   loop_control:
     loop_var: srv
+  run_once: yes
   setup:
   when:
   - groups['openstreamingplatform'] | length > 0

@@ -1,17 +1,42 @@
 - name: Installs Scalelite API Working Directories
   file:
-    dest: "{{ fl }}"
+    dest: /var/log/scalelite-api
     group: root
     mode: 0755
     owner: root
     state: directory
-  loop:
-  - /var/log/scalelite-api
-  loop_control:
-    loop_var: fl
 - include_role:
     name: docker
     tasks_from: check-pull.yaml
   vars:
     image_tag: "{{ scalelite_images_release }}-api"
     image_url: "{{ scalelite_images_repo }}"
+  when:
+  - not (custom_scalelite_api | default(False))
+- block:
+  - name: Clones Scalelite Custom Repository
+    git:
+      dest: /usr/src/scalelite
+      repo: "{{ scalelite_custom_source_repo }}"
+      update: yes
+      version: "{{ scalelite_custom_source_ref }}"
+    register: haspulled
+  - name: Installs Scalelite Custom API Dockerfile
+    copy:
+      dest: /usr/src/scalelite/Dockerfile-justapi
+      group: root
+      mode: 0644
+      owner: root
+      src: Dockerfile-justapi
+    register: hasdkrf
+  - name: Pre-Builds Scalelite Custom API Image
+    args:
+      chdir: /usr/src/scalelite
+    shell: |
+      docker build -t custom-scalelite-api -f Dockerfile-justapi .
+    when:
+    - >
+        (haspulled is defined and haspulled is changed)
+        or (hasdkrf is defined and hasdkrf is changed)
+  when:
+  - custom_scalelite_api | default(False)

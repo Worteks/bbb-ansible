@@ -1,0 +1,33 @@
+- block:
+  - name: Installs Certbot Post Hook Script
+    copy:
+      dest: /usr/local/sbin/fix-certbot-perms-for-turn
+      group: root
+      mode: 0700
+      owner: root
+      src: fix-certbot-permissions
+  - name: Initializes Domains List Fact
+    set_fact:
+      cert_fqdn: []
+  - name: Populates Domains List Fact
+    loop:
+    - "{{ coturn_fqdn | default(ansible_fqdn) }}"
+    - "{{ ansible_fqdn }}"
+    set_fact:
+      cert_fqdn: "{{ cert_fqdn + [ item ] }}"
+    when:
+    - (item | default(False)) not in [ False, 'false', 'False', 'FALSE' ]
+    - item not in cert_fqdn
+  - include_role:
+      name: certbot
+      tasks_from: generate-cert.yaml
+    vars:
+      certbot_post_hooks:
+      - /usr/local/sbin/fix-certbot-perms-for-turn
+  when:
+  - not (bbb_uses_selfsigned | default(True))
+- include_role:
+    name: pki
+    tasks_from: install-cert.yaml
+  when:
+  - bbb_uses_selfsigned | default(True)

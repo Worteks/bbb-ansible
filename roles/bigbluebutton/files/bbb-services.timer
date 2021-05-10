@@ -1,0 +1,9 @@
+[Unit]
+Description=Run BigBlueButton Services Prometheus Collector
+
+[Timer]
+OnBootSec=5min
+OnCalendar=*:0/1
+
+[Install]
+WantedBy=timers.target

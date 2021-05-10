@@ -1,0 +1,12 @@
+[Unit]
+Description=ElasticSearch Exporter
+After=network.target
+
+[Service]
+User=esxp
+Group=esxp
+ExecStart=/usr/bin/elasticsearch_exporter --es.all --es.cluster_settings --es.indices --es.shards --es.snapshots --es.uri=http://127.0.0.1:9200 --web.listen-address=:{{ elasticsearch_exporter_port }}
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

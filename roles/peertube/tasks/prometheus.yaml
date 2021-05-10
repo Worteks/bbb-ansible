@@ -1,0 +1,29 @@
+- include_role:
+    name: docker
+    tasks_from: check-pull.yaml
+  vars:
+    image_tag: "{{ peertubeexporter_images_release }}"
+    image_url: "{{ peertubeexporter_images_repo }}"
+- name: Installs PeerTube Exporter Docker-Compose Directory
+  file:
+    dest: /etc/docker-compose/peertube-exporter
+    group: root
+    mode: 0755
+    owner: root
+    state: directory
+- name: Installs PeerTube Exporter Configuration
+  register: should_reload
+  template:
+    dest: /etc/docker-compose/peertube-exporter/docker-compose.yaml
+    group: root
+    mode: 0640
+    owner: root
+    src: exporter.j2
+- include_role:
+    name: docker
+    tasks_from: service.yaml
+  vars:
+    service_description: PeerTube Exporter
+    service_name: peertube-exporter
+    service_standby: "{{ False if ((groups['peertube'] | first) == ansible_nodename)
+                               else True }}"

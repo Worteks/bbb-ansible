@@ -21,8 +21,10 @@
   - /etc/grafana
   - /etc/grafana/bbb-dashboards
   - /etc/grafana/provisioning
-  - /etc/grafana/provisioning/datasources
   - /etc/grafana/provisioning/dashboards
+  - /etc/grafana/provisioning/datasources
+  - /etc/grafana/provisioning/notifiers
+  - /etc/grafana/provisioning/plugins
   loop_control:
     loop_var: fl
 - name: Installs Grafana Database Directory

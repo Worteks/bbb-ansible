@@ -1,0 +1,26 @@
+- name: Fails on Missing Variables
+  fail:
+    msg: |
+      Could not find {{ ansible_fqdn }} in DRBD members
+  when:
+  - ansible_fqdn not in drbd_members
+- name: Fails on Invalid Variables
+  fail:
+    msg: |
+      Should have at least 2 DRBD members
+  when:
+  - drbd_members | length < 2
+- name: Installs DRBD
+  apt:
+    name: drbd-utils
+    state: present
+- name: Ensures DRBD Module Would be Loaded on Boot
+  lineinfile:
+    dest: /etc/modules
+    line: drbd
+  register: newmod
+- name: Ensures DRBD Module is Loaded
+  shell: modprobe drbd
+  when:
+  - newmod is defined
+  - newmod is changed

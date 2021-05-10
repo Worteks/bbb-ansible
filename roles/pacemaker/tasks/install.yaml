@@ -1,0 +1,25 @@
+- name: Fails on Missing Variables
+  fail:
+    msg: |
+      Could not find {{ ansible_fqdn }} in Corosync members
+  when:
+  - ansible_fqdn not in corosync_members
+- name: Fails on Invalid Variables
+  fail:
+    msg: |
+      Should have at least 2 Corosync members
+  when:
+  - corosync_members | length < 2
+- name: Installs Pacemaker & Corosync
+  apt:
+    name:
+    - corosync
+    - crmsh
+    - pacemaker
+    - pcs
+    state: present
+- name: Ensures Pcsd Running
+  service:
+    enabled: yes
+    name: pcsd
+    state: started

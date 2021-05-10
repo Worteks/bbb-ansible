@@ -1,0 +1,20 @@
+- name: Fixes PHP Configuration
+  lineinfile:
+    dest: "/etc/php/{{ php_version }}/{{ item }}/php.ini"
+    line: cgi.fix_pathinfo=0
+    regex: cgi.fix_pathinfo
+  loop:
+  - cli
+  - fpm
+  notify: Reloads PHP FPM
+- name: Fixes PHP FPM Configuration
+  lineinfile:
+    dest: "/etc/php/{{ php_version }}/fpm/pool.d/www.conf"
+    line: security.limit_extensions = .php
+    regex: security.limit_extensions
+  notify: Reloads PHP FPM
+- name: Ensures PHP FPM is Running & Starts on Boot
+  service:
+    enabled: yes
+    name: "php{{ php_version }}-fpm"
+    state: started

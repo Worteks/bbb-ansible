@@ -10,8 +10,8 @@
   args:
     chdir: /etc/sysctl.d
   notify:
-  - Reload Redis
-  - Reload Sentinel
+  - Reloads Redis
+  - Reloads Sentinel
   shell: |
     while read value; \
         do \

@@ -1,0 +1,19 @@
+- name: Gather Facts from ElasticSearch
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['elasticsearch'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+- name: Inits ElasticSearch Facts
+  run_once: yes
+  set_fact:
+    es_nodes: []
+- name: Fetches ElasticSearch Nodes Names
+  loop: "{{ groups['elasticsearch'] }}"
+  loop_control:
+    loop_var: node
+  run_once: yes
+  set_fact:
+    es_nodes: "{{ es_nodes + [ hostvars[node]['ansible_hostname'] ] }}"

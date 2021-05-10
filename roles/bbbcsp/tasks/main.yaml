@@ -1,0 +1,16 @@
+- include_tasks: facts.yaml
+- include_tasks: internalnet.yaml
+  when:
+  - >
+      (groups['lb_front'] | length > 0
+       and hostvars[groups['lb_front'][0]]['corosync_vip'] is defined)
+      or (groups['reverse'] | length > 0
+          and hostvars[groups['reverse'][0]]['corosync_vip'] is defined)
+      or (groups['scalelite'] | length > 0
+          and hostvars[groups['scalelite'][0]]['corosync_vip'] is defined)
+      or (groups['peertube'] | length > 0
+          and hostvars[groups['peertube'][0]]['corosync_vip'] is defined)
+- include_tasks: image.yaml
+- include_tasks: install.yaml
+- include_tasks: configure.yaml
+- include_tasks: nginx.yaml

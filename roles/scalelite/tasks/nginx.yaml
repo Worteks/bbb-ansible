@@ -1,38 +1,40 @@
-- block:
-  - name: Installs Scalelite Nginx Build Directory
-    file:
-      dest: /usr/src/scalelite-nginx
-      group: root
-      mode: 0755
-      owner: root
-      state: directory
-  - name: Installs Scalelite Nginx custom Dockerfile Metrics
-    register: patch_conf
-    template:
-      dest: /usr/src/scalelite-nginx/Dockerfile
-      group: root
-      mode: 0644
-      owner: root
-      src: patch-nginx.j2
-  when:
-  - >
-      groups['prometheus'] | length > 0
-      or do_prometheus | default(False)
-- name: Installs Scalelite Nginx Working Directories
-  file:
-    dest: "{{ fl }}"
+- name: Installs Scalelite Virtualhost
+  notify: Reloads Nginx
+  template:
+    dest: /etc/nginx/sites-available/scalelite.conf
     group: root
-    mode: 0755
+    mode: 0644
     owner: root
-    state: directory
-  loop:
-  - /etc/nginx
-  - /var/log/nginx
-  loop_control:
-    loop_var: fl
-- include_role:
-    name: docker
-    tasks_from: check-pull.yaml
-  vars:
-    image_tag: "{{ scalelite_images_release }}-nginx"
-    image_url: "{{ scalelite_images_repo }}"
+    src: vhost.j2
+- name: Enables Scalelite Virtualhost
+  file:
+    dest: /etc/nginx/sites-enabled/scalelite.conf
+    src: /etc/nginx/sites-available/scalelite.conf
+    state: link
+  notify: Reloads Nginx
+- name: Checks for Playbacks Directory
+  changed_when: False
+  failed_when: False
+  stat:
+    path: /var/scalelite-recordings/playback
+  register: hasplaybacks
+- block:
+  - name: Starts Scalelite Nginx Container
+    shell: |
+      docker rm -f extractplaybacks || echo OK;
+      docker run --entrypoint /bin/sh \
+          --name extractplaybacks \
+          -d "{{ scalelite_images_repo }}:{{ scalelite_images_release }}-nginx" \
+          -c "sleep 86400"
+  - name: Extracts Scalelite Playbacks
+    shell: docker cp extractplaybacks:/var/bigbluebutton/playback /var/scalelite-recordings/playback
+  - name: Terminates Scalelite Nginx Container
+    shell: docker rm -f extractplaybacks
+  when:
+  - hasplaybacks is defined
+  - hasplaybacks.stat is defined
+  - not hasplaybacks.stat.exists
+  - >
+      (ansible_fqdn not in groups['drbd'])
+      or (ansible_fqdn in groups['drbd']
+          and drbd_is_primary | default(False))

@@ -1,0 +1,6 @@
+- include_tasks: install.yaml
+- include_tasks: configure.yaml
+- include_tasks: lvm.yaml
+  when:
+  - drbd_filesystems | default(False)
+  - drbd_filesystems | length > 0

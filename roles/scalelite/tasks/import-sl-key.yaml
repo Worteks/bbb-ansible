@@ -1,0 +1,25 @@
+- name: "Creates Scalelite SSH Key Pair on {{ srv }}"
+  args:
+    chdir: /home/scalelite-spool/.ssh
+    creates: /home/scalelite-spool/.ssh/id_rsa
+  delegate_to: "{{ srv }}"
+  run_once: yes
+  shell: |
+    /usr/bin/ssh-keygen -t rsa -b 4096 -N '' -f id_rsa;
+    chown scalelite-spool:scalelite-spool id_rsa id_rsa.pub
+- name: "Fetches Scalelite Public SSH Key from {{ srv }}"
+  args:
+    chdir: /home/scalelite-spool/.ssh
+  changed_when: False
+  delegate_to: "{{ srv }}"
+  register: has_key
+  run_once: yes
+  shell: cat id_rsa.pub
+- name: "Ensures {{ srv }} Key is Trusted"
+  lineinfile:
+    create: yes
+    dest: /home/scalelite-spool/.ssh/authorized_keys
+    group: scalelite-spool
+    line: "{{ has_key.stdout_lines[0] }}"
+    mode: 0600
+    owner: scalelite-spool

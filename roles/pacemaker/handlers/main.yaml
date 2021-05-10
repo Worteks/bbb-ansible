@@ -1,0 +1,4 @@
+- name: Reloads HA Cluster Exporter
+  service:
+    name: ha-cluster-exporter
+    state: restarted

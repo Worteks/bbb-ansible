@@ -1,0 +1,71 @@
+- name: Ensures Sudo is Installed
+  apt:
+    name: sudo
+    state: present
+  when:
+  - pm2_ecosystem_path | default(False)
+  - pm2_runtime_user != 'root'
+- name: Ensures PM2 Home Directory Exists
+  file:
+    dest: "{{ pm2_runtime_homedir }}"
+    group: root
+    mode: 0750
+    owner: "{{ pm2_runtime_user }}"
+    state: directory
+  when:
+  - pm2_runtime_user != 'root'
+- name: Installs PM2 Unit
+  args:
+    creates: "/etc/systemd/system/pm2-{{ pm2_runtime_user }}.service"
+  shell: "pm2 startup systemd -u {{ pm2_runtime_user }} --hp {{ pm2_runtime_homedir }} --service-name pm2-{{ pm2_runtime_user }}"
+- name: Fixes PM2 Unit - removes PID File
+  lineinfile:
+    dest: "/etc/systemd/system/pm2-{{ pm2_runtime_user }}.service"
+    regexp: ^PIDFile=
+    line: "#PIDFile="
+  register: fixed_unit
+- name: Initializes PM2 Ecosystem (as root)
+  args:
+    chdir: "{{ pm2_ecosystem_path }}"
+    creates: /root/.pm2/dump.pm2
+  register: startedup_root
+  shell: "pm2 start {{ pm2_ecosystem_file | default('ecosystem.config.js') }} && sleep 2 && pm2 save && sleep 2 && pm2 stop {{ pm2_ecosystem_file | default('ecosystem.config.js') }}"
+  when:
+  - pm2_ecosystem_path | default(False)
+  - pm2_runtime_user == 'root'
+- name: Initializes PM2 Ecosystem (as unprivileged user)
+  args:
+    chdir: "{{ pm2_ecosystem_path }}"
+    creates: "{{ pm2_runtime_homedir }}/.pm2/dump.pm2"
+  become: yes
+  become_user: "{{ pm2_runtime_user }}"
+  register: startedup_unprivileged
+  shell: "pm2 start {{ pm2_ecosystem_file | default('ecosystem.config.js') }} && sleep 2 && pm2 save && sleep 2 && pm2 stop {{ pm2_ecosystem_file | default('ecosystem.config.js') }}"
+  when:
+  - pm2_ecosystem_path | default(False)
+  - pm2_runtime_user != 'root'
+- block:
+  - name: Reloads Systemd Configuration
+    shell: systemctl daemon-reload
+  - name: "Stops pm2-{{ pm2_runtime_user }}"
+    service:
+      name: "pm2-{{ pm2_runtime_user }}"
+      state: stopped
+  when:
+  - >
+      (startedup_unprivileged is defined
+       and startedup_unprivileged is changed)
+      or (startedup_root is defined
+          and startedup_root is changed)
+      or (fixed_unit is defined
+          and fixed_unit is changed)
+- name: "Ensures pm2-{{ pm2_runtime_user }} is Running & Starts on Boot"
+  service:
+    enabled: yes
+    name: "pm2-{{ pm2_runtime_user }}"
+    state: started
+- name: Links PM2 Logs to /var/log
+  file:
+    dest: "/var/log/pm2-{{ pm2_runtime_user }}"
+    state: link
+    src: "{{ pm2_runtime_homedir if (pm2_runtime_user != 'root') else '/root' }}/.pm2/logs"

@@ -1,0 +1,13 @@
+- name: Gather Facts from CephFS
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['cephfs'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+- name: Sets PKI Root Directory Fact
+  delegate_to: localhost
+  run_once: yes
+  set_fact:
+    pki_root: "{{ playbook_dir }}/.pki"

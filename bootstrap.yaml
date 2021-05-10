@@ -1,5 +1,5 @@
 # Finish hosts prep on dedicated instances
-- hosts: lb:postgres:redis:scalelite:bbb:greenlight:moodle:prometheus:grafana:alertmanager:sshfs:nfs:openstreamingplatform:coturn:rtmp
+- hosts: lb:postgres:redis:scalelite:bbb:bbbcsp:greenlight:moodle:peertube:prometheus:grafana:alertmanager:sshfs:nfs:openstreamingplatform:coturn:rtmp:kibana:elasticsearch:freeipa:reverse
   tasks:
   - include_role:
       name: commons
@@ -7,7 +7,7 @@
     - not (is_on_shared_hardware | default(False))
 
 # Configures Firewall
-- hosts: lb:postgres:redis:sshfs:nfs
+- hosts: lb:postgres:redis:sshfs:nfs:reverse:coturn
   tasks:
   - include_role:
       name: firehol
@@ -18,23 +18,51 @@
 # Initilizes BBB PKI
 # Generates Certificates to BBB, Greenlight, Scalelite,
 # AlertManager & Prometheus
-- hosts: bbb:scalelite:greenlight:prometheus:grafana:alertmanager:coturn
+- hosts: bbb:bbbcsp:scalelite:greenlight:peertube:prometheus:grafana:alertmanager:coturn:kibana
   roles:
   - { name: pki, when: bbb_uses_selfsigned | default(True) }
-- hosts: bbb:greenlight
+- hosts: bbb
   serial: 1
   tasks:
-  - fail:
-      msg: |
-        BigBueButton FQDN has to be set, deploying multiple servers
-    when:
-    - groups['bbb'] | length > 1
-    - not (bigbluebutton_fqdn | default(False))
   - include_role:
       name: pki
       tasks_from: generate-cert.yaml
     vars:
       cert_fqdn: "{{ bigbluebutton_fqdn | default(ansible_fqdn) }}"
+    when:
+    - ansible_hostname not in groups['greenlight']
+    - ansible_fqdn not in groups['greenlight']
+    - bbb_uses_selfsigned | default(True)
+- hosts: greenlight
+  serial: 1
+  tasks:
+  - fail:
+      msg: |
+        Greenlight FQDN has to be set, deploying multiple servers
+    when:
+    - groups['greenlight'] | length > 1
+    - not (greenlight_fqdn | default(False))
+  - include_role:
+      name: pki
+      tasks_from: generate-cert.yaml
+    vars:
+      cert_fqdn: "{{ greenlight_fqdn | default(ansible_fqdn) }}"
+    when:
+    - bbb_uses_selfsigned | default(True)
+- hosts: peertube
+  serial: 1
+  tasks:
+  - fail:
+      msg: |
+       PeerTube FQDN has to be set, deploying multiple servers
+    when:
+    - groups['peertube'] | length > 1
+    - not (peertube_fqdn | default(False))
+  - include_role:
+      name: pki
+      tasks_from: generate-cert.yaml
+    vars:
+      cert_fqdn: "{{ peertube_fqdn | default(ansible_fqdn) }}"
     when:
     - bbb_uses_selfsigned | default(True)
 - hosts: scalelite
@@ -53,6 +81,22 @@
       cert_fqdn: "{{ scalelite_fqdn | default(ansible_fqdn) }}"
     when:
     - bbb_uses_selfsigned | default(True)
+- hosts: bbbcsp
+  serial: 1
+  tasks:
+  - fail:
+      msg: |
+       BigBlueButton Conferences Streaming Platform FQDN has to be set, deploying multiple servers
+    when:
+    - groups['bbbcsp'] | length > 1
+    - not (bbbcsp_fqdn | default(False))
+  - include_role:
+      name: pki
+      tasks_from: generate-cert.yaml
+    vars:
+      cert_fqdn: "{{ bbbcsp_fqdn | default(ansible_fqdn) }}"
+    when:
+    - bbb_uses_selfsigned | default(True)
 - hosts: coturn
   serial: 1
   tasks:
@@ -67,6 +111,22 @@
       tasks_from: generate-cert.yaml
     vars:
       cert_fqdn: "{{ coturn_fqdn | default(ansible_fqdn) }}"
+    when:
+    - bbb_uses_selfsigned | default(True)
+- hosts: kibana
+  serial: 1
+  tasks:
+  - fail:
+      msg: |
+        Kibana FQDN has to be set, deploying multiple servers
+    when:
+    - groups['kibana'] | length > 1
+    - not (kibana_fqdn | default(False))
+  - include_role:
+      name: pki
+      tasks_from: generate-cert.yaml
+    vars:
+      cert_fqdn: "{{ kibana_fqdn | default(ansible_fqdn) }}"
     when:
     - bbb_uses_selfsigned | default(True)
 - hosts: alertmanager
@@ -130,28 +190,37 @@
 - hosts: nfs
   roles:
   - nfs
-- hosts: cephfs
+- hosts: scalelite
   roles:
   - cephfs
+  when:
+  - groups['cephfs'] | length > 0
 - hosts: sshfs
   roles:
   - sshfs
 
 # Installs Redis
-# only required when deploying Scalelite
-- hosts: redis
+# only required when deploying PeerTube or Scalelite
+- hosts: redis_peertube
+  vars:
+    my_hostgroup: redis_peertube
+  roles:
+  - redis
+- hosts: redis_scalelite
+  vars:
+    my_hostgroup: redis_scalelite
   roles:
   - redis
 
 # Installs Postgres
-# provisions Greenlight, Moodle & Scalelite databases & users
+# provisions Greenlight, Moodle PeerTube & Scalelite databases & users
 - hosts: postgres
   roles:
   - postgres
 
 # Installs HAProxy for backend services
-# sends Scalelite clients to redis Master, Prometheus to AlertManager,
-# Grafana to Prometheus
+# sends PeerTube & Scalelite clients to redis Master, Prometheus to
+# AlertManager, Grafana to Prometheus
 - hosts: lb_back
   roles:
   - haproxy
@@ -163,20 +232,26 @@
 
 # Installs BigBlueButton
 - hosts: bbb
-  roles:
-  - bigbluebutton
+  tasks:
+  - include_role:
+      name: bigbluebutton
+    when:
+    - not (skip_bbb | default(False))
 
 # Installs Scalelite
 - hosts: scalelite
   roles:
   - scalelite
+  serial: 1
 
 # Registers BigBlueButton backends to Scalelite
-- hosts: scalelite[0]
+- hosts: scalelite
   tasks:
   - include_role:
       name: scalelite
       tasks_from: init-backends.yaml
+    when:
+    - groups['bbb'] | length > 0
 # Trusts Scalelite SSH Hostkey in BBB
 - hosts: bbb
   tasks:
@@ -188,8 +263,6 @@
     - groups['nfs'] | length == 0
 
 # Installs HAProxy for frontend services
-# Greenlight & external clients to an active Scalelite server,
-# external clients to Greenlight & Grafana
 # -- don't re-apply, if host also member of lb_back group
 - hosts: lb_front
   tasks:
@@ -197,12 +270,52 @@
       name: haproxy
     when:
     - not (ansible_fqdn in groups['lb_back'])
-    - groups['scalelite'] | length > 0
+    - not (ansible_hostname in groups['lb_back'])
+
+# Installs Nginx Reverse Proxy
+- hosts: reverse
+  roles:
+  - reverse
+  serial: 1
 
 # Installs Greenlight
 - hosts: greenlight
   roles:
   - greenlight
+  serial: 1
+
+# Installs OpenStreamingPlatform
+- hosts: openstreamingplatform
+  roles:
+  - openstreamingplatform
+
+# Installs PeerTube
+- hosts: peertube
+  roles:
+  - peertube
+
+# Installs BigBlueButton Conferences Streaming Platform
+- hosts: bbbcsp
+  roles:
+  - bbbcsp
+
+# Installs ElasticSearch
+- hosts: elasticsearch
+  roles:
+  - elasticsearch
+
+# Configures Logs Forwarding
+- hosts: lb:postgres:redis:scalelite:bbb:bbbcsp:greenlight:moodle:peertube:prometheus:grafana:alertmanager:sshfs:nfs:openstreamingplatform:coturn:rtmp:kibana:elasticsearch:freeipa:reverse
+  tasks:
+  - include_role:
+      name: fluentd
+    when:
+    - groups['elasticsearch'] | length > 0
+
+# Installs Kibana
+- hosts: kibana
+  roles:
+  - kibana
 
 # Installs AlertManager
 - hosts: alertmanager

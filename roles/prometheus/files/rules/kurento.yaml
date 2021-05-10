@@ -1,0 +1,19 @@
+groups:
+- name: KurentoMediaServer
+  rules:
+  - alert: KurentoMediaServerDown
+    expr: kurento_up == 0
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Kurento Media Server down (instance {{ $labels.instance }})"
+      description: "Kurento Media Server down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: KurentoMediaServerUnavailable
+    expr: time() - (kurento_last_scrape / 1000) > 60
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Kurento Media Server unavailable (instance {{ $labels.instance }})"
+      description: "Kurento Media Server unavailable\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"

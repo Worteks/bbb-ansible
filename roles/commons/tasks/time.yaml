@@ -15,6 +15,7 @@
     force: yes
     src: "/usr/share/zoneinfo/{{ timezone | default('UTC') }}"
     state: link
+
 - block:
   - name: Installs NTP Configurationn
     register: new_ntp
@@ -40,4 +41,6 @@
       name: ntp
       state: started
   when:
+  - ntp_upstreams | default(False)
   - ntp_upstreams | length > 0
+  - groups['freeipa'] | length < 1

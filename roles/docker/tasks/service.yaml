@@ -11,21 +11,29 @@
   when:
   - docker_unit is defined
   - docker_unit is changed
-- name: "Ensures {{ service_description | default(service_name) }} is Running & Starts on Boot"
-  register: did_start
-  service:
-    enabled: yes
-    name: "{{ service_name }}"
-    state: started
-- name: "Restarts {{ service_description | default(service_name) }}"
-  service:
-    name: "{{ service_name }}"
-    state: restarted
+- block:
+  - name: "Ensures {{ service_description | default(service_name) }} is Running & Starts on Boot"
+    register: did_start
+    service:
+      enabled: "{{ 'no' if (service_standby | default(False))
+                        else 'yes' }}"
+      name: "{{ service_name }}"
+      state: "{{ 'stopped' if (service_standby | default(False))
+                           else 'started' }}"
+  - name: "Restarts {{ service_description | default(service_name) }}"
+    service:
+      name: "{{ service_name }}"
+      state: restarted
+    when:
+    - did_start is defined
+    - not (service_standby | default(False))
+    - not (did_start is changed)
+    - >
+        (should_reload is defined
+         and should_reload is changed)
+        or (config_changed is defined
+         and config_changed is changed)
   when:
-  - did_start is defined
-  - not (did_start is changed)
-  - >
-      (should_reload is defined
-       and should_reload is changed)
-      or (config_changed is defined
-       and config_changed is changed)
+  - ansible_fqdn not in groups['drbd']
+  - ansible_hostname not in groups['drbd']
+  - ansible_nodename not in groups['drbd']

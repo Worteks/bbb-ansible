@@ -1,0 +1,44 @@
+- name: Installs PeerTube Postgres Database
+  become: yes
+  become_user: postgres
+  postgresql_db:
+    encoding: UTF-8
+    name: "{{ peertube_postgres_database }}"
+    template: template0
+- name: Installs PeerTube Postgres User
+  become: yes
+  become_user: postgres
+  postgresql_user:
+    db: "{{ peertube_postgres_database }}"
+    name: "{{ peertube_postgres_user }}"
+    password: "{{ peertube_postgres_password }}"
+- name: Grants PeerTube User Privileges over its database
+  become: yes
+  become_user: postgres
+  postgresql_privs:
+    admin_option: yes
+    db: "{{ peertube_postgres_database }}"
+    privs: ALL
+    type: database
+    role: "{{ peertube_postgres_user }}"
+- name: Loads Postgres Extensions for PeerTube
+  become: yes
+  become_user: postgres
+  loop:
+  - pg_trgm
+  - unaccent
+  loop_control:
+    loop_var: exten
+  postgresql_ext:
+    db: "{{ peertube_postgres_database }}"
+    name: "{{ exten }}"
+    state: present
+- include_tasks: backup.yaml
+  vars:
+    database: "{{ peertube_postgres_database }}"
+    db_password: "{{ peertube_postgres_password }}"
+    db_user: "{{ peertube_postgres_user }}"
+  when:
+  - >
+      do_backups | default(False)
+      or do_postgres_backups | default(False)

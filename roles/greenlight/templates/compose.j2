@@ -1,4 +1,4 @@
-version: '3'
+version: '2.0'
 services:
   greenlight:
 {% if greenlight_saml_endpoint | default(False) or greenlight_oidc_endpoint | default(False) %}
@@ -12,16 +12,19 @@ services:
 {% if groups['scalelite'] | length > 1 and groups['lb_front'] | length > 0 %}
     - BIGBLUEBUTTON_ENDPOINT=https://{{ hostvars[groups['lb_front'][0]]['scalelite_fqdn'] | default(hostvars[groups['lb_front'][0]]['ansible_fqdn']) }}/bigbluebutton/api/
     - BIGBLUEBUTTON_SECRET={{ hostvars[groups['scalelite'][0]]['scalelite_lb_secret'] }}
+{% elif groups['scalelite'] | length > 1 and groups['reverse'] | length > 0 %}
+    - BIGBLUEBUTTON_ENDPOINT=https://{{ hostvars[groups['reverse'][0]]['scalelite_fqdn'] | default(hostvars[groups['reverse'][0]]['ansible_fqdn']) }}/bigbluebutton/api/
+    - BIGBLUEBUTTON_SECRET={{ hostvars[groups['scalelite'][0]]['scalelite_lb_secret'] }}
 {% elif groups['scalelite'] | length > 0 %}
     - BIGBLUEBUTTON_ENDPOINT=https://{{ hostvars[groups['scalelite'][0]]['scalelite_fqdn'] | default(hostvars[groups['scalelite'][0]]['ansible_fqdn']) }}/bigbluebutton/api/
     - BIGBLUEBUTTON_SECRET={{ hostvars[groups['scalelite'][0]]['scalelite_lb_secret'] }}
 {% else %}
-    - BIGBLUEBUTTON_ENDPOINT=https://{{ hostvars[groups['bbb'][0]]['ansible_fqdn'] }}/bigbluebutton/api/
+    - BIGBLUEBUTTON_ENDPOINT=https://{{ hostvars[groups['bbb'][0]]['bigbluebutton_fqdn'] | default(hostvars[groups['bbb'][0]]['ansible_fqdn']) }}/bigbluebutton/api/
     - BIGBLUEBUTTON_SECRET={{ bbb_secret.stdout_lines[0] }}
 {% endif %}
-{% if groups['postgres'] | length > 0 %}
+{% if groups['postgres_greenlight'] | length > 0 %}
     - DB_ADAPTER=postgresql
-    - DB_HOST={{ greenlight_postgres_host if (greenlight_postgres_host | default(False)) else hostvars[groups['postgres'][0]]['ansible_fqdn'] }}
+    - DB_HOST={{ greenlight_postgres_host if (greenlight_postgres_host | default(False)) else (hostvars[groups['postgres_greenlight'][0]]['corosync_vip'] | default(hostvars[groups['postgres_greenlight'][0]]['ansible_fqdn'])) }}
     - DB_NAME={{ greenlight_postgres_database }}
     - DB_PASSWORD={{ greenlight_postgres_password }}
     - DB_PORT={{ greenlight_postgres_port }}
@@ -56,7 +59,7 @@ services:
 {% if greenlight_oidc_logout_endpoint | default(False) %}
     - OPENID_CONNECT_END_SESSION_ENDPOINT={{ greenlight_oidc_logout_endpoint }}
 {% endif %}
-    - OPENID_CONNECT_ISSUER=https://{{ bigbluebutton_fqdn | default(ansible_fqdn) }}
+    - OPENID_CONNECT_ISSUER=https://{{ greenlight_fqdn | default(ansible_fqdn) }}
 {% if greenlight_oidc_site | default(False) %}
     - OPENID_CONNECT_SITE={{ greenlight_oidc_site }}
 {% endif %}
@@ -67,7 +70,7 @@ services:
     - RAILS_LOG_TO_STDOUT=true
     - RELATIVE_URL_ROOT={{ greenlight_app_root }}
     - ROOM_FEATURES={{ greenlight_room_features | join(',') }}
-    - SAFE_HOSTS={{ bigbluebutton_fqdn | default(ansible_fqdn) }}
+    - SAFE_HOSTS={{ greenlight_fqdn | default(ansible_fqdn) }}
 {% if greenlight_saml_endpoint | default(False) %}
     - SAML_COMMONNAME_ATTRIBUTE={{ greenlight_saml_commonname_field }}
     - SAML_EMAIL_ATTRIBUTE={{ greenlight_saml_email_field }}
@@ -79,6 +82,49 @@ services:
     - SAML_USERNAME_ATTRIBUTE={{ greenlight_saml_username_field }}
 {% endif %}
     - SECRET_KEY_BASE={{ greenlight_base_secret }}
+{% if greenlight_smtp_server %}
+    - ALLOW_MAIL_NOTIFICATIONS=true
+    - SMTP_DOMAIN={{ greenlight_smtp_domain | default(greenlight_fqdn | default(ansible_fqdn)) }}
+    - SMTP_PORT={{ greenlight_smtp_port }}
+{% if greenlight_smtp_username %}
+{% if '@' in greenlight_smtp_username %}
+    - SMTP_SENDER={{ greenlight_smtp_username }}
+{% else %}
+    - SMTP_SENDER={{ greenlight_smtp_username | default('greenlight') }}@{{ greenlight_smtp_domain | default(greenlight_fqdn | default(ansible_fqdn)) }}
+{% endif %}
+{% else %}
+    - SMTP_SENDER={{ greenlight_smtp_mailfrom | default('greenlight@' ~ (greenlight_smtp_domain | default(greenlight_fqdn | default(ansible_fqdn)))) }}
+{% endif %}
+    - SMTP_SERVER={{ greenlight_smtp_server }}
+{% if greenlight_smtp_testuser %}
+    - SMTP_TEST_RECIPIENT={{ greenlight_smtp_testuser }}
+{% endif %}
+{% if greenlight_smtp_password and greenlight_smtp_username %}
+    - SMTP_AUTH={{ greenlight_smtp_auth }}
+    - SMTP_PASSWORD={{ greenlight_smtp_password }}
+    - SMTP_USERNAME={{ greenlight_smtp_username }}
+{% endif %}
+{% if bbb_uses_selfsigned | default(True) %}
+    - SMTP_OPENSSL_VERIFY_MODE=none
+{% endif %}
+{% if greenlight_smtp_tls %}
+    - SMTP_TLS=true
+{% elif greenlight_smtp_starttls %}
+    - SMTP_STARTTLS_AUTO=true
+{% endif %}
+{% endif %}
+    extra_hosts:
+{% if groups['scalelite'] | length > 0 and hostvars[groups['scalelite'][0]]['corosync_vip'] is defined %}
+    - {{ hostvars[groups['scalelite'][0]]['scalelite_fqdn'] | default(hostvars[groups['scalelite'][0]]['ansible_fqdn']) }}:{{ hostvars[groups['scalelite'][0]]['corosync_vip'] }}
+{% elif groups['scalelite'] | length > 1 and groups['lb_front'] | length > 0 %}
+    - {{ hostvars[groups['lb_front'][0]]['scalelite_fqdn'] | default(hostvars[groups['lb_front'][0]]['ansible_fqdn']) }}:{{ hostvars[groups['lb_front'][0]]['corosync_vip'] | default(hostvars[groups['lb_front'][0]]['ansible_default_ipv4']['address']) }}
+{% elif groups['scalelite'] | length > 1 and groups['reverse'] | length > 0 %}
+    - {{ hostvars[groups['reverse'][0]]['scalelite_fqdn'] | default(hostvars[groups['reverse'][0]]['ansible_fqdn']) }}:{{ hostvars[groups['reverse'][0]]['corosync_vip'] | default(hostvars[groups['reverse'][0]]['ansible_default_ipv4']['address']) }}
+{% elif groups['scalelite'] | length > 0 %}
+    - {{ hostvars[groups['scalelite'][0]]['scalelite_fqdn'] | default(hostvars[groups['scalelite'][0]]['ansible_fqdn']) }}:{{ hostvars[groups['scalelite'][0]]['ansible_default_ipv4']['address'] }}
+{% else %}
+    - {{ hostvars[groups['bbb'][0]]['bigbluebutton_fqdn'] | default(hostvars[groups['bbb'][0]]['ansible_fqdn']) }}:{{ hostvars[groups['bbb'][0]]['ansible_default_ipv4']['address'] }}
+{% endif %}
 {% if greenlight_saml_endpoint | default(False) or greenlight_oidc_endpoint | default(False) %}
     image: custom-greenlight:sso
 {% else %}
@@ -86,6 +132,9 @@ services:
 {% endif %}
     logging:
       driver: journald
+{% if docker_hostnetwork | default(False) or ansible_fqdn in groups['postgres_greenlight'] or ansible_nodename in groups['postgres_greenlight'] or ansible_hostname in groups['postgres_greenlight'] %}
+    network_mode: host
+{% endif %}
     ports:
     - "5000:80"
     restart: unless-stopped
@@ -94,7 +143,7 @@ services:
     - /etc/ssl/certs:/etc/ssl/certs
     - /usr/local/share/ca-certificates:/usr/local/share/ca-certificates
 {% endif %}
-{% if groups['postgres'] | length == 0 %}
+{% if groups['postgres_greenlight'] | length == 0 %}
     - /var/lib/greenlight-db:/usr/src/app/db/production
 {% endif %}
     - /var/lib/greenlight:/usr/src/app/storage

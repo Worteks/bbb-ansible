@@ -1,0 +1,68 @@
+- name: Fetches Fluentd Installer (deb)
+  get_url:
+    dest: /usr/src/td-agent-installer.sh
+    group: root
+    mode: 0750
+    owner: root
+    url: "https://toolbelt.treasuredata.com/sh/install-{{ ansible_distribution | lower }}-{{ ansible_distribution_release | lower }}-td-agent4.sh"
+  register: fsetup1
+  when:
+  - ansible_distribution in [ 'Debian', 'Ubuntu' ]
+- name: Fetches Fluentd Installer (el)
+  get_url:
+    dest: /usr/src/td-agent-installer.sh
+    group: root
+    mode: 0750
+    owner: root
+    url: https://toolbelt.treasuredata.com/sh/install-redhat-td-agent4.sh
+  register: fsetup2
+  when:
+  - ansible_distribution in [ 'CentOS', 'Fedora', 'RedHat' ]
+- name: Installs Fluentd
+  args:
+    creates: /etc/td-agent/td-agent.conf
+  environment:
+    PATH: /usr/src:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+  shell: td-agent-installer.sh
+- name: Installs Fluentd ElasticSearch Output Plugin
+  changed_when: False
+  shell: |
+    if ! ls /opt/td-agent/lib/ruby/gems/*/doc/fluent-plugin-elasticsearch* 2>/dev/null; then
+        /usr/sbin/td-agent-gem install fluent-plugin-elasticsearch
+    fi
+- name: Installs Fluentd Systemd Input Plugin
+  changed_when: False
+  shell: |
+    if ! ls /opt/td-agent/lib/ruby/gems/*/doc/fluent-plugin-systemd* 2>/dev/null; then
+        /usr/sbin/td-agent-gem install fluent-plugin-systemd
+    fi
+- name: Installs Fluentd Prometheus Plugin
+  changed_when: False
+  shell: |
+    if ! ls /opt/td-agent/lib/ruby/gems/*/doc/fluent-plugin-prometheus*; then
+        /usr/sbin/td-agent-gem install fluent-plugin-prometheus
+    fi
+  when:
+  - >
+      groups['prometheus'] | length > 0
+      or do_prometheus | default(False)
+- name: Fixes Td-Agent Fluentd Unit
+  lineinfile:
+    dest: /lib/systemd/system/td-agent.service
+    regex: ^PIDFile=
+    line: PIDFile=/run/td-agent/td-agent.pid
+  register: shouldrld
+  when:
+  - ansible_distribution == 'Debian'
+  - ansible_distribution_release == 'buster'
+- name: Reloads Systemd Configuration
+  shell: systemctl daemon-reload
+  when:
+  - shouldrld is defined
+  - shouldrld is changed
+- name: Adds Td-Agent User to the Adm Group
+  user:
+    groups:
+    - td-agent
+    - adm
+    name: td-agent

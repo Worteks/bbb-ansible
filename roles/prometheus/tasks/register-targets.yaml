@@ -6,6 +6,14 @@
     mode: 0644
     owner: root
     src: target.j2
+  when:
+  - targets | length > 0
+- name: Removes Spurious Configuration
+  file:
+    dest: "/etc/prometheus/targets.d/{{ target_name }}.json"
+    state: absent
+  when:
+  - targets | length == 0
 - name: "Keeps Track of {{ target_name }} Modifications"
   set_fact:
     tgt_changed: True

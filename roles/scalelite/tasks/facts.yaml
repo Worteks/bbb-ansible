@@ -1,6 +1,7 @@
 - name: Gather Facts from NFS Server
   delegate_to: "{{ groups['nfs'][0] }}"
   delegate_facts: True
+  run_once: yes
   setup:
   when:
   - groups['nfs'] | length > 0
@@ -10,22 +11,30 @@
   loop: "{{ groups['lb'] }}"
   loop_control:
     loop_var: srv
+  run_once: yes
   setup:
   when:
   - groups['lb'] | length > 0
 - name: Gather Facts from Postgres
   delegate_to: "{{ srv }}"
   delegate_facts: True
-  loop: "{{ groups['postgres'] }}"
+  loop: "{{ groups['postgres_scalelite'] }}"
   loop_control:
     loop_var: srv
+  run_once: yes
   setup:
 - name: Gather Facts from Redis
   delegate_to: "{{ srv }}"
   delegate_facts: True
-  loop: "{{ groups['redis'] }}"
+  loop: "{{ groups['redis_scalelite'] }}"
   loop_control:
     loop_var: srv
+  run_once: yes
   setup:
   when:
   - groups['lb'] | length == 0
+- name: Forces Scalelite Image Release to Last Beta
+  set_fact:
+    scalelite_images_release: v1.1-beta.4
+  when:
+  - custom_scalelite_api | default(False)

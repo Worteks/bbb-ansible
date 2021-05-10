@@ -1,0 +1,8 @@
+- name: Reloads Nginx
+  service:
+    name: nginx
+    state: restarted
+  when:
+  - ansible_fqdn not in groups['drbd']
+  - ansible_hostname not in groups['drbd']
+  - ansible_nodename not in groups['drbd']

@@ -4,11 +4,11 @@ datasources:
   isDefault: true
   name: Prometheus
   type: prometheus
-{% if ansible_fqdn in groups['prometheus'] or ansible_hostname in groups['prometheus'] %}
+{% if ansible_nodename in groups['prometheus'] or ansible_fqdn in groups['prometheus'] or ansible_hostname in groups['prometheus'] %}
   url: http://{{ ansible_default_ipv4['address'] }}:9090
 {% elif groups['lb_back'] | length > 0 and groups['prometheus'] | length > 1 %}
   url: http://{{ prometheus_fqdn | default(hostvars[groups['lb_back'][0]]['ansible_default_ipv4']['address']) }}:9090
 {% else %}
-  url: http://{{ prometheus_fqdn | default(hostvars[groups['prometheus'][0]]['prometheus_fqdn'] | default(hostvars[groups['prometheus'][0]]['ansible_fqdn'])) }}:9090
+  url: http://{{ prometheus_fqdn | default(hostvars[groups['prometheus'][0]]['ansible_default_ipv4']['address'] | default(hostvars[groups['prometheus'][0]]['ansible_fqdn'])) }}:9090
 {% endif %}
 deleteDatasources: []

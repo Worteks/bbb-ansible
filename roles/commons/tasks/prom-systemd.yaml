@@ -1,0 +1,41 @@
+- name: Fetches Systemd Exporter
+  get_url:
+    dest: "/usr/src/systemd-exporter-{{ systemd_exporter_release }}.tar.gz"
+    group: root
+    mode: 0644
+    owner: root
+    url: "{{ systemd_exporter_repo }}/releases/download/v{{ systemd_exporter_release }}/systemd_exporter-{{ systemd_exporter_release }}.linux-amd64.tar.gz"
+- name: Extracts Systemd Exporter
+  args:
+    chdir: /usr/src
+    creates: "/usr/src/systemd_exporter-{{ systemd_exporter_release }}.linux-amd64"
+    warn: False
+  shell: "tar -xzf /usr/src/systemd-exporter-{{ systemd_exporter_release }}.tar.gz && rm -f /usr/bin/systemd_exporter"
+- name: Installs Systemd Exporter
+  copy:
+    dest: /usr/bin/systemd_exporter
+    group: root
+    mode: 0755
+    owner: root
+    remote_src: yes
+    src: "/usr/src/systemd_exporter-{{ systemd_exporter_release }}.linux-amd64/systemd_exporter"
+  notify: Reloads Systemd Exporter
+- name: Installs Systemd Exporter Unit
+  notify: Reloads Systemd Exporter
+  register: exporter_unit
+  template:
+    dest: /etc/systemd/system/systemd-exporter.service
+    group: root
+    mode: 0644
+    owner: root
+    src: systemd-xp.j2
+- name: Reloads Systemd Configuration
+  shell: systemctl daemon-reload
+  when:
+  - exporter_unit is defined
+  - exporter_unit is changed
+- name: Ensures Systemd Exporter is Running & Starts on Boot
+  service:
+    enabled: yes
+    name: systemd-exporter
+    state: started

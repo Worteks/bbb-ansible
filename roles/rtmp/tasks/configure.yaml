@@ -2,7 +2,7 @@
   changed_when: False
   delegate_to: "{{ groups['bbb'][0] }}"
   register: bbb_secret
-  run_once: True
+  run_once: yes
   shell: bbb-conf --secret | awk '/Secret:/{print $2}'
   when:
   - groups['scalelite'] | length == 0
@@ -10,7 +10,7 @@
   changed_when: False
   delegate_to: "{{ stream_hosted_on | default(groups['bbb'][0]) }}"
   register: bbb_meeting
-  run_once: True
+  run_once: yes
   shell: >
     bbb-cli get-rooms \
         | grep -A1 "<meetingName>{{ stream_meeting_id }}</meetingName>" \

@@ -1,0 +1,57 @@
+totem {
+	version: 2
+	clear_node_high_bit: yes
+	cluster_name: {{ corosync_cluster_name }}
+	crypto_cipher: {{ corosync_crypto_cipher }}
+	crypto_hash: {{ corosync_crypto_hash }}
+	token: 3000
+	token_retransmits_before_loss_const: 10
+	interface {
+		ringnumber: 0
+{% if corosync_bindnetaddr | default(False) %}
+		bindnetaddr: {{ corosync_bindnetaddr }}
+{% elif corosync_interface is defined %}
+		bindnetaddr: {{ hostvars[ansible_nodename]['ansible_' ~ corosync_interface]['ipv4']['network'] }}
+{% else %}
+		bindnetaddr: {{ ansible_default_ipv4['network'] }}
+{% endif %}
+		mcastaddr: {{ corosync_multicast_address }}
+		mcastport: {{ corosync_multicast_port }}
+		ttl: 1
+	}
+}
+
+logging {
+	fileline: off
+	to_stderr: yes
+	to_logfile: yes
+	logfile: /var/log/corosync/corosync.log
+	to_syslog: yes
+	debug: off
+	logger_subsys {
+		subsys: QUORUM
+		debug: off
+	}
+}
+
+quorum {
+	provider: corosync_votequorum
+{% if corosync_members | length == 2 %}
+	two_node: 1
+{% endif %}
+	expected_votes: {{ corosync_members | length }}
+}
+
+nodelist {
+{% for node in corosync_members %}
+	node {
+		name: {{ hostvars[node]['ansible_hostname'] }}
+		nodeid: {{ loop.index }}
+{% if hostvars[node]['corosync_interface'] is defined %}
+		ring0_addr: {{ hostvars[node]['ansible_' ~ (hostvars[node]['corosync_interface'])]['ipv4']['address'] }}
+{% else %}
+		ring0_addr: {{ hostvars[node]['ansible_default_ipv4']['address'] }}
+{% endif %}
+	}
+{% endfor %}
+}

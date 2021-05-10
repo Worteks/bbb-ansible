@@ -1,14 +1,19 @@
+{% if docker_hostnetwork | default(False) or ansible_fqdn in groups['postgres_greenlight'] or ansible_nodename in groups['postgres_greenlight'] or ansible_hostname in groups['postgres_greenlight'] %}
+# WARNING: greenlight container listens en :80 already
+
+{% else %}
 server {
     listen 80;
     listen [::]:80;
-    server_name {{ ansible_fqdn }} {{ bigbluebutton_fqdn | default(ansible_fqdn) }};
-    return 301 https://{{ bigbluebutton_fqdn | default(ansible_fqdn) }};
+    server_name {{ ansible_fqdn }} {{ greenlight_fqdn | default(ansible_fqdn) }};
+    return 301 https://{{ greenlight_fqdn | default(ansible_fqdn) }};
 }
 
+{% endif %}
 server {
     listen 443 ssl;
     listen [::]:443 ssl;
-    server_name {{ ansible_fqdn }} {{ bigbluebutton_fqdn | default(ansible_fqdn) }};
+    server_name {{ ansible_fqdn }} {{ greenlight_fqdn | default(ansible_fqdn) }};
 {% if bbb_uses_selfsigned | default(True) %}
     ssl_certificate /etc/nginx/ssl/fullchain.pem;
     ssl_certificate_key /etc/nginx/ssl/privkey.pem;
@@ -22,10 +27,14 @@ server {
     ssl_ciphers "ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+3DES:!aNULL:!MD5:!DSS:!AES256";
     ssl_prefer_server_ciphers on;
     ssl_dhparam /etc/nginx/ssl/dh.pem;
-    access_log /var/log/nginx/greenlight.access.log;
+    access_log /var/log/nginx/greenlight.access.log {{ nginx_log_fmt | default('combined') }};
 
     location {{ greenlight_app_root }} {
-	proxy_pass http://{{ hostvars[groups['greenlight'][0]]['ansible_fqdn'] }}:5000;
+{% if docker_hostnetwork | default(False) or ansible_fqdn in groups['postgres_greenlight'] or ansible_nodename in groups['postgres_greenlight'] or ansible_hostname in groups['postgres_greenlight'] %}
+	proxy_pass http://127.0.0.1:80;
+{% else %}
+	proxy_pass http://127.0.0.1:5000;
+{% endif %}
 	proxy_set_header Host $host;
 	proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 	proxy_set_header X-Forwarded-Proto $scheme;
@@ -33,7 +42,11 @@ server {
     }
 
     location {{ greenlight_app_root }}/cable {
-	proxy_pass http://{{ hostvars[groups['greenlight'][0]]['ansible_fqdn'] }}:5000;
+{% if docker_hostnetwork | default(False) or ansible_fqdn in groups['postgres_greenlight'] or ansible_nodename in groups['postgres_greenlight'] or ansible_hostname in groups['postgres_greenlight'] %}
+	proxy_pass http://127.0.0.1:80;
+{% else %}
+	proxy_pass http://127.0.0.1:5000;
+{% endif %}
 	proxy_set_header Host $host;
 	proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 	proxy_set_header X-Forwarded-Proto $scheme;
@@ -49,7 +62,11 @@ server {
 # Allow larger body size for uploading presentations
     location ~ /preupload_presentation$ {
 	client_max_body_size 30m;
-	proxy_pass http://{{ hostvars[groups['greenlight'][0]]['ansible_fqdn'] }}:5000;
+{% if docker_hostnetwork | default(False) or ansible_fqdn in groups['postgres_greenlight'] or ansible_nodename in groups['postgres_greenlight'] or ansible_hostname in groups['postgres_greenlight'] %}
+	proxy_pass http://127.0.0.1:80;
+{% else %}
+	proxy_pass http://127.0.0.1:5000;
+{% endif %}
 	proxy_set_header Host $host;
 	proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 	proxy_set_header X-Forwarded-Proto $scheme;

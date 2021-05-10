@@ -1,8 +1,8 @@
 - name: "Ensures {{ ansible_fqdn }} Certificates Directory Exists"
   file:
     dest: "{{ crt_dir | default('/etc/nginx/ssl') }}"
-    group: root
-    mode: 0700
+    group: certs-trusted
+    mode: 0750
     owner: root
     state: directory
 - name: "Concatenates {{ ansible_fqdn }} CA & Certificate"
@@ -13,8 +13,8 @@
 - name: "Copies {{ ansible_fqdn }} Key"
   copy:
     dest: "{{ crt_dir | default('/etc/nginx/ssl') }}/privkey.pem"
-    group: root
-    mode: 0600
+    group: certs-trusted
+    mode: 0640
     owner: root
     remote_src: yes
     src: "/root/pki/{{ ansible_fqdn }}.key"

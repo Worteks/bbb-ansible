@@ -1,2 +1,5 @@
 ansible_user: root
 timezone: Europe/Paris
+
+systemd_exporter_release: 0.5.0-rc1
+systemd_exporter_repo: https://github.com/Worteks/systemd_exporter

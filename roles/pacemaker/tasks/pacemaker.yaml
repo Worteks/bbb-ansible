@@ -1,0 +1,31 @@
+- name: Ensures Pacemaker Running
+  service:
+    enabled: yes
+    name: pacemaker
+    state: started
+
+- name: Checks Stonith
+  changed_when: False
+  failed_when: False
+  register: chkstonith
+  shell: "pcs property list | grep 'stonith-enabled: false'"
+- name: Disables Stonith
+  shell: pcs property set stonith-enabled=false
+  when:
+  - chkstonith is defined
+  - (chkstonith.rc | default(0)) != 0
+
+- name: Installs Pacemaker Profile Configuration
+  copy:
+    dest: /etc/profile.d/pcs.sh
+    group: root
+    mode: 0644
+    owner: root
+    src: pcs.sh
+- name: Removes Motd
+  copy:
+    content: ""
+    dest: /etc/motd
+    group: root
+    mode: 0644
+    owner: root

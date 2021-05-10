@@ -1,0 +1,5 @@
+- name: Installs Kibana Prometheus Plugin
+  args:
+    creates: /usr/share/kibana/plugins/kibanaPrometheusExporter
+  shell: |
+    docker exec -it kibana /bin/sh -c "cd /usr/share/kibana && ./bin/kibana-plugin install '{{ kibana_prometheus_plugin }}'"

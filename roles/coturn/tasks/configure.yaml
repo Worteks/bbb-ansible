@@ -1,10 +1,34 @@
-- name: Installs Coturn Logroate Configuration
+- name: Removes Coturn Log File
+  file:
+    dest: "{{ item }}"
+    state: absent
+  loop:
+  - /var/log/coturn.log
+  - /etc/logrotate.d/coturn.conf
+- name: Disables IPv6
   copy:
-    dest: /etc/logrotate.d/coturn.conf
+    dest: /etc/sysctl.d/99-nov6.conf
     group: root
     mode: 0644
     owner: root
-    src: logrotate.conf
+    src: nov6.conf
+  register: sysconf
+- name: Ensures /etc/hosts would not mention IPv6 Addresses
+  lineinfile:
+    dest: /etc/hosts
+    regex: "^{{ item }}"
+    state: absent
+  loop:
+  - "::1"
+  - ff0
+- name: Reloads Sysctl Configuration
+  args:
+    chdir: /etc/sysctl.d
+  shell: |
+    while read config; do sysctl -w $config; done <99-nov6.conf
+  when:
+  - sysconf is defined
+  - sysconf is changed
 - name: Installs Coturn Configuration
   register: config_changed
   template:
@@ -37,3 +61,5 @@
        and should_reload is changed)
       or (config_changed is defined
        and config_changed is changed)
+      or (unit_configured is defined
+       and unit_configured is changed)

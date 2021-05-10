@@ -1,0 +1,36 @@
+- include_role:
+    name: docker
+    tasks_from: check-pull.yaml
+  vars:
+    image_tag: "{{ bigbluebutton_livestream_images_release }}"
+    image_url: "{{ bigbluebutton_livestream_images_repo }}"
+  when:
+  - not (bbb_uses_selfsigned | default(True))
+- block:
+  - name: Fetches BigBlueButton LiveStreaming Image Sources
+    git:
+      dest: /usr/src/bbb-livestream
+      repo: "{{ bigbluebutton_livestream_custom_source_repo }}"
+      update: yes
+      version: "{{ bigbluebutton_livestream_custom_source_ref }}"
+    register: hascode
+  - name: Checks for BigBlueButton LiveStreaming Cached Image
+    failed_when: False
+    changed_when: False
+    register: hasimage
+    shell: |
+      docker images | grep -E "^bbb-livestream[ \t]*latest"
+  - name: Builds BigBlueButton LiveStreaming Image
+    args:
+      chdir: /usr/src/bbb-livestream
+    shell:
+      docker build -t bbb-livestream:latest .
+    when:
+    - >
+       (hascode is defined
+        and hascode is changed)
+       or (hasimage is defined
+           and hasimage.rc is defined
+           and (hasimage.rc | default(0)) != 0)
+  when:
+  - bbb_uses_selfsigned | default(True)

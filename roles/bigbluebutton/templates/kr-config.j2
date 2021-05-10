@@ -1,0 +1,16 @@
+{
+    "file_output" : 0,
+    "graph_only": 0,
+    "info_interval" : 1000,
+    "keep_monitoring" : 1,
+    "kurento": {
+	"server" : {
+	    "uri" : "ws://127.0.0.1:8888/kurento"
+	},
+      "reject_self_signed" : 0
+    },
+    "log_prefix": false,
+    "pipelines_only": 0,
+    "prometheus_port": {{ kurento_exporter_port }},
+    "space_width" : 0
+}

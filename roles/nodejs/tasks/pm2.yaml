@@ -1,0 +1,4 @@
+- name: Installs NodeJS Process Manager
+  args:
+    creates: /usr/bin/pm2
+  shell: npm install -g pm2

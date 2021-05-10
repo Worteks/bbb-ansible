@@ -4,6 +4,7 @@
   loop: "{{ groups['scalelite'] }}"
   loop_control:
     loop_var: srv
+  run_once: yes
   setup:
   when:
   - groups['scalelite'] | length > 0
@@ -13,6 +14,7 @@
   loop: "{{ groups['coturn'] }}"
   loop_control:
     loop_var: srv
+  run_once: yes
   setup:
   when:
   - groups['coturn'] | length > 0

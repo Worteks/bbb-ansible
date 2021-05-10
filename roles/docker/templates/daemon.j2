@@ -1,0 +1,8 @@
+{
+{% if docker_bind_interface | default(False) %}
+  "metrics-addr" : "{{ hostvars[ansible_nodename]['ansible_' ~ docker_bind_interface]['ipv4']['address'] }}:{{ docker_exporter_port }}",
+{% else %}
+  "metrics-addr" : "{{ docker_bind_address | default(ansible_default_ipv4['address']) }}:{{ docker_exporter_port }}",
+{% endif %}
+  "experimental" : true
+}

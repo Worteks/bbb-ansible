@@ -1,4 +1,4 @@
-- name: "Installs Postgres Exporter Unit (db={{ postgres_exporter_db }}"
+- name: "Installs Postgres Exporter Unit (db={{ postgres_exporter_db }})"
   register: exporter_unit
   template:
     dest: "/etc/systemd/system/postgres-exporter-{{ postgres_exporter_db }}.service"
@@ -6,7 +6,7 @@
     mode: 0644
     owner: root
     src: exporter.j2
-- name: "Installs Postgres Exporter Configuration (db={{ postgres_exporter_db }}"
+- name: "Installs Postgres Exporter Configuration (db={{ postgres_exporter_db }})"
   register: exporter_config
   template:
     dest: "/etc/default/postgres-exporter-{{ postgres_exporter_db }}"
@@ -14,7 +14,7 @@
     mode: 0640
     owner: root
     src: xp-defaults.j2
-- name: "Reloads Systemd Configuration (db={{ postgres_exporter_db }}"
+- name: "Reloads Systemd Configuration (db={{ postgres_exporter_db }})"
   register: reconfigured
   shell: systemctl daemon-reload
   when:
@@ -23,19 +23,46 @@
       and exporter_unit is changed)
       or (exporter_config is defined
       and exporter_config is changed)
-- name: "Ensures Postgres Exporter is Running & Starts on Boot (db={{ postgres_exporter_db }}"
-  register: restarted
-  service:
-    enabled: yes
-    name: "postgres-exporter-{{ postgres_exporter_db }}"
-    state: started
-- name: "Restarts Postgres Exporter (db={{ postgres_exporter_db }}"
-  register: restarted
-  service:
-    name: "postgres-exporter-{{ postgres_exporter_db }}"
-    state: restarted
+- block:
+  - name: "Ensures Postgres Exporter is Running & Starts on Boot (db={{ postgres_exporter_db }})"
+    register: restarted
+    service:
+      enabled: yes
+      name: "postgres-exporter-{{ postgres_exporter_db }}"
+      state: started
+  - name: "Restarts Postgres Exporter (db={{ postgres_exporter_db }})"
+    register: restarted
+    service:
+      name: "postgres-exporter-{{ postgres_exporter_db }}"
+      state: restarted
+    when:
+    - reconfigured is defined
+    - reconfigured is changed
+    - restarted is defined
+    - not (restarted is changed)
   when:
-  - reconfigured is defined
-  - reconfigured is changed
-  - restarted is defined
-  - not (restarted is changed)
+  - >
+       (postgres_exporter_should_run | default(False)
+        and (ansible_fqdn in groups['drbd']
+             or ansible_nodename in groups['drbd']
+             or ansible_hostname in groups['drbd']))
+       or (ansible_fqdn not in groups['drbd']
+          and ansible_nodename not in groups['drbd']
+          and ansible_hostname not in groups['drbd'])
+- block:
+  - name: Ensures Postgres Exporter is Disabled on DRBD Members
+    service:
+      enabled: no
+      name: "postgres-exporter-{{ postgres_exporter_db }}"
+  - name: Ensures Postgres Exporter is Stopped on DRBD Backup Members
+    service:
+      name: "postgres-exporter-{{ postgres_exporter_db }}"
+      state: stopped
+    when:
+    - not (drbd_is_primary | default(False))
+  when:
+  - not (postgres_exporter_should_run | default(False))
+  - >
+      ansible_fqdn in groups['drbd']
+      or ansible_hostname in groups['drbd']
+      or ansible_nodename in groups['drbd']

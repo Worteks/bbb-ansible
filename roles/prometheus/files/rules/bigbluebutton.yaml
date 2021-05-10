@@ -17,3 +17,115 @@ groups:
     annotations:
       summary: "BigBlueButton API latency high (instance {{ $labels.instance }})"
       description: "BigBlueButton API p99 latency is higher than .8 seconds\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: BigBlueButtonNginxDown
+    expr: bbb_services_nginx_up == 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "BigBlueButton Nginx down (instance {{ $labels.instance }})"
+      description: "BigBlueButton Nginx down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: BigBlueButtonFreeswitchDown
+    expr: bbb_services_freeswitch_up == 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "BigBlueButton Freeswitch down (instance {{ $labels.instance }})"
+      description: "BigBlueButton Freeswitch down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: BigBlueButtonRedisDown
+    expr: bbb_services_redis_server_up == 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "BigBlueButton Redis Server down (instance {{ $labels.instance }})"
+      description: "BigBlueButton Redis Server down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: BigBlueButtonAppsAkkaDown
+    expr: bbb_services_bbb_apps_akka_up == 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "BigBlueButton Apps Akka down (instance {{ $labels.instance }})"
+      description: "BigBlueButton Apps Akka down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: BigBlueButtonTranscodeAkkaDown
+    expr: bbb_services_bbb_transcode_akka_up == 0
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "BigBlueButton Transcode Akka down (instance {{ $labels.instance }})"
+      description: "BigBlueButton Transcode Akka down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: BigBlueButtonFeslAkkaDown
+    expr: bbb_services_bbb_fsesl_akka_up == 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "BigBlueButton Fesl Akka down (instance {{ $labels.instance }})"
+      description: "BigBlueButton Fesl Akka down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: BigBlueButtonRed5Down
+    expr: bbb_services_red5_up == 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "BigBlueButton Red5 down (instance {{ $labels.instance }})"
+      description: "BigBlueButton Red5 down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: BigBlueButtonMongodbDown
+    expr: bbb_services_mongod_up == 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "BigBlueButton MongoDB down (instance {{ $labels.instance }})"
+      description: "BigBlueButton MongoDB down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: BigBlueButtonHtml5Down
+    expr: bbb_services_bbb_html5_up == 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "BigBlueButton HTML5 down (instance {{ $labels.instance }})"
+      description: "BigBlueButton HTML5 down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: BigBlueButtonWebRtcDown
+    expr: bbb_services_bbb_webrtc_sfu_up == 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "BigBlueButton WebRTC down (instance {{ $labels.instance }})"
+      description: "BigBlueButton WebRTC down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: BigBlueButtonEtherPadDown
+    expr: bbb_services_etherpad_up == 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "BigBlueButton EtherPad down (instance {{ $labels.instance }})"
+      description: "BigBlueButton EtherPad down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: BigBlueButtonKurentoDown
+    expr: bbb_services_kurento_media_server_up == 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "BigBlueButton Kurento Media Server down (instance {{ $labels.instance }})"
+      description: "BigBlueButton Kurento Media Server down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: BigBlueButtonWebDown
+    expr: bbb_services_bbb_web_up == 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "BigBlueButton Web down (instance {{ $labels.instance }})"
+      description: "BigBlueButton Web down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: BigBlueButtonServicesStale
+    expr: time() - bbb_services_last_run > 300
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "BigBlueButton Services Exporter down (instance {{ $labels.instance }})"
+      description: "BigBlueButton Services Exporter down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"

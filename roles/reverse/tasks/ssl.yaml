@@ -1,0 +1,29 @@
+- block:
+  - name: Initializes Domains List Fact
+    set_fact:
+      cert_fqdn: []
+  - name: Populates Domains List Fact
+    loop:
+    - "{{ peertube_fqdn | default(False) if (expose_peertube | default(True)) else False }}"
+    - "{{ alertmanager_fqdn | default(False) if (expose_alertmanager | default(True)) else False }}"
+    - "{{ bbbcsp_fqdn | default(False) if (expose_bbbcsp | default(True)) else False }}"
+    - "{{ grafana_fqdn | default(False) if (expose_grafana | default(True)) else False }}"
+    - "{{ greenlight_fqdn | default(False) if (expose_greenlight | default(True)) else False }}"
+    - "{{ kibana_fqdn | default(False) if (expose_kibana | default(True)) else False }}"
+    - "{{ prometheus_fqdn | default(False) if (expose_prometheus | default(True)) else False }}"
+    - "{{ scalelite_fqdn | default(False) if (expose_scalelite | default(True)) else False }}"
+    set_fact:
+      cert_fqdn: "{{ cert_fqdn + [ item ] }}"
+    when:
+    - (item | default(False)) not in [ False, 'false', 'False', 'FALSE' ]
+    - item not in cert_fqdn
+  - include_role:
+      name: certbot
+      tasks_from: generate-cert.yaml
+  when:
+  - not (bbb_uses_selfsigned | default(True))
+- include_role:
+    name: pki
+    tasks_from: install-cert.yaml
+  when:
+  - bbb_uses_selfsigned | default(True)

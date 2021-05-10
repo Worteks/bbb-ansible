@@ -17,6 +17,105 @@
   loop_control:
     loop_var: rule
   register: prom_rules
+- name: Installs Prometheus AlertManager Rules
+  copy:
+    dest: /etc/prometheus/rules.d/alertmanager.yaml
+    group: root
+    mode: 0644
+    owner: root
+    src: rules/alertmanager.yaml
+  register: am_rules
+  when:
+  - groups['alertmanager'] | length > 0
+- name: Removes Prometheus AlertManager Rules
+  file:
+    dest: /etc/prometheus/rules.d/alertmanager.yaml
+    state: absent
+  register: am_norules
+  when:
+  - groups['alertmanager'] | length == 0
+- name: Installs Prometheus BigBlueButton Conferences Streaming Platform Rules
+  copy:
+    dest: /etc/prometheus/rules.d/bbbcsp.yaml
+    group: root
+    mode: 0644
+    owner: root
+    src: rules/bbbcsp.yaml
+  register: csp_rules
+  when:
+  - groups['bbbcsp'] | length > 0
+- name: Removes Prometheus BigBlueButton Conferences Streaming Platform Rules
+  file:
+    dest: /etc/prometheus/rules.d/bbbcsp.yaml
+    state: absent
+  register: csp_norules
+  when:
+  - groups['bbbcsp'] | length == 0
+- name: Installs Prometheus PeerTube Rules
+  copy:
+    dest: /etc/prometheus/rules.d/peertube.yaml
+    group: root
+    mode: 0644
+    owner: root
+    src: rules/peertube.yaml
+  register: pt_rules
+  when:
+  - groups['peertube'] | length > 0
+- name: Removes Prometheus PeerTube Rules
+  file:
+    dest: /etc/prometheus/rules.d/peertube.yaml
+    state: absent
+  register: pt_norules
+  when:
+  - groups['peertube'] | length == 0
+- name: Installs Prometheus Scalelite Rules
+  copy:
+    dest: /etc/prometheus/rules.d/scalelite.yaml
+    group: root
+    mode: 0644
+    owner: root
+    src: rules/scalelite.yaml
+  register: sl_rules
+  when:
+  - groups['scalelite'] | length > 0
+- name: Removes Prometheus Scalelite Rules
+  file:
+    dest: /etc/prometheus/rules.d/scalelite.yaml
+    state: absent
+  register: sl_norules
+  when:
+  - groups['scalelite'] | length == 0
+- name: Installs Prometheus PaceMaker Cluster Rules
+  loop:
+  - bbbcsp
+  - greenlight
+  - peertube
+  - postgres_coturn
+  - postgres_grafana
+  - postgres_greenlight
+  - postgres_moddle
+  - postgres_openstreamingplatform
+  - postgres_peertube
+  - postgres_scalelite
+  - redis_peertube
+  - redis_scalelite
+  - reverse
+  - scalelite
+  loop_control:
+    loop_var: cluster
+  register: prom_crules
+  template:
+    dest: "/etc/prometheus/rules.d/pacemaker-{{ hostvars[groups[cluster][0]]['corosync_cluster_name'] }}.yaml"
+    group: root
+    mode: 0644
+    owner: root
+    src: pacemaker.j2
+  when:
+  - groups['pacemaker'] | length > 0
+  - groups[cluster] is defined
+  - groups[cluster] | length > 1
+  - groups[cluster][0] in groups['pacemaker']
+  - hostvars[groups[cluster][0]]['corosync_cluster_name'] is defined
 - name: Installs Prometheus Docker-Compose Directory
   file:
     dest: /etc/docker-compose/prometheus
@@ -47,6 +146,24 @@
           and prom_config is changed)
       or (prom_rules is defined
           and prom_rules is changed)
+      or (prom_crules is defined
+          and prom_crules is changed)
+      or (am_rules is defined
+          and am_rules is changed)
+      or (am_norules is defined
+          and am_norules is changed)
+      or (csp_rules is defined
+          and csp_rules is changed)
+      or (csp_norules is defined
+          and csp_norules is changed)
+      or (pt_rules is defined
+          and pt_rules is changed)
+      or (pt_norules is defined
+          and pt_norules is changed)
+      or (sl_rules is defined
+          and sl_rules is changed)
+      or (sl_norules is defined
+          and sl_norules is changed)
   - did_start is defined
   - not (did_start is changed)
   - should_reload is defined

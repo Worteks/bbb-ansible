@@ -1,0 +1,9 @@
+[Unit]
+Description=Run Scalelite Recordings Prometheus Collector
+
+[Timer]
+OnBootSec=5min
+OnCalendar=*:0/1
+
+[Install]
+WantedBy=timers.target

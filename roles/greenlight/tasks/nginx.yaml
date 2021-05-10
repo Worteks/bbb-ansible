@@ -1,5 +1,5 @@
 - name: Installs Greenlight Virtualhost
-  notify: Reload Nginx
+  notify: Reloads Nginx
   template:
     dest: /etc/nginx/sites-available/greenlight.conf
     group: root
@@ -11,4 +11,4 @@
     dest: /etc/nginx/sites-enabled/greenlight.conf
     src: /etc/nginx/sites-available/greenlight.conf
     state: link
-  notify: Reload Nginx
+  notify: Reloads Nginx

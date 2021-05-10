@@ -1,0 +1,18 @@
+moodle_admin_account: mdladmin
+moodle_admin_email: admin@demo.local
+moodle_admin_password: secret
+
+moodle_postgres_database: moodle
+#moodle_postgres_host: False -- detected from inventory
+moodle_postgres_password: moodlepw
+moodle_postgres_port: 5432
+moodle_postgres_user: moodleusr
+
+moodle_site_full_name: BigBlueButton-Moodle
+moodle_site_short_name: bbbmoodle
+moodle_site_summary: A BigBlueButton Integrated Moodle
+
+moodle_source_ref: MOODLE_311_STABLE
+moodle_source_repo: https://github.com/moodle/moodle
+
+moodle_upgrade_key:

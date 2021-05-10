@@ -10,7 +10,7 @@
     chdir: /usr/src
     creates: "/usr/src/redis_exporter-v{{ redis_exporter_release }}.linux-amd64"
     warn: False
-  shell: "tar -xzf /usr/src/redis-exporter-{{ redis_exporter_release }}.tar.gz"
+  shell: "tar -xzf /usr/src/redis-exporter-{{ redis_exporter_release }}.tar.gz && rm -f /usr/bin/redis_exporter"
 - name: Installs Redis Exporter
   copy:
     dest: /usr/bin/redis_exporter
@@ -19,6 +19,7 @@
     owner: root
     remote_src: yes
     src: "/usr/src/redis_exporter-v{{ redis_exporter_release }}.linux-amd64/redis_exporter"
+  notify: Reloads Redis Exporter
 - name: Creates Redis Exporter Group
   group:
     name: redisexporter
@@ -28,6 +29,7 @@
     groups: redisexporter
     name: redisexporter
 - name: Installs Redis Exporter Unit
+  notify: Reloads Redis Exporter
   register: exporter_unit
   template:
     dest: /etc/systemd/system/redis-exporter.service
@@ -45,3 +47,29 @@
     enabled: yes
     name: redis-exporter
     state: started
+  when:
+  - >
+       (redis_exporter_should_run | default(False)
+        and (ansible_fqdn in groups['drbd']
+             or ansible_nodename in groups['drbd']
+             or ansible_hostname in groups['drbd']))
+       or (ansible_fqdn not in groups['drbd']
+          and ansible_nodename not in groups['drbd']
+          and ansible_hostname not in groups['drbd'])
+- block:
+  - name: Ensures Redis Exporter is Disabled on DRBD Members
+    service:
+      enabled: no
+      name: redis-exporter
+  - name: Ensures Redis Exporter is Stopped on DRBD Backup Members
+    service:
+      name: redis-exporter
+      state: stopped
+    when:
+    - not (drbd_is_primary | default(False))
+  when:
+  - not (redis_exporter_should_run | default(False))
+  - >
+      ansible_fqdn in groups['drbd']
+      or ansible_hostname in groups['drbd']
+      or ansible_nodename in groups['drbd']

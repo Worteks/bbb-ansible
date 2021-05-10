@@ -1,19 +1,38 @@
-- name: Install Common Packages
-  apt:
-    name:
-    - ca-certificates
-    - lsb-release
-    - net-tools
-    - ntp
-    - ntpdate
-    - openssl
-    - python-apt
-    - python-boto
-    - rsync
-    - unattended-upgrades
-    - vim
-    - wget
-    state: present
+- block:
+  - name: Configures APT Bandwidth Limit
+    template:
+      dest: /etc/apt/apt.conf.d/30bandwidth-limit
+      group: root
+      mode: 0644
+      owner: root
+      src: aptbwlimit.j2
+    when:
+    - apt_bw_limit_kb | default(False)
+  - name: Install Common Packages
+    apt:
+      name:
+      - ca-certificates
+      - lsb-release
+      - net-tools
+      - ntp
+      - ntpdate
+      - openssl
+      - python-apt
+      - python-boto
+      - rsync
+      - unattended-upgrades
+      - vim
+      - wget
+      state: present
+  - name: Configures Unattended Upgrades
+    template:
+      dest: /etc/apt/apt.conf.d/50unattended-upgrades
+      group: root
+      mode: 0644
+      owner: root
+      src: unattended.j2
+  when:
+  - ansible_distribution in [ 'Debian', 'Devuan', 'Ubuntu' ]
 
 - name: Creates certs-trusted Group
   group:
@@ -40,3 +59,30 @@
     mode: 0700
     owner: root
     src: dropcaches
+
+- block:
+  - name: Installs ResolvConf Base
+    register: dnsi
+    template:
+      dest: /etc/resolvconf/resolv.conf.d/base
+      group: root
+      mode: 0644
+      owner: root
+      src: resolv.j2
+  - name: Refreshes Resolv Configuration
+    shell: resolvconf -u
+    when:
+    - dnsi is defined
+    - dnsi is changed
+  - name: Fixes DHCP Client Configuration
+    loop: "{{ install_dns }}"
+    loop_control:
+      loop_var: ns
+    lineinfile:
+      dest: /etc/dhcp/dhclient.conf
+      line: "prepend domain-name-servers {{ ns }};"
+      regex: "name-servers {{ ns }}"
+  when:
+  - (install_dns | default([])) | length > 0
+  - ansible_fqdn not in groups['freeipa']
+  - ansible_hostname not in groups['freeipa']

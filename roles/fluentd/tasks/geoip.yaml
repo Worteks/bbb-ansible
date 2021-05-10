@@ -1,0 +1,59 @@
+- name: Installs Fluentd GeoIP Runtime Dependencies (deb)
+  apt:
+    name:
+    - build-essential
+    - libgeoip-dev
+    - libmaxminddb-dev
+    state: present
+  when:
+  - ansible_distribution in [ 'Debian', 'Devuan', 'Ubuntu' ]
+- block:
+  - name: Enables EPEL Release
+    yum:
+      name: epel-release
+      state: present
+  - name: Installs Fluentd GeoIP Runtime Dependencies (el)
+    yum:
+      name:
+      - "@Development Tools"
+      - geoip-devel
+      - libmaxminddb-devel
+      state: present
+  when:
+  - ansible_distribution in [ 'CentOS', 'RedHat' ]
+- name: Pulls GeoIP Database from Provider
+  get_url:
+    dest: /usr/src/geoip2.tar.gz
+    group: root
+    mode: 0644
+    owner: root
+    url: "{{ geoip_database_url }}"
+  register: newcopy
+- name: Installs GeoIP Extract Directory
+  file:
+    dest: /usr/src/geoip
+    group: root
+    mode: 0755
+    owner: root
+    state: directory
+- name: Removes Previous GeoIP Database
+  file:
+    dest: /usr/src/geoip/GeoLite2-City.mmdb
+    state: absent
+  when:
+  - newcopy is defined
+  - newcopy is changed
+- name: Extracts GeoIP Database
+  args:
+    chdir: /usr/src/geoip
+    creates: /usr/src/geoip/GeoLite2-City.mmdb
+    warn: false
+  shell: |
+    tar -xzf /usr/src/geoip2.tar.gz --strip-components=1 \
+    && cp -f GeoLite2-City.mmdb /etc/td-agent/
+- name: Installs Fluentd GeoIP Filter Plugin
+  changed_when: False
+  shell: |
+    if ! ls /opt/td-agent/lib/ruby/gems/*/doc/fluent-plugin-geoip* 2>/dev/null; then
+        /usr/sbin/td-agent-gem install fluent-plugin-geoip
+    fi

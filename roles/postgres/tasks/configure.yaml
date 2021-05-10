@@ -1,23 +1,50 @@
 - name: Sets Postgres Listen Address
   lineinfile:
-    dest: /etc/postgresql/12/main/postgresql.conf
+    dest: "/etc/postgresql/{{ postgres_version }}/main/postgresql.conf"
     regexp: listen_addresses
     line: "listen_addresses = '{{ postgres_bind_address }}'"
-  notify: Reload Postgres
+  notify: Reloads Postgres
 - name: Allows Remote Connections to Postgres
   lineinfile:
-    dest: /etc/postgresql/12/main/pg_hba.conf
+    dest: "/etc/postgresql/{{ postgres_version }}/main/pg_hba.conf"
     regexp: "^host    all             all              {{ h }}                       md5"
     line: "host    all             all              {{ h }}                       md5"
   loop: "{{ postgres_trusted_clients }}"
   loop_control:
     loop_var: h
-  notify: Reload Postgres
+  notify: Reloads Postgres
+- name: Sets Postgres Max Connections
+  lineinfile:
+    dest: "/etc/postgresql/{{ postgres_version }}/main/postgresql.conf"
+    regexp: max_connections
+    line: "max_connections = {{ postgres_max_connections }}"
+  notify: Reloads Postgres
+- name: Sets Postgres Shared Buffers Size
+  lineinfile:
+    dest: "/etc/postgresql/{{ postgres_version }}/main/postgresql.conf"
+    regexp: shared_buffers
+    line: "shared_buffers = {{ postgres_shared_buffers_mbytes }}MB"
+  notify: Reloads Postgres
+- block:
+  - name: Installs Sysctl Shared Buffers Configuration
+    register: sysctlconf
+    lineinfile:
+      dest: "/etc/postgresql/{{ postgres_version }}/main/postgresql.conf"
+      regexp: kernel.shmmax
+      line: "kernel.shmmax = {{ (postgres_shared_buffers_mbytes * 1024 * 1024 * 125 / 100) | round }}"
+  - name: Applies new Sysctl Configuration
+    shell: "sysctl -w kernel.shmmax={{ (postgres_shared_buffers_mbytes * 1024 * 1024 * 125 / 100) | round }}"
+  when:
+  - (postgres_shared_buffers_mbytes | int) > 1024
 - name: Ensures Postgres is Running & Starts on Boot
   service:
     enabled: yes
     name: postgresql
     state: started
+  when:
+  - ansible_fqdn not in groups['drbd']
+  - ansible_hostname not in groups['drbd']
+  - ansible_nodename not in groups['drbd']
 - name: Installs Postgres User Ansible Working Directory
   file:
     dest: "{{ fl }}"
@@ -30,3 +57,8 @@
   - /var/lib/postgresql/.ansible/tmp
   loop_control:
     loop_var: fl
+  when:
+  - >
+      ansible_nodename not in groups['drbd']
+      or (ansible_nodename in groups['drbd']
+          and drbd_is_primary | default(False))

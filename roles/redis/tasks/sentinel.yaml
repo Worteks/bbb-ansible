@@ -1,5 +1,5 @@
 - name: Installs Sentinel Configuration
-  notify: Reload Sentinel
+  notify: Reloads Sentinel
   template:
     dest: /etc/redis/sentinel.conf
     force: no

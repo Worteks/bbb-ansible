@@ -8,4 +8,4 @@
   file:
     dest: /etc/nginx/sites-enabled/default
     state: absent
-  notify: Reload Nginx
+  notify: Reloads Nginx

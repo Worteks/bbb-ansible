@@ -1,0 +1,41 @@
+- block:
+  - name: Installs pexpect
+    apt:
+      name: python-pexpect
+      state: present
+  - name: Clones BigBlueButton Conferences Streaming Platform Sources from Git (with auth)
+    expect:
+      chdir: /usr/src
+      command: git clone -b "{{ bigbluebutton_conferencesstreamingplatform_source_ref }}" "{{ bigbluebutton_conferencesstreamingplatform_source_repo }}" bbb-csp
+      creates: /usr/src/bbb-csp
+      responses:
+        Username: "{{ gituser | default(False) }}"
+        Password: "{{ gitpass | default(False) }}"
+    no_log: true
+  when:
+  - gitpass | default(False)
+  - gituser | default(False)
+- name: Clones BigBlueButton Conferences Streaming Platform Sources from Git
+  git:
+    dest: /usr/src/bbb-csp
+    repo: "{{ bigbluebutton_conferencesstreamingplatform_source_repo }}"
+    update: no
+    version: "{{ bigbluebutton_conferencesstreamingplatform_source_ref }}"
+  when:
+  - >
+      not (gitpass | default(False))
+      and not (gituser | default(False))
+- name: Installs NodeJS Dependencies
+  args:
+    chdir: /usr/src/bbb-csp
+    creates: /usr/src/bbb-csp/node_modules
+  shell: npm install
+- name: Creates BigBlueButton Conferences Streaming Platform Group
+  group:
+    name: "{{ bbbcsp_group }}"
+    state: present
+- name: Creates BigBlueButton Conferences Streaming Platform User
+  user:
+    groups: "{{ bbbcsp_group }},docker"
+    home: /home/bbbcsp
+    name: "{{ bbbcsp_user }}"

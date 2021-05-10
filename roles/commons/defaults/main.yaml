@@ -1,6 +1,29 @@
+freeipa_registration_user: admin
+freeipa_registration_password: secret
+
+lang: en
 locale: en_US.UTF-8
+localegen: en_US UTF-8
+
 node_exporter_port: 9142
-node_exporter_release: 1.0.1
+node_exporter_release: 1.1.2
+
 ntp_upstreams:
 - pool.ntp.org
+
+systemd_exporter_port: 9147
+systemd_exporter_release: 0.4.0
+systemd_exporter_repo: https://github.com/povilasv/systemd_exporter
+
 timezone: UTC
+
+unattended_upgrades_blacklist:
+- corosync
+- coturn
+- drbd
+- ffmpeg
+- nodejs
+- pacemaker
+- php
+- postgresql
+- redis

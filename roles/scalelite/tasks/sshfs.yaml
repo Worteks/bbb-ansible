@@ -56,7 +56,7 @@
   - name: Adds SSHFS Mount to /etc/fstab
     lineinfile:
       dest: /etc/fstab
-      line: "{{ hostvars[groups['sshfs'][0]]['sshfs_user'] | default(sshfs_user) }}@{{ hostvars[groups['sshfs'][0]]['ansible_default_ipv4']['address'] }}:{{ hostvars[groups['sshfs'][0]]['sshfs_exports_root'] | default(sshfs_exports_root) }} /var/scalelite-recordings fuse.sshfs users,idmap=user,IdentityFile=/root/.ssh/sshfs_rsa,uid=1000,gid=2000,allow_other,reconnect 0 0"
+      line: "{{ hostvars[groups['sshfs'][0]]['sshfs_user'] | default(sshfs_user) }}@{{ hostvars[groups['sshfs'][0]]['ansible_default_ipv4']['address'] }}:{{ hostvars[groups['sshfs'][0]]['sshfs_exports_root'] | default(sshfs_exports_root) }} /var/scalelite-recordings fuse.sshfs users,idmap=user,IdentityFile=/root/.ssh/sshfs_rsa,uid=2000,gid=2000,allow_other,reconnect 0 0"
       regexp: " /var/scalelite-recordings "
   - name: Mounts SSHFS Share
     args:

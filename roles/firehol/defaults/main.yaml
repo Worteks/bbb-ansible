@@ -1,6 +1,8 @@
 firehol_allow_icmp: True
-
 firehol_docker_if: docker0
+firehol_private_if: False
+firehol_public_open: False
+firehol_routes_ifaces: []
 
 firehol_filtered_ports: []
 

@@ -1,6 +1,8 @@
 dependencies:
 - role: docker
 - role: nginx
+  vars:
+    nginx_exporter_should_run: True
   when:
   - >
      not (ansible_fqdn in groups['bbb']

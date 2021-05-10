@@ -1,8 +1,18 @@
 global:
   resolve_timeout: 5m
-  smtp_smarthost: {{ smtp_relay | default(ansible_default_ipv4['address']) }}:25
-  smtp_from: alertmanager@{{ alertmanager_fqdn | default(ansible_fqdn) }}
-  smtp_require_tls: False
+{% if alertmanager_smtp_server | default(False) %}
+  smtp_smarthost: {{ alertmanager_smtp_server }}:{{ alertmanager_smtp_port }}
+{% if alertmanager_smtp_username %}
+{% if '@' in alertmanager_smtp_username %}
+  smtp_from: {{ alertmanager_smtp_username }}
+{% else %}
+  smtp_from: {{ alertmanager_smtp_username | default('alertmanager') }}@{{ alertmanager_smtp_domain | default(alertmanager_fqdn | default(ansible_fqdn)) }}
+{% endif %}
+{% else %}
+  smtp_from: {{ alertmanager_smtp_mailfrom | default('alertmanager@' ~ (alertmanager_smtp_domain | default(alertmanager_fqdn | default(ansible_fqdn)))) }}
+{% endif %}
+  smtp_require_tls: {{ 'True' if alertmanager_smtp_tls else 'Fals' }}e
+{% endif %}
 receivers:
 - name: deadmansswitch
 - name: default
@@ -14,11 +24,23 @@ receivers:
 {% endif %}
     send_resolved: {{ alertmanager_notify_slack_send_resolved }}
 {% endif %}
-{% if alertmanager_notify_smtp_address | default(False) %}
+{% if alertmanager_smtp_server and alertmanager_notify_smtp_address | default(False) %}
   email_configs:
-  - from: alertmanager@{{ alertmanager_fqdn | default(ansible_fqdn) }}
+{% if alertmanager_smtp_username %}
+{% if '@' in alertmanager_smtp_username %}
+  - from: {{ alertmanager_smtp_username }}
+{% else %}
+  - from: {{ alertmanager_smtp_username | default('alertmanager') }}@{{ alertmanager_smtp_domain | default(alertmanager_fqdn | default(ansible_fqdn)) }}
+{% endif %}
+{% else %}
+  - from: {{ alertmanager_smtp_mailfrom | default('alertmanager@' ~ (alertmanager_smtp_domain | default(alertmanager_fqdn | default(ansible_fqdn)))) }}
+{% endif %}
     send_resolved: {{ alertmanager_notify_smtp_send_resolved }}
     to: {{ alertmanager_notify_smtp_address }}
+{% if bbb_uses_selfsigned | default(True) %}
+    tls_config:
+      insecure_skip_verify: True
+{% endif %}
 {% endif %}
 route:
   group_by:

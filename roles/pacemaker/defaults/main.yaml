@@ -1,0 +1,12 @@
+corosync_cluster_name: mycluster
+corosync_crypto_cipher: aes256
+corosync_crypto_hash: sha256
+corosync_interface: eth0
+corosync_members: []
+#- node1.example.com
+#- node2.example.com
+corosync_multicast_address: 239.255.1.1
+corosync_multicast_port: 5442
+
+hacluster_exporter_port: 9664
+hacluster_exporter_release: 1.2.1

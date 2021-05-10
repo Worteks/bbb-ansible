@@ -1,0 +1,8 @@
+- name: Reloads Nginx
+  service:
+    name: nginx
+    state: restarted
+- name: Reloads BlackBox Exporter
+  service:
+    name: blackbox-exporter
+    state: restarted

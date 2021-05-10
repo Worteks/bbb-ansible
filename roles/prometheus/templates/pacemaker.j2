@@ -1,0 +1,33 @@
+groups:
+- name: Cluster{{ hostvars[groups[cluster][0]]['corosync_cluster_name'] }}
+  rules:
+{% if groups[cluster][0] in groups['drbd'] %}
+  - alert: DrbdMasterDown{{ hostvars[groups[cluster][0]]['corosync_cluster_name'] }}
+    expr: absent(ha_cluster_pacemaker_resources{status="active",pcm_cluster=~"{{ hostvars[groups[cluster][0]]['corosync_cluster_name'] }}",resource=~"DRBD_r0",role="master"} == 1)
+    labels:
+      severity: critical
+    annotations:
+      summary: "DRBD {{ hostvars[groups[cluster][0]]['corosync_cluster_name'] }} Primary node down (instance {{ '{{' }} $labels.node {{ '}}' }})"
+      description: "DRBD {{ hostvars[groups[cluster][0]]['corosync_cluster_name'] }} Primary node is unavailable\n  VALUE = {{ '{{' }} $value {{ '}}' }}\n  LABELS: {{ '{{' }} $labels {{ '}}' }}"
+  - alert: DrbdBackupDown{{ hostvars[groups[cluster][0]]['corosync_cluster_name'] }}
+    expr: absent(ha_cluster_pacemaker_resources{status="active",pcm_cluster=~"{{ hostvars[groups[cluster][0]]['corosync_cluster_name'] }}",resource=~"DRBD_r0",role="slave"} == 1)
+    labels:
+      severity: warning
+    annotations:
+      summary: "DRBD {{ hostvars[groups[cluster][0]]['corosync_cluster_name'] }} Secondary node down (instance {{ '{{' }} $labels.node {{ '}}' }})"
+      description: "DRBD {{ hostvars[groups[cluster][0]]['corosync_cluster_name'] }} Secondary node is unavailable\n  VALUE = {{ '{{' }} $value {{ '}}' }}\n  LABELS: {{ '{{' }} $labels {{ '}}' }}"
+{% endif %}
+  - alert: CorosyncMasterDown{{ hostvars[groups[cluster][0]]['corosync_cluster_name'] }}
+    expr: absent(ha_cluster_pacemaker_resources{status="active",pcm_cluster=~"{{ hostvars[groups[cluster][0]]['corosync_cluster_name'] }}",resource=~"IP-.+",role="started"} == 1)
+    labels:
+      severity: critical
+    annotations:
+      summary: "VIP {{ hostvars[groups[cluster][0]]['corosync_cluster_name'] }} is down (instance {{ '{{' }} $labels.node {{ '}}' }})"
+      description: "VIP {{ hostvars[groups[cluster][0]]['corosync_cluster_name'] }} is unavailable\n  VALUE = {{ '{{' }} $value {{ '}}' }}\n  LABELS: {{ '{{' }} $labels {{ '}}' }}"
+  - alert: CorosyncBackupDown{{ hostvars[groups[cluster][0]]['corosync_cluster_name'] }}
+    expr: count(ha_cluster_pacemaker_resources{status="active",pcm_cluster=~"{{ hostvars[groups[cluster][0]]['corosync_cluster_name'] }}",resource=~"IP-.+",role="started"}) < 2
+    labels:
+      severity: warning
+    annotations:
+      summary: "VIP {{ hostvars[groups[cluster][0]]['corosync_cluster_name'] }} backup host is down (instance {{ '{{' }} $labels.node {{ '}}' }})"
+      description: "VIP {{ hostvars[groups[cluster][0]]['corosync_cluster_name'] }} backup host is unavailable\n  VALUE = {{ '{{' }} $value {{ '}}' }}\n  LABELS: {{ '{{' }} $labels {{ '}}' }}"

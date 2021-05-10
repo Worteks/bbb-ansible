@@ -1,0 +1,21 @@
+- name: Installs Ceph Configuration Directory
+  file:
+    dest: /etc/ceph
+    group: ceph
+    mode: 0755
+    owner: ceph
+    state: directory
+- name: Installs Ceph Cluster Configuration
+  synchronize:
+    dest: "/etc/ceph/{{ bbb_ceph_cluster }}.conf"
+    group: True
+    owner: True
+    perms: True
+    src: "{{ pki_root }}/{{ bbb_ceph_cluster }}.conf/{{ hostvars[groups['cephfs'][0]]['ansible_nodename'] }}/etc/ceph/{{ bbb_ceph_cluster }}.conf"
+- name: Installs BBB CephFS Keyring
+  synchronize:
+    dest: "/etc/ceph/{{ bbb_ceph_cluster }}.client.{{ bbb_ceph_username }}.keyring"
+    group: True
+    owner: True
+    perms: True
+    src: "{{ pki_root }}/{{ bbb_ceph_cluster }}.client.{{ bbb_ceph_username }}.keyring/{{ hostvars[groups['cephfs'][0]]['ansible_nodename'] }}/etc/ceph/{{ bbb_ceph_cluster }}.client.{{ bbb_ceph_username }}.keyring"

@@ -1,0 +1,4 @@
+{% for ns in install_dns | default([]) %}
+nameserver {{ ns }}
+{% endfor %}
+domain {{ install_domain | default(ansible_domain) }}

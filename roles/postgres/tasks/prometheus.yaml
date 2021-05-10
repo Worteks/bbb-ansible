@@ -4,13 +4,13 @@
     group: root
     mode: 0644
     owner: root
-    url: "https://github.com/wrouesnel/postgres_exporter/releases/download/v{{ postgres_exporter_release }}/postgres_exporter_v{{ postgres_exporter_release }}_linux-amd64.tar.gz"
+    url: "https://github.com/prometheus-community/postgres_exporter/releases/download/v{{ postgres_exporter_release }}/postgres_exporter-{{ postgres_exporter_release }}.linux-amd64.tar.gz"
 - name: Extracts Postgres Exporter
   args:
     chdir: /usr/src
-    creates: "/usr/src/postgres_exporter_v{{ postgres_exporter_release }}_linux-amd64"
+    creates: "/usr/src/postgres_exporter-{{ postgres_exporter_release }}.linux-amd64"
     warn: False
-  shell: "tar -xzf /usr/src/postgres-exporter-{{ postgres_exporter_release }}.tar.gz"
+  shell: "tar -xzf /usr/src/postgres-exporter-{{ postgres_exporter_release }}.tar.gz && rm -f /usr/bin/postgres_exporter"
 - name: Installs Postgres Exporter
   copy:
     dest: /usr/bin/postgres_exporter
@@ -18,7 +18,8 @@
     mode: 0755
     owner: root
     remote_src: yes
-    src: "/usr/src/postgres_exporter_v{{ postgres_exporter_release }}_linux-amd64/postgres_exporter"
+    src: "/usr/src/postgres_exporter-{{ postgres_exporter_release }}.linux-amd64/postgres_exporter"
+  notify: Reloads Postgres Exporter
 - name: Creates Postgres Exporter Group
   group:
     name: postgresexporter
@@ -29,6 +30,90 @@
     name: postgresexporter
 - include_tasks: prom-db.yaml
   vars:
-    postgres_exporter_db: "{{ scalelite_postgres_database }}"
-    postgres_exporter_password: "{{ scalelite_postgres_password }}"
-    postgres_exporter_user: "{{ scalelite_postgres_user }}"
+    postgres_exporter_db: "{{ scalelite_postgres_database
+                                 if (ansible_fqdn in groups['postgres_scalelite']
+                                     or ansible_hostname in groups['postgres_scalelite']
+                                     or ansible_nodename in groups['postgres_scalelite'])
+                                 else (coturn_postgres_database
+                                       if (ansible_fqdn in groups['postgres_coturn']
+                                           or ansible_hostname in groups['postgres_coturn']
+                                           or ansible_nodename in groups['postgres_coturn'])
+                                       else (moodle_postgres_database
+                                             if (ansible_fqdn in groups['postgres_moodle']
+                                                 or ansible_hostname in groups['postgres_moodle']
+                                                 or ansible_nodename in groups['postgres_moodle'])
+                                             else (openstreamingplatform_postgres_database
+                                                   if (ansible_fqdn in groups['postgres_openstreamingplatform']
+                                                       or ansible_hostname in groups['postgres_openstreamingplatform']
+                                                       or ansible_nodename in groups['postgres_openstreamingplatform'])
+                                                   else (peertube_postgres_database
+                                                         if (ansible_fqdn in groups['postgres_peertube']
+                                                             or ansible_hostname in groups['postgres_peertube']
+                                                             or ansible_nodename in groups['postgres_peertube'])
+                                                         else (grafana_postgres_database
+                                                               if (ansible_fqdn in groups['postgres_grafana']
+                                                                   or ansible_hostname in groups['postgres_grafana']
+                                                                   or ansible_nodename in groups['postgres_grafana'])
+                                                               else (greenlight_postgres_database
+                                                                     if (ansible_fqdn in groups['postgres_greenlight']
+                                                                         or ansible_hostname in groups['postgres_greenlight']
+                                                                         or ansible_nodename in groups['postgres_greenlight'])
+                                                                     else 'postgres'))))) }}"
+    postgres_exporter_password: "{{ scalelite_postgres_password
+                                 if (ansible_fqdn in groups['postgres_scalelite']
+                                     or ansible_hostname in groups['postgres_scalelite']
+                                     or ansible_nodename in groups['postgres_scalelite'])
+                                 else (coturn_postgres_password
+                                       if (ansible_fqdn in groups['postgres_coturn']
+                                           or ansible_hostname in groups['postgres_coturn']
+                                           or ansible_nodename in groups['postgres_coturn'])
+                                       else (moodle_postgres_password
+                                             if (ansible_fqdn in groups['postgres_moodle']
+                                                 or ansible_hostname in groups['postgres_moodle']
+                                                 or ansible_nodename in groups['postgres_moodle'])
+                                             else (openstreamingplatform_postgres_password
+                                                   if (ansible_fqdn in groups['postgres_openstreamingplatform']
+                                                       or ansible_hostname in groups['postgres_openstreamingplatform']
+                                                       or ansible_nodename in groups['postgres_openstreamingplatform'])
+                                                   else (peertube_postgres_password
+                                                         if (ansible_fqdn in groups['postgres_peertube']
+                                                             or ansible_hostname in groups['postgres_peertube']
+                                                             or ansible_nodename in groups['postgres_peertube'])
+                                                         else (grafana_postgres_password
+                                                               if (ansible_fqdn in groups['postgres_grafana']
+                                                                   or ansible_hostname in groups['postgres_grafana']
+                                                                   or ansible_nodename in groups['postgres_grafana'])
+                                                               else (greenlight_postgres_password
+                                                                     if (ansible_fqdn in groups['postgres_greenlight']
+                                                                         or ansible_hostname in groups['postgres_greenlight']
+                                                                         or ansible_nodename in groups['postgres_greenlight'])
+                                                                     else 'postgres'))))) }}"
+    postgres_exporter_user: "{{ scalelite_postgres_user
+                                 if (ansible_fqdn in groups['postgres_scalelite']
+                                     or ansible_hostname in groups['postgres_scalelite']
+                                     or ansible_nodename in groups['postgres_scalelite'])
+                                 else (coturn_postgres_user
+                                       if (ansible_fqdn in groups['postgres_coturn']
+                                           or ansible_hostname in groups['postgres_coturn']
+                                           or ansible_nodename in groups['postgres_coturn'])
+                                       else (moodle_postgres_user
+                                             if (ansible_fqdn in groups['postgres_moodle']
+                                                 or ansible_hostname in groups['postgres_moodle']
+                                                 or ansible_nodename in groups['postgres_moodle'])
+                                             else (openstreamingplatform_postgres_user
+                                                   if (ansible_fqdn in groups['postgres_openstreamingplatform']
+                                                       or ansible_hostname in groups['postgres_openstreamingplatform']
+                                                       or ansible_nodename in groups['postgres_openstreamingplatform'])
+                                                   else (peertube_postgres_user
+                                                         if (ansible_fqdn in groups['postgres_peertube']
+                                                             or ansible_hostname in groups['postgres_peertube']
+                                                             or ansible_nodename in groups['postgres_peertube'])
+                                                         else (grafana_postgres_user
+                                                               if (ansible_fqdn in groups['postgres_grafana']
+                                                                   or ansible_hostname in groups['postgres_grafana']
+                                                                   or ansible_nodename in groups['postgres_grafana'])
+                                                               else (greenlight_postgres_user
+                                                                     if (ansible_fqdn in groups['postgres_greenlight']
+                                                                         or ansible_hostname in groups['postgres_greenlight']
+                                                                         or ansible_nodename in groups['postgres_greenlight'])
+                                                                     else 'postgres'))))) }}"

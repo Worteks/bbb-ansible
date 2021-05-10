@@ -1,0 +1,29 @@
+- include_tasks: facts.yaml
+- block:
+  - name: Checks for Existing PV
+    changed_when: False
+    failed_when: False
+    register: haspv
+    shell: pvs | grep /dev/drbd1
+  - name: Creates PV
+    shell: pvcreate /dev/drbd1
+    when:
+    - haspv is defined
+    - haspv.rc is defined
+    - (haspv.rc | default(0)) != 0
+  - name: Checks for Existing VG
+    changed_when: False
+    failed_when: False
+    register: hasvg
+    shell: vgs | grep data
+  - name: Creates VG
+    shell: vgcreate data /dev/drbd1
+    when:
+    - hasvg is defined
+    - hasvg.rc is defined
+    - (hasvg.rc | default(0)) != 0
+  - include_tasks: filesystem.yaml
+    loop: "{{ drbd_filesystems }}"
+    loop_control:
+      loop_var: fs
+  when: drbd_is_primary | default(False)

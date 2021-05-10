@@ -1,0 +1,43 @@
+groups:
+- name: DockerEngine
+  rules:
+  - alert: DockerBuildFailed
+    expr: increase(builder_builds_failed_total[60m]) > 0
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Docker Build failed (instance {{ $labels.instance }})"
+      description: "Docker Engine recorded builds that failed in the last 60 minutes\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: DockerHealthCheckFail
+    expr: increase(engine_daemon_health_checks_failed_total[10m]) > 0
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Docker Health Check failed (instance {{ $labels.instance }})"
+      description: "Docker Engine recorded failed health check in the last 10 minutes\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: DockerLogReadFail
+    expr: increase(logger_log_read_operations_failed_total[10m]) > 0
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Docker Log Read failed (instance {{ $labels.instance }})"
+      description: "Docker Engine recorded failed reads on logs in the last 10 minutes\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: DockerLogWriteFail
+    expr: increase(logger_log_write_operations_failed_total[10m]) > 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Docker Log Write failed (instance {{ $labels.instance }})"
+      description: "Docker Engine recorded failed writes on logs in the last 10 minutes\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: DockerStoppedContainer
+    expr: engine_daemon_container_states_containers{state="stopped"} > 0
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Docker has Stopped Containers (instance {{ $labels.instance }})"
+      description: "Docker Engine recorded containers that are currently stopped\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"

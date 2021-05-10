@@ -1,0 +1,8 @@
+[Unit]
+Description=Backups Scalelite Site
+
+[Service]
+Group=scalelite-spool
+Type=oneshot
+User=scalelite-spool
+ExecStart=/usr/local/bin/scalelite-sync-published

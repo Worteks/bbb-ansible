@@ -1,5 +1,2 @@
-- block:
-  - include_tasks: prom-bbb.yaml
-  - include_tasks: prom-nginx.yaml
-  when:
-  - "'nginx' in scalelite_has_roles"
+- include_tasks: prom-bbb.yaml
+- include_tasks: prom-textfile.yaml

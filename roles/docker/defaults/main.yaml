@@ -1,1 +1,1 @@
-docker_compose_release: 1.27.0
+docker_exporter_port: 9146

@@ -1,0 +1,68 @@
+- name: Fixes /etc/hosts
+  lineinfile:
+    dest: /etc/hosts
+    line: "{{ ansible_default_ipv4['address'] }} {{ h }}"
+    regexp: "^{{ ansible_default_ipv4['address'] }} {{ h }}"
+  loop:
+  - "{{ peertube_fqdn | default(ansible_fqdn) }}"
+  - "{{ ansible_fqdn }}"
+  loop_control:
+    loop_var: h
+- name: Installs PeerTube Configuration Directory
+  file:
+    dest: /etc/peertube
+    group: root
+    mode: 0755
+    owner: 999
+    state: directory
+- name: Installs PeerTube Runtime Directories
+  file:
+    dest: "{{ dir }}"
+    group: root
+    mode: 0755
+    owner: 999
+    state: directory
+  loop:
+  - /var/lib/peertube
+  - /var/lib/peertube/data
+  loop_control:
+    loop_var: dir
+  when:
+  - >
+      (ansible_fqdn not in groups['drbd']
+       and ansible_hostname not in groups['drbd']
+       and ansible_nodename not in groups['drbd'])
+      or ((ansible_fqdn in groups['drbd']
+           or ansible_hostname in groups['drbd']
+           or ansible_nodename in groups['drbd'])
+          and drbd_is_primary | default(False))
+- name: Installs Peertube Instances Configuration
+  loop:
+  - config
+  - production
+  loop_control:
+    loop_var: target
+  register: config_changed
+  template:
+    dest: "/etc/peertube/{{ target }}.yaml"
+    force: "{{ 'no' if (peertube_no_reconfigure | default(False)) else 'yes' }}"
+    group: root
+    mode: 0640
+    owner: 999
+    src: config.j2
+- name: Installs PeerTube Configuration
+  register: should_reload
+  template:
+    dest: /etc/docker-compose/peertube/docker-compose.yaml
+    group: root
+    mode: 0640
+    owner: root
+    src: compose.j2
+- include_role:
+    name: docker
+    tasks_from: service.yaml
+  vars:
+    service_description: PeerTube
+    service_name: peertube
+    service_standby: "{{ False if ((groups['peertube'] | first) == ansible_nodename)
+                               else True }}"

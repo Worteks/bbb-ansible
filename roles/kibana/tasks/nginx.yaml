@@ -1,0 +1,14 @@
+- name: Installs Kibana Virtualhost
+  notify: Reloads Nginx
+  template:
+    dest: /etc/nginx/sites-available/kibana.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: vhost.j2
+- name: Enables Kibana Virtualhost
+  file:
+    dest: /etc/nginx/sites-enabled/kibana.conf
+    src: /etc/nginx/sites-available/kibana.conf
+    state: link
+  notify: Reloads Nginx

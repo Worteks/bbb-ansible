@@ -1,0 +1,40 @@
+// Unattended-Upgrade::Origins-Pattern controls which packages are
+// upgraded.
+
+Unattended-Upgrade::Origins-Pattern {
+{% if ansible_distribution == "Ubuntu" %}
+    "${distro_id}:${distro_codename}";
+    "${distro_id}:${distro_codename}-security";
+    "${distro_id}ESMApps:${distro_codename}-apps-security";
+    "${distro_id}ESM:${distro_codename}-infra-security";
+{% elif ansible_distribution == 'Devuan' %}
+    "o=Devuan,a=stable";
+    "o=Devuan,a=stable-updates";
+    "o=Devuan,a=proposed-updates";
+{% else %}
+    "origin=Debian,codename=${distro_codename},label=Debian";
+    "origin=Debian,codename=${distro_codename},label=Debian-Security";
+{% endif %}
+};
+
+Unattended-Upgrade::Package-Blacklist {
+{% for pkg in unattended_upgrades_blacklist %}
+    "{{ pkg }}";
+{% endfor %}
+};
+
+Unattended-Upgrade::AutoFixInterruptedDpkg "true";
+Unattended-Upgrade::MinimalSteps "true";
+Unattended-Upgrade::InstallOnShutdown "false";
+Unattended-Upgrade::Mail "";
+Unattended-Upgrade::MailOnlyOnError "false";
+Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
+Unattended-Upgrade::Remove-New-Unused-Dependencies "false";
+Unattended-Upgrade::Remove-Unused-Dependencies "false";
+Unattended-Upgrade::Automatic-Reboot "false";
+Unattended-Upgrade::Automatic-Reboot-WithUsers "false";
+{% if apt_bw_limit_kb | default(False) %}
+Acquire::http::Dl-Limit "{{ apt_bw_limit_kb }}";
+{% endif %}
+Unattended-Upgrade::SyslogEnable "true";
+Unattended-Upgrade::SyslogFacility "daemon";

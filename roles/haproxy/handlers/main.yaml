@@ -1,8 +1,12 @@
-- name: Reload Rsyslog
+- name: Reloads Rsyslog
   service:
     name: rsyslog
     state: restarted
-- name: Reload HAProxy
+- name: Reloads HAProxy
   service:
     name: haproxy
+    state: restarted
+- name: Reloads HAProxy Exporter
+  service:
+    name: haproxy-exporter
     state: restarted

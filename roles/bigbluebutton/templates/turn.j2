@@ -3,35 +3,79 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
-
+{% if groups['coturn'] | length > 0 %}
+{% for node in groups['coturn'] %}
+    <bean id="stun{{ loop.index0 }}" class="org.bigbluebutton.web.services.turn.StunServer">
+	<constructor-arg index="0" value="stun:{{ hostvars[node]['coturn_fqdn'] | default(hostvars[node]['ansible_fqdn']) }}"/>
+    </bean>
+    <bean id="turn{{ (loop.index0 | int) * 2 }}" class="org.bigbluebutton.web.services.turn.TurnServer">
+	<constructor-arg index="0" value="{{ hostvars[node]['coturn_auth_secret'] }}"/>
+{% if debug_coturn_no_turns_proto | default(False) %}
+	<constructor-arg index="1" value="turn:{{ hostvars[node]['coturn_fqdn'] | default(hostvars[node]['ansible_fqdn']) }}:{{ hostvars[node]['coturn_tls_port'] | default(turn_default_tls_port) }}?transport=tcp"/>
+{% else %}
+	<constructor-arg index="1" value="turns:{{ hostvars[node]['coturn_fqdn'] | default(hostvars[node]['ansible_fqdn']) }}:{{ hostvars[node]['coturn_tls_port'] | default(turn_default_tls_port) }}?transport=tcp"/>
+{% endif %}
+	<constructor-arg index="2" value="86400"/>
+    </bean>
+    <bean id="turn{{ ((loop.index0 | int) * 2) + 1 }}" class="org.bigbluebutton.web.services.turn.TurnServer">
+	<constructor-arg index="0" value="{{ hostvars[node]['coturn_auth_secret'] }}"/>
+{% if debug_coturn_all_tls | default(False) %}
+{% if debug_coturn_no_turns_proto | default(False) %}
+	<constructor-arg index="1" value="turn:{{ hostvars[node]['coturn_fqdn'] | default(hostvars[node]['ansible_fqdn']) }}:{{ hostvars[node]['coturn_tls_port'] | default(turn_default_plain_port) }}?transport=tcp"/>
+{% else %}
+	<constructor-arg index="1" value="turns:{{ hostvars[node]['coturn_fqdn'] | default(hostvars[node]['ansible_fqdn']) }}:{{ hostvars[node]['coturn_tls_port'] | default(turn_default_plain_port) }}?transport=tcp"/>
+{% endif %}
+{% else %}
+	<constructor-arg index="1" value="turn:{{ hostvars[node]['coturn_fqdn'] | default(hostvars[node]['ansible_fqdn']) }}:{{ hostvars[node]['coturn_plain_port'] | default(turn_default_plain_port) }}?transport=tcp"/>
+{% endif %}
+	<constructor-arg index="2" value="86400"/>
+    </bean>
+{% endfor %}
+{% elif external_turn_secret | default(False) and external_turn_fqdn | default(False) %}
     <bean id="stun0" class="org.bigbluebutton.web.services.turn.StunServer">
-	<constructor-arg index="0" value="stun:turn.example.com"/>
+	<constructor-arg index="0" value="stun:{{ external_turn_fqdn }}"/>
     </bean>
-
-
     <bean id="turn0" class="org.bigbluebutton.web.services.turn.TurnServer">
-	<constructor-arg index="0" value="{{ turn_secret }}"/>
-	<constructor-arg index="1" value="turns:{{ turn_fqdn }}:{{ turn_tls_port }}?transport={{ turn_tls_proto }}"/>
+	<constructor-arg index="0" value="{{ external_turn_secret }}"/>
+	<constructor-arg index="1" value="turns:{{ external_turn_fqdn }}:{{ turn_default_tls_port }}?transport=tcp"/>
 	<constructor-arg index="2" value="86400"/>
     </bean>
-    
     <bean id="turn1" class="org.bigbluebutton.web.services.turn.TurnServer">
-	<constructor-arg index="0" value="{{ turn_secret }}"/>
-	<constructor-arg index="1" value="turn:{{ turn_fqdn }}:{{ turn_plain_port }}?transport={{ turn_plain_proto }}"/>
+	<constructor-arg index="0" value="{{ external_turn_secret }}"/>
+	<constructor-arg index="1" value="turn:{{ external_turn_fqdn }}:{{ turn_default_plain_port }}?transport=tcp"/>
 	<constructor-arg index="2" value="86400"/>
     </bean>
+{% else %}
+    <bean id="stun0" class="org.bigbluebutton.web.services.turn.StunServer">
+	<constructor-arg index="0" value="stun:stun.freeswitch.org"/>
+    </bean>
+{% endif %}
+
 
     <bean id="stunTurnService"
 	  class="org.bigbluebutton.web.services.turn.StunTurnService">
 	<property name="stunServers">
 	    <set>
+{% if groups['coturn'] | length > 0 %}
+{% for node in groups['coturn'] %}
+		<ref bean="stun{{ loop.index0 }}"/>
+{% endfor %}
+{% else %}
 		<ref bean="stun0"/>
+{% endif %}
 	    </set>
 	</property>
 	<property name="turnServers">
 	    <set>
+{% if groups['coturn'] | length > 0 %}
+{% for node in groups['coturn'] %}
+		<ref bean="turn{{ (loop.index0 | int) * 2 }}"/>
+		<ref bean="turn{{ ((loop.index0 | int) * 2) + 1 }}"/>
+{% endfor %}
+{% elif external_turn_secret | default(False) and external_turn_fqdn | default(False) %}
 		<ref bean="turn0"/>
 		<ref bean="turn1"/>
+{% endif %}
 	    </set>
 	</property>
     </bean>

@@ -1,0 +1,261 @@
+root@peertube:/etc/nginx/sites-enabled# cat /etc/peertube/config.yaml 
+listen:
+  hostname: '0.0.0.0'
+  port: 9000
+
+webserver:
+  https: true
+  hostname: 'peertube.example.com'
+  port: 443
+
+rates_limit:
+  api:
+    window: 10 seconds
+    max: 100
+  login:
+    window: 5 minutes
+    max: 15
+  signup:
+    window: 5 minutes
+    max: 2
+  ask_send_email:
+    window: 5 minutes
+    max: 3
+
+database:
+  hostname: 'bbb-postgres.example.com'
+  port: 5432
+  ssl: false
+  suffix: ''
+  username: 'peertubeusr'
+  password: 'peertubepw'
+
+redis:
+  db: 2
+  hostname: 'bbb-redis.example.com'
+  port: 6379
+  auth: null
+
+smtp:
+  ca_file: /etc/ssl/certs/ca-certificates.crt
+  disable_starttls: true
+  from_address: admin@peertube.example.com
+  hostname: smtp.example.com
+  password: null
+  port: 25
+  sendmail: null
+  tls: true
+  transport: smtp
+  username: null
+
+email:
+  body:
+    signature: "PeerTube"
+  subject:
+    prefix: "[PeerTube]"
+
+storage:
+  tmp: '/data/tmp/'
+  avatars: '/data/avatars/'
+  videos: '/data/videos/'
+  streaming_playlists: '/data/streaming-playlists'
+  redundancy: '/data/redundancy/'
+  logs: '/data/logs/'
+  previews: '/data/previews/'
+  thumbnails: '/data/thumbnails/'
+  torrents: '/data/torrents/'
+  captions: '/data/captions/'
+  cache: '/data/cache/'
+  plugins: '/data/plugins/'
+  client_overrides: '/data/client-overrides/'
+
+log:
+  level: 'info'
+  rotation:
+    enabled : true
+    maxFileSize: 12MB
+    maxFiles: 20
+  anonymizeIP: false
+
+tracker:
+  enabled: true
+  reject_too_many_announces: false
+
+admin:
+  email: 'admin@peertube.example.com'
+
+remote_redundancy:
+  videos:
+    accept_from: 'anybody'
+
+csp:
+  enabled: false
+  report_only: true
+  report_uri: ''
+
+history:
+  videos:
+    max_age: -1
+
+views:
+  videos:
+    remote:
+      max_age: '15 days'
+
+plugins:
+  index:
+    enabled: true
+    check_latest_versions_interval: '12 hours'
+    url: 'https://packages.joinpeertube.org'
+
+federation:
+  videos:
+    federate_unlisted: false
+
+cache:
+  previews:
+    size: 500
+  captions:
+    size: 500
+
+contact_form:
+  enabled: true
+
+signup:
+  enabled: false
+  limit: 10
+  requires_email_verification: false
+  filters:
+    cidr:
+      whitelist: []
+      blacklist: []
+
+user:
+  video_quota: -1
+  video_quota_daily: -1
+
+transcoding:
+  allow_additional_extensions: true
+  allow_audio_files: true
+  enabled: true
+  hls:
+    enabled: false
+  resolutions:
+    0p: false
+    240p: false
+    360p: false
+    480p: true
+    720p: true
+    1080p: true
+    2160p: false
+  threads: 1
+  webtorrent:
+    enabled: true
+
+live:
+  allow_replay: true
+  enabled: true
+  max_duration: 6 hours
+  max_instance_lives: -1
+  max_user_lives: -1
+  rtmp:
+    port: 1935
+  transcoding:
+    enabled: true
+    resolutions:
+      240p: false
+      360p: false
+      480p: true
+      720p: true
+      1080p: true
+      2160p: false
+    threads: 5
+
+import:
+  videos:
+    http:
+      enabled: false
+      force_ipv4: false
+      proxy:
+        enabled: false
+        url: ""
+    torrent:
+      enabled: false
+
+auto_blacklist:
+  videos:
+    of_users:
+      enabled: false
+
+instance:
+  name: "BigBlueButtonTube"
+  short_description: "PeerTube, a federated (ActivityPub) video streaming platform using P2P (BitTorrent) directly in the web browser with WebTorrent and Angular."
+  description: "Welcome to this PeerTube instance'"
+  terms: "No terms for now"
+  code_of_conduct: "Don't be evil"
+  moderation_information: ''
+  creation_reason: "Streaming BigBlueButton Conferences"
+  administrator: ''
+  maintenance_lifetime: ''
+  business_model: "Collect underpants...... step 2, ... and then profit!"
+  hardware_information: '2CPU, 3003MB RAM'
+  languages:
+  - en
+  - es
+  - fr
+  categories: []
+  default_client_route: '/videos/trending'
+  is_nsfw: true
+  default_nsfw_policy: 'do_not_list'
+  customizations:
+    javascript: ''
+    css: ''
+  robots: |
+    User-agent: *
+    Disallow: /
+  securitytxt:
+    "# See https://github.com/Chocobozzz/PeerTube/blob/develop/SECURITY.md"
+
+services:
+  twitter:
+    username: ''
+    whitelisted: false
+
+followers:
+  instance:
+    enabled: true
+    manual_approval: false
+
+followings:
+  instance:
+    auto_follow_back:
+      enabled: false
+    auto_follow_index:
+      enabled: false
+      index_url: ''
+
+theme:
+  default: 'default'
+
+broadcast_message:
+  enabled: false
+  message: ''
+  level: 'info'
+  dismissable: false
+
+search:
+  remote_uri:
+    users: true
+    anonymous: false
+  search_index:
+    enabled: false
+    url: 'https://search.joinpeertube.org/'
+    disable_local_search: false
+    is_default_search: false
+
+trust_proxy:
+- '127.0.0.1'
+- '10.0.0.0/8'
+- '172.16.0.0/12'
+- '192.168.0.0/16'
+- '10.42.253.170/32'

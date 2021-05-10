@@ -1,0 +1,16 @@
+dependencies:
+- role: docker
+- role: nginx
+  when:
+  - >
+     not (ansible_fqdn in groups['bbb']
+          and ansible_fqdn in groups['scalelite'])
+  - >
+     not (ansible_hostname in groups['bbb']
+          and ansible_hostname in groups['scalelite'])
+  - >
+     not (ansible_fqdn in groups['bbb']
+          and ansible_fqdn in groups['peertube'])
+  - >
+     not (ansible_hostname in groups['bbb']
+          and ansible_hostname in groups['peertube'])

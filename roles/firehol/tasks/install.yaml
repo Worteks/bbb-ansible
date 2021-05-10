@@ -1,3 +1,36 @@
+- name: Checks for Previous Firehol Installation
+  changed_when: False
+  failed_when: False
+  stat:
+    path: /etc/firehol/firehol.conf
+  register: hasfconf
+- block:
+  # Installs Allow-All Configuration, as installing Firehol
+  # would otherwise setup a deny-all default and enable+start
+  # service during post-install. While Ansible would re-use
+  # the same connection, fihishing to apply our configuration,
+  # any mistake in configuring our firewall at that stage
+  # could result in remote no longer being reachable... In
+  # which case, logging in from console or changing grub
+  # boot command to /bin/sh may be required ...
+  - name: Installs Firehol Configuration Directory
+    file:
+      dest: /etc/firehol
+      group: root
+      mode: 0755
+      owner: root
+      state: directory
+  - name: Installs Firehol Initial Configuration
+    copy:
+      dest: /etc/firehol/firehol.conf
+      group: root
+      mode: 0644
+      owner: root
+      src: init.conf
+  when:
+  - hasfconf is defined
+  - hasfconf.stat is defined
+  - not hasfconf.stat.exists
 - name: Installs Firehol
   apt:
     name: firehol

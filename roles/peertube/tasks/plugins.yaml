@@ -1,0 +1,92 @@
+- block:
+  - name: Ensures Peertube Auth LDAP Plugin Present
+    changed_when: False
+    failed_when: False
+    register: ldapplugin
+    stat:
+      path: /var/lib/peertube/data/plugins/peertube-plugin-auth-ldap
+  - name: Installs Peertube Auth LDAP Plugin
+    register: lrestart
+    shell: docker exec peertube_peertube_1 /bin/sh -c "npm run plugin:install -- --npm-name peertube-plugin-auth-ldap"
+    when:
+    - ldapplugin is defined
+    - ldapplugin.stat is defined
+    - not ldapplugin.stat.exists
+  - name: Configures Peertube LDAP Auth Plugin
+    postgresql_query:
+      positional_args:
+      - "{{ ansible_date_time['date'] }} 00:00:00.000+00"
+      - "{\"url\":\"{{ peertube_ldap_endpoint }}\",\"weight\":100,\"bind-dn\":\"{{ peertube_ldap_bind_dn }}\",\"custom-ca\":\"/etc/ssl/certs/ca-certificates.crt\",\"search-base\":\"{{ peertube_ldap_base }}\",\"group-base\":\"\",\"insecure-tls\":false,\"mail-property\":\"mail\",\"search-filter\":\"(|(mail={{ '{{username}}' }})({{ peertube_ldap_uid }}={{ '{{username}}' }}))\",\"group-filter\":\"(member={{ '{{dn}}' }})\",\"bind-credentials\":\"{{ peertube_ldap_password }}\",\"username-property\":\"{{ peertube_ldap_uid }}\",\"group-admin\":\"\",\"group-mod\":\"\",\"group-user\":\"\"}"
+      - "auth-ldap"
+      query: "UPDATE plugin SET updateAt = %s, settings = %s WHERE name = %s"
+  when: 
+  - peertube_ldap_endpoint | default(False)
+- block:
+  - name: Ensures Peertube Auth SAML Plugin Present
+    changed_when: False
+    failed_when: False
+    register: samlplugin
+    stat:
+      path: /var/lib/peertube/data/plugins/peertube-plugin-auth-saml2
+  - name: Installs Peertube Auth SAML2 Plugin
+    register: srestart
+    shell: docker exec peertube_peertube_1 /bin/sh -c "npm run plugin:install -- --npm-name peertube-plugin-auth-saml2"
+    when:
+    - ldapplugin is defined
+    - ldapplugin.stat is defined
+    - not ldapplugin.stat.exists
+  - name: Configures Peertube SAML2 Auth Plugin
+    postgresql_query:
+      positional_args:
+      - "{{ ansible_date_time['date'] }} 00:00:00.000+00"
+      - "{\"auth-display-name\":\"SAML\",\"client-id\":\"{{ peertube_saml_issuer }}\",\"login-url\":\"{{ peertube_saml_endpoint }}\",\"provider-certificate\":\"/config/idp.crt\",\"service-certificate\":\"/config/saml.crt\",\"service-private-key\":\"/config/saml.key\",\"username-property\":\"{{ peertube_saml_username_field }}\",\"role-property\":\"\",\"sign-get-request\":true}"
+      - "auth-saml2"
+      query: "UPDATE plugin SET updateAt = %s, settings = %s WHERE name = %s"
+  when: 
+  - peertube_saml_endpoint | default(False)
+- block:
+  - name: Ensures Peertube Auth OIDC Plugin Present
+    changed_when: False
+    failed_when: False
+    register: oidcplugin
+    stat:
+      path: /var/lib/peertube/data/plugins/peertube-plugin-auth-openid-connect
+  - name: Installs Peertube Auth OIDC Plugin
+    register: orestart
+    shell: docker exec peertube_peertube_1 /bin/sh -c "npm run plugin:install -- --npm-name peertube-plugin-auth-openid-connect"
+    when:
+    - ldapplugin is defined
+    - ldapplugin.stat is defined
+    - not ldapplugin.stat.exists
+  - name: Configures Peertube OIDC Auth Plugin
+    postgresql_query:
+      positional_args:
+      - "{{ ansible_date_time['date'] }} 00:00:00.000+00"
+      - "{\"auth-display-name\":\"OIDC\",\"client-id\":\"{{ peertube_oidc_client_id }}\",\"discover-url\":\"{{ peertube_oidc_endpoint }}/.well-known/openid-configuration\",\"client-secret\":\"{{ peertube_oidc_client_secret }}\",\"scope\":\"{{ peertube_oidc_scope }}\",\"username-property\":\"{{ peertube_oidc_uid_field }}\",\"mail-property\":\"{{ peertube_oidc_mail_field }}\",\"role-property\":\"\",\"display-name-property\":\"\"}"
+      - "auth-openid-connect"
+      query: "UPDATE plugin SET updateAt = %s, settings = %s WHERE name = %s"
+  when: 
+  - peertube_oidc_endpoint | default(False)
+  - >
+      (ansible_fqdn not in groups['drbd']
+       and ansible_hostname not in groups['drbd']
+       and ansible_nodename not in groups['drbd'])
+      or ((ansible_fqdn in groups['drbd']
+           or ansible_hostname in groups['drbd']
+           or ansible_nodename in groups['drbd'])
+          and drbd_is_primary | default(False))
+- name: Restarts PeerTube Loading New Plugins
+  service:
+    name: peertube
+    state: restarted
+  when:
+  - ansible_fqdn not in groups['drbd']
+  - ansible_hostname not in groups['drbd']
+  - ansible_nodename not in groups['drbd']
+  - >
+      (orestart is defined
+       and orestart is changed)
+      or (lrestart is defined
+       and lrestart is changed)
+      or (srestart is defined
+       and srestart is changed)

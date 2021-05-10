@@ -27,21 +27,7 @@
 
 - name: Installs Docker-CE
   apt:
-    name: docker-ce
+    name:
+    - docker-ce
+    - docker-compose
     state: present
-
-- name: Fetches Docker Compose Release
-  get_url:
-    dest: "/usr/src/docker-compose-{{ docker_compose_release }}"
-    group: root
-    mode: 0644
-    owner: root
-    url: "https://github.com/docker/compose/releases/download/{{ docker_compose_release }}/docker-compose-Linux-x86_64"
-- name: Installs Docker Compose
-  copy:
-    dest: /usr/bin/docker-compose
-    group: root
-    mode: 0755
-    owner: root
-    remote_src: yes
-    src: "/usr/src/docker-compose-{{ docker_compose_release }}"

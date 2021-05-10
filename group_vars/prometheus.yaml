@@ -1,9 +1,3 @@
-prometheus_fqdn: bbb-prom.example.com
-
-# Integrate with Prometheus
-# see https://gitlab.com/synacksynack/opsperator/docker-operator
-prometheus_k8s_integration: True
-
 firehol_app_opened_ports:
 - name: ssh
   value: tcp/22
@@ -13,3 +7,7 @@ firehol_app_opened_ports:
   value: tcp/9142
 - name: nginxxp
   value: tcp/9143
+- name: nginxluaxp
+  value: tcp/9145
+- name: systemdxp
+  value: tcp/9147

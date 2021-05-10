@@ -1,0 +1,6 @@
+[Unit]
+Description=Backups PeerTube Site
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/peertube-sync-videos

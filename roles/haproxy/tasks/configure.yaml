@@ -9,7 +9,7 @@
 - name: Reloads Sysctl
   args:
     chdir: /etc/sysctl.d
-  notify: Reload HAProxy
+  notify: Reloads HAProxy
   shell: |
     while read value; \
         do \
@@ -19,7 +19,7 @@
   - reload_sysctl is defined
   - reload_sysctl is changed
 - name: Installs HAProxy Main Configuration
-  notify: Reload HAProxy
+  notify: Reloads HAProxy
   template:
     dest: /etc/haproxy/haproxy.cfg
     group: root
@@ -30,9 +30,9 @@
   file:
     dest: /etc/rsyslog.d/haproxy.conf
     state: absent
-  notify: Reload Rsyslog
+  notify: Reloads Rsyslog
 - name: Installs HAProxy Custom Rsyslog Configuration
-  notify: Reload Rsyslog
+  notify: Reloads Rsyslog
   template:
     dest: /etc/rsyslog.d/50-haproxy.conf
     group: root

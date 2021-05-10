@@ -1,0 +1,105 @@
+- name: Sets PKI Root Directory Fact
+  delegate_to: localhost
+  run_once: yes
+  set_fact:
+    pki_root: "{{ playbook_dir }}/.pki"
+
+- name: Installs Corosync Configuration
+  register: coroconf
+  template:
+    dest: /etc/corosync/corosync.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: corosync.j2
+- name: Checks for Existing Key on Secondary Node
+  delegate_to: "{{ corosync_members[1] }}"
+  failed_when: False
+  register: haskeytoo
+  run_once: yes
+  stat:
+    path: /etc/corosync/authkey
+- block:
+  - name: Generates Corosync Auth Key
+    args:
+      chdir: /etc/corosync
+      creates: /etc/corosync/authkey
+    delegate_to: "{{ corosync_members[0] }}"
+    register: corokeyone
+    run_once: yes
+    shell: corosync-keygen
+  - name: Copy Corosync Auth Key from Primary Node to Ansible Node
+    delegate_to: "{{ corosync_members[0] }}"
+    fetch:
+      dest: "{{ pki_root }}/corosync-{{ corosync_cluster_name }}"
+      group: root
+      mode: 0600
+      owner: root
+      src: /etc/corosync/authkey
+    run_once: yes
+  - name: Send Key to Corosync Members
+    register: corokeytoo
+    synchronize:
+      dest: /etc/corosync/authkey
+      group: True
+      owner: True
+      perms: True
+      src: "{{ pki_root }}/corosync-{{ corosync_cluster_name }}/{{ corosync_members[0] }}/etc/corosync/authkey"
+    when:
+    - ansible_fqdn != corosync_members[0]
+  when:
+  - haskeytoo is defined
+  - haskeytoo.stat is defined
+  - not haskeytoo.stat.exists
+- block:
+  - name: Checks for Existing Key on Primary Node
+    delegate_to: "{{ corosync_members[0] }}"
+    failed_when: False
+    register: haskeyone
+    run_once: yes
+    stat:
+      path: /etc/corosync/authkey
+  - block:
+    - name: Copy Corosync Auth Key from Secondary Node to Ansible Node
+      delegate_to: "{{ corosync_members[1] }}"
+      fetch:
+        dest: "{{ pki_root }}/corosync-{{ corosync_cluster_name }}"
+        group: root
+        mode: 0600
+        owner: root
+        src: /etc/corosync/authkey
+      run_once: yes
+    - name: Send Key to Corosync Members
+      register: corokeytri
+      synchronize:
+        dest: /etc/corosync/authkey
+        group: True
+        owner: True
+        perms: True
+        src: "{{ pki_root }}/corosync-{{ corosync_cluster_name }}/{{ corosync_members[1] }}/etc/corosync/authkey"
+      when:
+      - ansible_fqdn != corosync_members[1]
+    when:
+    - haskeyone is defined
+    - haskeyone.stat is defined
+    - not haskeyone.stat.exists
+  when:
+  - haskeytoo is defined
+  - haskeytoo.stat is defined
+  - haskeytoo.stat.exists
+
+- name: Ensures Corosync Running
+  service:
+    enabled: yes
+    name: corosync
+    state: started
+- name: Restarts Corosync when Required
+  service:
+    name: corosync
+    state: restarted
+  when:
+  - >
+      (coroconf is defined and coroconf is changed)
+      or (corokeyone is defined and corokeyone is changed)
+      or (corokeytoo is defined and corokeytoo is changed)
+      or (corokeytri is defined and corokeytri is changed)

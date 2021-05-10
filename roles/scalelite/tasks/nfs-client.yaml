@@ -28,7 +28,7 @@
       dest: "{{ hostvars[groups['nfs'][0]]['nfs_exports_root'] | default(nfs_exports_root) }}/{{ sub }}"
       group: 2000
       mode: 0775
-      owner: 1000
+      owner: 2000
       state: directory
     loop:
     - published

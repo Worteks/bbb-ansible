@@ -1,10 +1,21 @@
+- include_role:
+    name: drbd
+    tasks_from: facts.yaml
+  when:
+  - "'drbd1' in ansible_devices"
 - include_tasks: install.yaml
 - include_tasks: configure.yaml
 - include_tasks: server.yaml
 - include_tasks: sentinel.yaml
   when:
-  - groups['redis'] | length > 1
+  - groups[my_hostgroup] | length > 1
   - redis_standalone is not defined
+  - ansible_fqdn not in groups['drbd']
+- include_tasks: backup.yaml
+  when:
+  - >
+      do_backups | default(False)
+      or do_redis_backups | default(False)
 - include_tasks: prometheus.yaml
   when:
   - >

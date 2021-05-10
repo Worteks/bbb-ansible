@@ -1,0 +1,31 @@
+- name: Requests Certificate from LetsEncrypt
+  args:
+    creates: "/etc/letsencrypt/live/{{ ansible_fqdn if (cert_fqdn is not defined) else cert_fqdn[0] }}/cert.pem"
+  shell: |
+    certbot certonly --standalone \
+      -d {{ (cert_fqdn | default([ ansible_fqdn ])) | join(' -d ') }} \
+      -m {{ bigbluebutton_letsencrypt_address }} \
+      --staple-ocsp --agree-tos --no-eff-email
+  when:
+  - bigbluebutton_letsencrypt_address | default(False)
+- block:
+  - name: Fixes LetsEncrypt Renewal Cron Job
+    template:
+      dest: /etc/cron.d/certbot
+      group: root
+      mode: 0644
+      owner: root
+      src: renew.j2
+  - name: Fixes LetsEncrypt Renewal Unit
+    lineinfile:
+      dest: /lib/systemd/system/certbot.service
+      line: "ExecStart=/usr/bin/certbot -q --post-hook {{ certbot_post_hooks | join(' --post-hook ') }} renew"
+      regex: ^ExecStart
+    register: leunit
+  - name: Reloads Systemd Configuration
+    shell: systemctl daemon-reload
+    when:
+    - leunit is defined
+    - leunit is changed
+  when:
+  - certbot_post_hooks | length > 0

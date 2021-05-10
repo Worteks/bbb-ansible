@@ -1,3 +1,9 @@
+- include_role:
+    name: drbd
+    tasks_from: facts.yaml
+  when:
+  - "'drbd1' in ansible_devices"
+- include_tasks: facts.yaml
 - include_tasks: install.yaml
 - include_role:
     name: certbot

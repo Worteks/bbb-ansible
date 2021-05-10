@@ -1,4 +1,4 @@
-version: '3'
+version: '2.0'
 services:
   bbb-exporter:
     container_name: bbb-exporter
@@ -10,11 +10,21 @@ services:
     - DEBUG=true
 {% endif %}
     - RECORDINGS_METRICS=true
+    - RECORDINGS_METRICS_READ_FROM_DISK=true
     - PORT={{ bigbluebutton_exporter_port }}
+{% if bbb_uses_selfsigned | default(True) %}
     - TLS_VERIFY=false
+{% endif %}
+    extra_hosts:
+    - {{ bigbluebutton_fqdn | default(ansible_fqdn) }}:{{ ansible_default_ipv4['address'] }}
     image: {{ bigbluebutton_exporter_images_repo }}:{{ bigbluebutton_exporter_images_release }}
     logging:
       driver: journald
+{% if docker_hostnetwork | default(False) %}
+    network_mode: host
+{% endif %}
     ports:
     - "{{ bigbluebutton_exporter_port }}:{{ bigbluebutton_exporter_port }}"
     restart: unless-stopped
+    volumes:
+    - /var/bigbluebutton:/var/bigbluebutton:ro

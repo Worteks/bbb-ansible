@@ -10,7 +10,7 @@
     chdir: /usr/src
     creates: "/usr/src/haproxy_exporter-{{ haproxy_exporter_release }}.linux-amd64"
     warn: False
-  shell: "tar -xzf /usr/src/haproxy-exporter-{{ haproxy_exporter_release }}.tar.gz"
+  shell: "tar -xzf /usr/src/haproxy-exporter-{{ haproxy_exporter_release }}.tar.gz && rm -f /usr/bin/haproxy_exporter"
 - name: Installs HAProxy Exporter
   copy:
     dest: /usr/bin/haproxy_exporter
@@ -19,6 +19,7 @@
     owner: root
     remote_src: yes
     src: "/usr/src/haproxy_exporter-{{ haproxy_exporter_release }}.linux-amd64/haproxy_exporter"
+  notify: Reloads HAProxy Exporter
 - name: Creates HAProxy Exporter Group
   group:
     name: haproxyexporter
@@ -28,6 +29,7 @@
     groups: haproxyexporter
     name: haproxyexporter
 - name: Installs HAProxy Exporter Unit
+  notify: Reloads HAProxy Exporter
   register: exporter_unit
   template:
     dest: /etc/systemd/system/haproxy-exporter.service

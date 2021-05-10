@@ -1,0 +1,30 @@
+- name: Gather Facts from FreeIPA Server
+  delegate_to: "{{ groups['freeipa'][0] }}"
+  delegate_facts: True
+  run_once: yes
+  setup:
+
+- name: Installs FreeIPA Client
+  apt:
+    name: freeipa-client
+    state: present
+
+- name: Disables Scaleway SetHostname
+  file:
+    dest: "{{ item }}"
+    state: absent
+  loop:
+  - /etc/apt/sources.list.d/scaleway-ubuntu-stable-xenial.list
+  - /etc/apt/sources.list.d/scaleway-ubuntu-stable-focal.list
+  - /etc/systemd/system/basic.target.wants/scw-set-hostname.service
+  - /etc/systemd/system/scw-set-hostname.service
+  - /lib/systemd/system/scw-set-hostname.service
+  - /var/lib/systemd/deb-systemd-helper-enabled/basic.target.wants/scw-set-hostname.service
+  - /var/lib/systemd/deb-systemd-helper-enabled/scw-set-hostname.service.dsh-also
+  - /usr/lib/systemd/system/scw-set-hostname.service
+
+- name: Registers Against FreeIPA Server
+  args:
+    creates: /etc/ipa/default.conf
+  shell: |
+    ipa-client-install --domain {{ freeipa_domain | default(ansible_domain) }} --server {{ hostvars[groups['freeipa'][0]]['ansible_fqdn'] }} -p {{ freeipa_registration_user }} -w "{{ freeipa_registration_password }}" --mkhomedir -U

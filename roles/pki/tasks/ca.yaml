@@ -1,7 +1,7 @@
 - name: Generates BigBlueButton CA Private Key
   delegate_to: localhost
   openssl_privatekey:
-    cipher: auto
+    cipher: aes256
     passphrase: "{{ ca_passphrase }}"
     path: "{{ pki_root }}/ca.key"
     size: "{{ ca_size | int }}"

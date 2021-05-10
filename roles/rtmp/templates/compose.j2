@@ -1,4 +1,4 @@
-version: '3.3'
+version: '2.0'
 services:
   bbb-streamer:
 {% if bbb_uses_selfsigned | default(True) %}
@@ -20,6 +20,9 @@ services:
 {% if groups['scalelite'] | length > 1 and groups['lb_front'] | length > 0 %}
     - BBB_SECRET={{ hostvars[groups['scalelite'][0]]['scalelite_lb_secret'] }}
     - BBB_URL=https://{{ hostvars[groups['lb_front'][0]]['scalelite_fqdn'] | default(hostvars[groups['lb_front'][0]]['ansible_fqdn']) }}/bigbluebutton/api
+{% elif groups['scalelite'] | length > 1 and groups['reverse'] | length > 0 %}
+    - BBB_SECRET={{ hostvars[groups['scalelite'][0]]['scalelite_lb_secret'] }}
+    - BBB_URL=https://{{ hostvars[groups['reverse'][0]]['scalelite_fqdn'] | default(hostvars[groups['reverse'][0]]['ansible_fqdn']) }}/bigbluebutton/api
 {% elif groups['scalelite'] | length > 0 %}
     - BBB_SECRET={{ hostvars[groups['scalelite'][0]]['scalelite_lb_secret'] }}
     - BBB_URL=https://{{ hostvars[groups['scalelite'][0]]['scalelite_fqdn'] | default(hostvars[groups['scalelite'][0]]['ansible_fqdn']) }}/bigbluebutton/api

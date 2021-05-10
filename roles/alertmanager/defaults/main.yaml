@@ -9,3 +9,10 @@ alertmanager_notify_smtp_address: root@demo.local
 alertmanager_repeat_interval_default: 12h
 alertmanager_repeat_interval_critical: 3h
 alertmanager_repeat_interval_warning: 6h
+
+#alertmanager_smtp_domain: "{{ ansible_fqdn }}"
+alertmanager_smtp_password: False
+alertmanager_smtp_port: 25
+alertmanager_smtp_server: False
+alertmanager_smtp_tls: False
+alertmanager_smtp_username: False

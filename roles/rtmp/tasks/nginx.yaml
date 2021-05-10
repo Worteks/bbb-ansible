@@ -18,7 +18,7 @@
     loop_var: mod
   register: modules_conf
 - name: Installs RTMP Server Configuration
-  notify: Reload Nginx
+  notify: Reloads Nginx
   template:
     dest: /etc/nginx/modules-available/99-rtmp.conf
     group: root

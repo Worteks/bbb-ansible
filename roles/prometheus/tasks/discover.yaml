@@ -1,45 +1,265 @@
 - include_tasks: register-targets.yaml
   loop:
   - { name: alertmanager, port: 9093, remotes: "{{ groups['alertmanager'] }}" }
+  - { name: bbbcsp, port: 8080, remotes: "{{ groups['bbbcsp'] }}" }
   - { name: blackbox, port: 9158, remotes: "{{ groups['greenlight'] }}" }
 # - { name: coturn, port: 9641, remotes: "{{ groups['coturn'] }}" }
+  - { name: docker, port: 9146, remotes: "{{ groups['docker'] }}" }
+  - { name: elasticsearch, port: 9114, remotes: "{{ groups['elasticsearch'] }}" }
   - { name: freeswitch, port: 9725, remotes: "{{ groups['bbb'] }}" }
+  - { name: kurento, port: 9148, remotes: "{{ groups['bbb'] }}" }
   - { name: grafana, port: 3000, remotes: "{{ groups['grafana'] }}" }
   - { name: haproxy, port: 9180, remotes: "{{ groups['lb'] }}" }
   - { name: mongodb, port: 9117, remotes: "{{ groups['bbb'] }}" }
   - { name: nginx, port: 9143, remotes: "{{ groups['front'] }}" }
+  - { name: nginx-lua, port: 9145, remotes: "{{ groups['front'] | difference(groups['bbb']) }}" }
   - { name: nodes, port: 9142, remotes: "{{ groups['bigbluebutton'] }}" }
+  - { name: peertube, port: 9113, remotes: "{{ groups['peertube'] }}" }
   - { name: postgres, port: 9144, remotes: "{{ groups['postgres'] }}" }
-  - { name: redis, port: 9179, remotes: "{{ groups['bbb'] }}" }
+  - { name: systemd, port: 9147, remotes: "{{ groups['bigbluebutton'] }}" }
   loop_control:
     loop_var: t
   vars:
      target_name: "{{ t.name }}"
      target_port: "{{ t.port }}"
      targets: "{{ t.remotes }}"
+
 - include_tasks: register-targets.yaml
   vars:
-     target_name: redis-masterslave
-     target_port: 9179
-     targets: "{{ groups['redis'] }}"
-     target_labels:
-      - name: redis_is_persistent
-        value: scalelite
-      - name: redis_replica_set
-        value: "{{ groups['redis'][0] }}"
+    target_name: scalelite
+    target_port: 9688
+    targets: "{{ groups['scalelite'] }}"
+    target_labels:
+     - name: target_type
+       value: scalelite
 - include_tasks: register-targets.yaml
   vars:
-     target_name: scalelite
-     target_port: 9688
-     targets: "{{ groups['scalelite'] }}"
-     target_labels:
-      - name: target_type
-        value: scalelite
+    target_name: bigbluebutton
+    target_port: 9688
+    targets: "{{ groups['bbb'] }}"
+    target_labels:
+     - name: target_type
+       value: bigbluebutton
+
 - include_tasks: register-targets.yaml
   vars:
-     target_name: bigbluebutton
-     target_port: 9688
-     targets: "{{ groups['bbb'] }}"
-     target_labels:
-      - name: target_type
-        value: bigbluebutton
+    target_name: fluentd
+    target_port: 9149
+    targets: "{{ groups['bigbluebutton'] }}"
+  when:
+  - groups['elasticsearch'] | length > 0
+
+- include_tasks: register-targets.yaml
+  vars:
+    target_name: redis_peertube
+    target_port: 9179
+    targets: "{{ groups['redis_peertube'] }}"
+    target_labels:
+     - name: redis_is_persistent
+       value: peertube
+     - name: redis_replica_set
+       value: "{{ groups['redis_peertube'][0] }}"
+  when:
+  - groups['redis_peertube'] | length > 0
+  - groups['redis_peertube'][0] not in groups['pacemaker']
+- include_tasks: register-targets.yaml
+  vars:
+    target_name: redis_scalelite
+    target_port: 9179
+    targets: "{{ groups['redis_scalelite'] }}"
+    target_labels:
+     - name: redis_is_persistent
+       value: scalelite
+     - name: redis_replica_set
+       value: "{{ groups['redis_scalelite'][0] }}"
+  when:
+  - groups['redis_scalelite'] | length > 0
+  - groups['redis_scalelite'][0] not in groups['pacemaker']
+
+- include_tasks: register-targets.yaml
+  vars:
+    target_name: redis_peertube
+    target_port: 9179
+    targets: "{{ groups['redis_peertube'] }}"
+  when:
+  - groups['redis_peertube'] | length > 0
+  - groups['redis_peertube'][0] in groups['pacemaker']
+- include_tasks: register-targets.yaml
+  vars:
+    target_name: redis_scalelite
+    target_port: 9179
+    targets: "{{ groups['redis_scalelite'] }}"
+  when:
+  - groups['redis_scalelite'] | length > 0
+  - groups['redis_scalelite'][0] in groups['pacemaker']
+
+- include_tasks: register-targets.yaml
+  vars:
+    target_name: "pacemaker-{{ hostvars[groups['postgres_coturn'][0]]['corosync_cluster_name'] }}"
+    target_port: 9664
+    targets: "{{ groups['postgres_coturn'] }}"
+    target_labels:
+    - name: pcm_cluster
+      value: "{{ hostvars[groups['postgres_coturn'][0]]['corosync_cluster_name'] }}"
+  when:
+  - groups['postgres_coturn'] | length > 1
+  - groups['postgres_coturn'][0] in groups['pacemaker']
+  - hostvars[groups['postgres_coturn'][0]]['corosync_cluster_name'] is defined
+- include_tasks: register-targets.yaml
+  vars:
+    target_name: "pacemaker-{{ hostvars[groups['postgres_grafana'][0]]['corosync_cluster_name'] }}"
+    target_port: 9664
+    targets: "{{ groups['postgres_grafana'] }}"
+    target_labels:
+    - name: pcm_cluster
+      value: "{{ hostvars[groups['postgres_grafana'][0]]['corosync_cluster_name'] }}"
+  when:
+  - groups['postgres_grafana'] | length > 1
+  - groups['postgres_grafana'][0] in groups['pacemaker']
+  - hostvars[groups['postgres_grafana'][0]]['corosync_cluster_name'] is defined
+- include_tasks: register-targets.yaml
+  vars:
+    target_name: "pacemaker-{{ hostvars[groups['postgres_greenlight'][0]]['corosync_cluster_name'] }}"
+    target_port: 9664
+    targets: "{{ groups['postgres_greenlight'] }}"
+    target_labels:
+    - name: pcm_cluster
+      value: "{{ hostvars[groups['postgres_greenlight'][0]]['corosync_cluster_name'] }}"
+  when:
+  - groups['postgres_greenlight'] | length > 1
+  - groups['postgres_greenlight'][0] in groups['pacemaker']
+  - hostvars[groups['postgres_greenlight'][0]]['corosync_cluster_name'] is defined
+- include_tasks: register-targets.yaml
+  vars:
+    target_name: "pacemaker-{{ hostvars[groups['postgres_moodle'][0]]['corosync_cluster_name'] }}"
+    target_port: 9664
+    targets: "{{ groups['postgres_moodle'] }}"
+    target_labels:
+    - name: pcm_cluster
+      value: "{{ hostvars[groups['postgres_moodle'][0]]['corosync_cluster_name'] }}"
+  when:
+  - groups['postgres_moodle'] | length > 1
+  - groups['postgres_moodle'][0] in groups['pacemaker']
+  - hostvars[groups['postgres_moodle'][0]]['corosync_cluster_name'] is defined
+- include_tasks: register-targets.yaml
+  vars:
+    target_name: "pacemaker-{{ hostvars[groups['postgres_openstreamingplatform'][0]]['corosync_cluster_name'] }}"
+    target_port: 9664
+    targets: "{{ groups['postgres_openstreamingplatform'] }}"
+    target_labels:
+    - name: pcm_cluster
+      value: "{{ hostvars[groups['postgres_openstreamingplatform'][0]]['corosync_cluster_name'] }}"
+  when:
+  - groups['postgres_openstreamingplatform'] | length > 1
+  - groups['postgres_openstreamingplatform'][0] in groups['pacemaker']
+  - hostvars[groups['postgres_openstreamingplatform'][0]]['corosync_cluster_name'] is defined
+- include_tasks: register-targets.yaml
+  vars:
+    target_name: "pacemaker-{{ hostvars[groups['postgres_peertube'][0]]['corosync_cluster_name'] }}"
+    target_port: 9664
+    targets: "{{ groups['postgres_peertube'] }}"
+    target_labels:
+    - name: pcm_cluster
+      value: "{{ hostvars[groups['postgres_peertube'][0]]['corosync_cluster_name'] }}"
+  when:
+  - groups['postgres_peertube'] | length > 1
+  - groups['postgres_peertube'][0] in groups['pacemaker']
+  - hostvars[groups['postgres_peertube'][0]]['corosync_cluster_name'] is defined
+- include_tasks: register-targets.yaml
+  vars:
+    target_name: "pacemaker-{{ hostvars[groups['postgres_scalelite'][0]]['corosync_cluster_name'] }}"
+    target_port: 9664
+    targets: "{{ groups['postgres_scalelite'] }}"
+    target_labels:
+    - name: pcm_cluster
+      value: "{{ hostvars[groups['postgres_scalelite'][0]]['corosync_cluster_name'] }}"
+  when:
+  - groups['postgres_scalelite'] | length > 1
+  - groups['postgres_scalelite'][0] in groups['pacemaker']
+  - hostvars[groups['postgres_scalelite'][0]]['corosync_cluster_name'] is defined
+
+- include_tasks: register-targets.yaml
+  vars:
+    target_name: "pacemaker-{{ hostvars[groups['redis_peertube'][0]]['corosync_cluster_name'] }}"
+    target_port: 9664
+    targets: "{{ groups['redis_peertube'] }}"
+    target_labels:
+    - name: pcm_cluster
+      value: "{{ hostvars[groups['redis_peertube'][0]]['corosync_cluster_name'] }}"
+  when:
+  - groups['redis_peertube'] | length > 1
+  - groups['redis_peertube'][0] in groups['pacemaker']
+  - hostvars[groups['redis_peertube'][0]]['corosync_cluster_name'] is defined
+- include_tasks: register-targets.yaml
+  vars:
+    target_name: "pacemaker-{{ hostvars[groups['redis_scalelite'][0]]['corosync_cluster_name'] }}"
+    target_port: 9664
+    targets: "{{ groups['redis_scalelite'] }}"
+    target_labels:
+    - name: pcm_cluster
+      value: "{{ hostvars[groups['redis_scalelite'][0]]['corosync_cluster_name'] }}"
+  when:
+  - groups['redis_scalelite'] | length > 1
+  - groups['redis_scalelite'][0] in groups['pacemaker']
+  - hostvars[groups['redis_scalelite'][0]]['corosync_cluster_name'] is defined
+
+- include_tasks: register-targets.yaml
+  vars:
+    target_name: "pacemaker-{{ hostvars[groups['bbbcsp'][0]]['corosync_cluster_name'] }}"
+    target_port: 9664
+    targets: "{{ groups['bbbcsp'] }}"
+    target_labels:
+    - name: pcm_cluster
+      value: "{{ hostvars[groups['bbbcsp'][0]]['corosync_cluster_name'] }}"
+  when:
+  - groups['bbbcsp'] | length > 1
+  - groups['bbbcsp'][0] in groups['pacemaker']
+  - hostvars[groups['bbbcsp'][0]]['corosync_cluster_name'] is defined
+- include_tasks: register-targets.yaml
+  vars:
+    target_name: "pacemaker-{{ hostvars[groups['greenlight'][0]]['corosync_cluster_name'] }}"
+    target_port: 9664
+    targets: "{{ groups['greenlight'] }}"
+    target_labels:
+    - name: pcm_cluster
+      value: "{{ hostvars[groups['greenlight'][0]]['corosync_cluster_name'] }}"
+  when:
+  - groups['greenlight'] | length > 1
+  - groups['greenlight'][0] in groups['pacemaker']
+  - hostvars[groups['greenlight'][0]]['corosync_cluster_name'] is defined
+- include_tasks: register-targets.yaml
+  vars:
+    target_name: "pacemaker-{{ hostvars[groups['peertube'][0]]['corosync_cluster_name'] }}"
+    target_port: 9664
+    targets: "{{ groups['peertube'] }}"
+    target_labels:
+    - name: pcm_cluster
+      value: "{{ hostvars[groups['peertube'][0]]['corosync_cluster_name'] }}"
+  when:
+  - groups['peertube'] | length > 1
+  - groups['peertube'][0] in groups['pacemaker']
+  - hostvars[groups['peertube'][0]]['corosync_cluster_name'] is defined
+- include_tasks: register-targets.yaml
+  vars:
+    target_name: "pacemaker-{{ hostvars[groups['reverse'][0]]['corosync_cluster_name'] }}"
+    target_port: 9664
+    targets: "{{ groups['reverse'] }}"
+    target_labels:
+    - name: pcm_cluster
+      value: "{{ hostvars[groups['reverse'][0]]['corosync_cluster_name'] }}"
+  when:
+  - groups['reverse'] | length > 1
+  - groups['reverse'][0] in groups['pacemaker']
+  - hostvars[groups['reverse'][0]]['corosync_cluster_name'] is defined
+- include_tasks: register-targets.yaml
+  vars:
+    target_name: "pacemaker-{{ hostvars[groups['scalelite'][0]]['corosync_cluster_name'] }}"
+    target_port: 9664
+    targets: "{{ groups['scalelite'] }}"
+    target_labels:
+    - name: pcm_cluster
+      value: "{{ hostvars[groups['scalelite'][0]]['corosync_cluster_name'] }}"
+  when:
+  - groups['scalelite'] | length > 1
+  - groups['scalelite'][0] in groups['pacemaker']
+  - hostvars[groups['scalelite'][0]]['corosync_cluster_name'] is defined

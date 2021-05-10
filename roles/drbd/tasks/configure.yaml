@@ -1,0 +1,23 @@
+- name: Installs DRBD Configuration
+  template:
+    dest: "/etc/drbd.d/{{ drbd_resource_name }}.res"
+    force: no
+    group: root
+    mode: 0644
+    owner: root
+    src: resource.j2
+- name: Tests State of DRBD Resource
+  changed_when: False
+  failed_when: False
+  register: dstate
+  shell: "drbdadm dstate {{ drbd_resource_name }}"
+- block:
+  - name: Initializes Device Metadata
+    shell: "drbdadm create-md {{ drbd_resource_name }}"
+  - name: Starts DRBD Resource
+    shell: "drbdadm up {{ drbd_resource_name }}"
+  - name: Marks Primary Node and Finish Device Initialization
+    delegate_to: "{{ drbd_members[0] }}"
+    shell: "drbdadm -- --overwrite-data-of-peer primary {{ drbd_resource_name }}"
+  when:
+  - '"No valid meta data found" in dstate.stderr'

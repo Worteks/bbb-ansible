@@ -2,10 +2,14 @@ blackbox_exporter_port: 9158
 blackbox_exporter_release: 0.17.0
 
 greenlight_help_url: https://docs.bigbluebutton.org/greenlight/gl-overview.html
-greenlight_images_release: v2
+greenlight_images_release: release-2.8.4
 greenlight_images_repo: docker.io/bigbluebutton/greenlight
 
 greenlight_allow_local_accounts: True
+
+greenlight_admin_account: gladmin
+greenlight_admin_email: gladmin@demo.local
+greenlight_admin_password: secret
 
 greenlight_ldap_auth: user
 greenlight_ldap_base: dc=demo,dc=local
@@ -41,6 +45,16 @@ greenlight_saml_issuer: greenlight
 greenlight_saml_uid_field: uid
 greenlight_saml_username_field: uid
 
+greenlight_smtp_auth: plain
+#greenlight_smtp_domain: "{{ ansible_fqdn }}"
+greenlight_smtp_password: False
+greenlight_smtp_port: 25
+greenlight_smtp_server: False
+greenlight_smtp_starttls: False
+greenlight_smtp_testuser: False
+greenlight_smtp_tls: False
+greenlight_smtp_username: False
+
 greenlight_app_root: /b
 greenlight_registrations: invite
 greenlight_room_features:
@@ -50,4 +64,4 @@ greenlight_room_features:
 - all-join-moderator
 - recording
 
-greenlight_base_secret: a2d791d3e55d3941f6eb1158454fd4972be7170b031a76bdd50faebbc94b91d882cb2f7cc7872a21d052f83742b4cf5ef231266a2ae3ab6d8c00e87dba23a60d
+greenlight_base_secret: changemechangemechangemechangemechangemechangemechangemechangemechangemechangemechangemechangemechangemechangemechangemechangemec

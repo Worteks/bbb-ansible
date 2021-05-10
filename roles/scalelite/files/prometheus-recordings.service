@@ -1,0 +1,6 @@
+[Unit]
+Description=Collect Scalelite Recordings Prometheus Metrics
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/scalelite-prometheus-recordings

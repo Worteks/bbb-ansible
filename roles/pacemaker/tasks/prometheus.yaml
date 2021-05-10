@@ -1,0 +1,35 @@
+- name: Fetches HA Cluster Exporter
+  get_url:
+    dest: "/usr/src/ha_cluster_exporter-{{ hacluster_exporter_release }}"
+    group: root
+    mode: 0644
+    owner: root
+    url: "https://github.com/ClusterLabs/ha_cluster_exporter/releases/download/{{ hacluster_exporter_release }}/ha_cluster_exporter-amd64"
+- name: Installs HA Cluster Exporter
+  copy:
+    dest: /usr/bin/ha_cluster_exporter
+    group: root
+    mode: 0755
+    owner: root
+    remote_src: yes
+    src: "/usr/src/ha_cluster_exporter-{{ hacluster_exporter_release }}"
+  notify: Reloads HA Cluster Exporter
+- name: Installs HA Cluster Exporter Unit
+  notify: Reloads HA Cluster Exporter
+  register: exporter_unit
+  template:
+    dest: /etc/systemd/system/ha-cluster-exporter.service
+    group: root
+    mode: 0644
+    owner: root
+    src: ha-cluster-xp.j2
+- name: Reloads Systemd Configuration
+  shell: systemctl daemon-reload
+  when:
+  - exporter_unit is defined
+  - exporter_unit is changed
+- name: Ensures HA Cluster Exporter is Running & Starts on Boot
+  service:
+    enabled: yes
+    name: ha-cluster-exporter
+    state: started

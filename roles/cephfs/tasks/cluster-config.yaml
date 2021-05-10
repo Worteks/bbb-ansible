@@ -1,0 +1,50 @@
+- name: Creates BBB Ceph Keyring
+  args:
+    chdir: /etc/ceph
+    creates: "/etc/ceph/{{ bbb_ceph_cluster }}.client.{{ bbb_ceph_username }}.keyring"
+  delegate_to: "{{ groups['cephfs'] }}"
+  register: created_keyring
+  run_once: yes
+  shell: |
+    ceph-authtool --config {{ bbb_ceph_cluster }}.conf --create-keyring {{ bbb_ceph_cluster }}.client.{{ bbb_ceph_username }}.keyring --gen-key -n client.{{ bbb_ceph_username }}
+- block:
+  - name: Patches Keyring
+    blockinfile:
+      block: |
+        caps mds = "allow r path=/, allow rw path=/{{ bbb_cephfs_root }}"
+        caps mon = "allow r"
+        caps osd = "allow class-read object_prefix rbd_children, allow rw pool={{ cephfs_data_pool }}"
+      path: "/etc/ceph/{{ bbb_ceph_cluster }}.client.{{ bbb_ceph_username }}.keyring"
+    delegate_to: "{{ groups['cephfs'] }}"
+    register: patched_keyring
+    run_once: yes
+  - name: Imports Patched Keyring
+    args:
+      chdir: /etc/ceph
+    delegate_to: "{{ groups['cephfs'] }}"
+    shell: ceph auth import --config {{ bbb_ceph_cluster }}.conf -i {{ bbb_ceph_cluster }}.client.{{ bbb_ceph_username }}.keyring
+    run_once: yes
+    when:
+    - patched_keyring is defined
+    - patched_keyring is changed
+  when:
+  - created_keyring is defined
+  - created_keyring is changed
+- name: Copy CephFS Client Keyring to Ansible Node
+  delegate_to: "{{ groups['cephfs'][0] }}"
+  fetch:
+    dest: "{{ pki_root }}/{{ bbb_ceph_cluster }}.client.{{ bbb_ceph_username }}.keyring"
+    group: root
+    mode: 0600
+    owner: root
+    src: "/etc/ceph/{{ bbb_ceph_cluster }}.client.{{ bbb_ceph_username }}.keyring"
+  run_once: yes
+- name: Copy Ceph Cluster Configuration to Ansible Node
+  delegate_to: "{{ groups['cephfs'][0] }}"
+  fetch:
+    dest: "{{ pki_root }}/{{ bbb_ceph_cluster }}.conf"
+    group: root
+    mode: 0600
+    owner: root
+    src: "/etc/ceph/{{ bbb_ceph_cluster }}.conf"
+  run_once: yes

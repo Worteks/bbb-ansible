@@ -1,0 +1,35 @@
+groups:
+- name: KubernetesKibana
+  rules:
+  - alert: KibanaDown
+    expr: kibana_status != 1
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Kibana is DOWN (instance {{ $labels.instance }})"
+      description: "Kibana is down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: KibanaESPlugin
+    expr: kibana_plugin_elasticsearch != 1
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Kibana ElasticSearch plugin missing (instance {{ $labels.instance }})"
+      description: "Kibana ElasticSearch plugin missing  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: KibanaDiscoverPlugin
+    expr: kibana_plugin_discover != 1
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Kibana Discover plugin missing (instance {{ $labels.instance }})"
+      description: "Kibana Discover plugin missing  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - alert: KibanaRestarting
+    expr: kibana_millis_uptime < 200000
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Kibana Restarting (instance {{ $labels.instance }})"
+      description: "Kibana Restarting  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"

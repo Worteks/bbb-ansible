@@ -26,8 +26,13 @@ usage()
     cat <<EOF
   usage: bbb-cli <command> [arguments]
        bbb-cli create-room room-name meeting-uid
+       bbb-cli get-deleted-recordings
+       bbb-cli get-processing-recordings
+       bbb-cli get-published-recordings
+       bbb-cli get-recordings [state]
        bbb-cli get-room meeting-uid
        bbb-cli get-rooms
+       bbb-cli get-unpublished-recordings
        bbb-cli help
 EOF
 }
@@ -38,6 +43,27 @@ case "$1" in
 	CMD=create
 	shift 2
 	;;
+    get-deleted-recordings)
+        CALL=state=deleted
+        CMD=getRecordings
+        ;;
+    get-processing-recordings)
+        CALL=state=processing
+        CMD=getRecordings
+        ;;
+    get-published-recordings)
+        CALL=state=published
+        CMD=getRecordings
+        ;;
+    get-recordings)
+        check=published
+        if test "$2"; then
+            check=$2
+        fi
+        CALL=state=$check
+        CMD=getRecordings
+	shift
+        ;;
     get-rooms)
 	CALL=
 	CMD=getMeetings
@@ -47,6 +73,10 @@ case "$1" in
 	CMD=getMeetingInfo
 	shift 1
 	;;
+    get-unpublished-recordings)
+        CALL=state=unpublished
+        CMD=getRecordings
+        ;;
     help|--help|-h)
 	usage
 	exit 0

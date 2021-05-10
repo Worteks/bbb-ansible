@@ -1,0 +1,13 @@
+- name: Installs PeerTube Docker-Compose Directory
+  file:
+    dest: /etc/docker-compose/peertube
+    group: root
+    mode: 0755
+    owner: root
+    state: directory
+- include_role:
+    name: docker
+    tasks_from: check-pull.yaml
+  vars:
+    image_tag: "{{ peertube_images_release }}"
+    image_url: "{{ peertube_images_repo }}"

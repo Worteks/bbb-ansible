@@ -1,0 +1,10 @@
+- name: Gather Facts from Reverse Proxies
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['reverse'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+  when:
+  - groups['reverse'] | length > 0

@@ -6,6 +6,14 @@
     owner: root
     src: profile.sh
 
+- name: Installs BigBlueButton LogTails
+  copy:
+    dest: /usr/local/sbin/bbb-logs
+    group: root
+    mode: 0755
+    owner: root
+    src: bbb-logs
+
 - name: Installs bbb-cli Configuration Directory
   file:
     dest: /etc/bbb-cli
@@ -37,6 +45,43 @@
   - has_conf is defined
   - has_conf.stat is defined
   - not has_conf.stat.exists
+
+- name: Removes Older BigBlueButton Recordings Purge Script
+  file:
+    dest: /etc/cron.daily/bigbluebutton-recordings-purge
+    state: absent
+- block:
+  - name: Installs BigBlueButton Recordings Purge Script
+    template:
+      dest: /usr/local/sbin/bigbluebutton-recordings-purge
+      group: root
+      mode: 0755
+      owner: root
+      src: prune.j2
+  - name: Installs BigBlueButton Recordings Purge Job
+    copy:
+      dest: "/etc/systemd/system/bigbluebutton-recordings-purge.{{ item }}"
+      group: root
+      mode: 0644
+      owner: root
+      src: "recordings-purge.{{ item }}"
+    loop:
+    - service
+    - timer
+    register: recpurgtmr
+  - name: Reloads Systemd Configuration
+    shell: systemctl daemon-reload
+    when:
+    - recpurgtmr is defined
+    - recpurgtmr is changed
+  - name: Enables BigBlueButton Recordings Purge
+    service:
+      enabled: yes
+      name: bigbluebutton-recordings-purge.timer
+      state: started
+  when:
+  - bigbluebutton_recordings_retention_days | int > 0
+  - groups['scalelite'] | length > 0
 
 - name: Installs bbb-cli
   copy:

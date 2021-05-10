@@ -1,0 +1,6 @@
+[Unit]
+Description=Purges Older BigBlueButton Recordings
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/bigbluebutton-recordings-purge

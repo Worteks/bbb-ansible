@@ -1,0 +1,6 @@
+[Unit]
+Description=Collect BigBlueButton Services Prometheus Metrics
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/bigbluebutton-prometheus-servicestatus

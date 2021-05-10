@@ -1,0 +1,8 @@
+- name: Reloads BBB CSP
+  service:
+    name: bbbcsp
+    state: restarted
+- name: Reloads Nginx
+  service:
+    name: nginx
+    state: restarted

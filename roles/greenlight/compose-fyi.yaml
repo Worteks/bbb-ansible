@@ -1,0 +1,65 @@
+version: '2.0'
+services:
+  greenlight:
+#   build:
+#     context: /usr/src/greenlight
+#     dockerfile: Dockerfile
+    container_name: greenlight
+    environment:
+    - ALLOW_GREENLIGHT_ACCOUNTS=true
+    - BIGBLUEBUTTON_ENDPOINT=https://scalelite.example.com/bigbluebutton/api/
+    - BIGBLUEBUTTON_SECRET=<scalelite-loadbalancer-secret>
+    - DB_ADAPTER=postgresql
+    - DB_HOST=bbb-postgres.example.com
+    - DB_NAME=greenlight
+    - DB_PASSWORD=greenlightpw
+    - DB_PORT=5432
+    - DB_USERNAME=greenlightusr
+    - DEFAULT_REGISTRATION=open
+    - ENABLE_SSL=true
+    - HELP_URL=https://docs.bigbluebutton.org/greenlight/gl-overview.html
+#   - LDAP_AUTH=user
+#   - LDAP_BASE=dc=example,dc=com
+#   - LDAP_BIND_DN=cn=greenlight,ou=services,dc=example,dc=com
+#   - LDAP_FILTER='(&(objectClass=inetOrgPerson)(!(pwdAccountLockedTime=*)))'
+#   - LDAP_METHOD=tls
+#   - LDAP_PASSWORD=ldappw
+#   - LDAP_PORT=636
+#   - LDAP_ROLE_FIELD=userRole
+#   - LDAP_SERVER=directory.example.com
+#   - LDAP_UID=uid
+    - MAINTENANCE_MODE=false
+    - MAINTENANCE_WINDOW=
+    - NUMBER_OF_ROWS=25
+#   - OPENID_CONNECT_AUTHORIZATION_ENDPOINT=https://auth.example.com/oauth2/authorize
+#   - OPENID_CONNECT_CLIENT_ID=clientid
+#   - OPENID_CONNECT_CLIENT_SECRET=clientsecret
+#   - OPENID_CONNECT_DISCOVERY=
+#   - OPENID_CONNECT_END_SESSION_ENDPOINT=https://auth.example.com/oauth2/slo
+#   - OPENID_CONNECT_ISSUER=https://visio.example.com
+#   - OPENID_CONNECT_SITE=https://auth.example.com
+    - PAGINATION_NUMBER=25
+    - RAILS_LOG_TO_STDOUT=true
+    - RELATIVE_URL_ROOT=/b
+    - ROOM_FEATURES=mute-on-join,require-moderator-approval,anyone-can-start,all-join-moderator,recording
+    - SAFE_HOSTS=visio.example.com
+#   - SAML_COMMONNAME_ATTRIBUTE=uid
+#   - SAML_EMAIL_ATTRIBUTE=mail
+#   - SAML_IDP_CERT_FINGERPRINT=CH:AN:GE:ME:...
+#   - SAML_IDP_URL=https://auth.example.com/saml/singleSignOn
+#   - SAML_ISSUER=greenlight
+#   - SAML_NAME_IDENTIFIER=urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress
+#   - SAML_UID_ATTRIBUTE=uid
+#   - SAML_USERNAME_ATTRIBUTE=uid
+    - SECRET_KEY_BASE=<rake-secret>
+    image: docker.io/bigbluebutton/greenlight:v2
+#   image: custom-greenlight:sso
+    logging:
+      driver: journald
+    ports:
+    - "5000:80"
+    restart: unless-stopped
+    volumes:
+    - /etc/ssl/certs:/etc/ssl/certs
+    - /usr/local/share/ca-certificates:/usr/local/share/ca-certificates
+    - /var/lib/greenlight:/usr/src/app/storage
