@@ -147,10 +147,9 @@ extra vars: `-e gituser=abcdef@worteks.com -e gitpass=mysecret`.
 
 ##### BigBlueButton Conferences Streaming Platform
 
-Relies on a currently-private repository / nothing to see here.
 Some web UI, streaming BigBlueButton Conferences to PeerTube.
 
- * https://git.worteks.com/Wsweet/bbb-csp
+ * https://github.com/Worteks/bbb-csp
 
 #### RTSP LiveStream
 

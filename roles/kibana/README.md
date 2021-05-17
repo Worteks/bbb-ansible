@@ -48,6 +48,7 @@ A few searches we could save into Kibana, once deployed:
 | MongoDB DB         | `@log_name:database.mongodb`                            |
 | PeerTube App       | `systemd_unit:peertube.service`                         |
 | PeerTube Web       | `hostname:peertube* AND @log_name:nginx.access`         |
+| Reverse Web        | `hostname:reverse* AND @log_name:nginx.access`          |
 | Postgres DB        | `@log_name:database.postgres`                           |
 | Redis DB           | `@log_name:database.redis`                              |
 | SSH Logs           | `systemd_unit:ssh.service OR systemd_unit:sshd.service` |

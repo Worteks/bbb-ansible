@@ -2,6 +2,7 @@ dependencies:
 - role: nginx
   vars:
     nginx_stats_port: 8083
+    nginx_worker_connections: 16384
 - role: certbot
   when:
   - not (bbb_uses_selfsigned | default(True))

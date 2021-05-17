@@ -26,6 +26,7 @@ usage()
     cat <<EOF
   usage: bbb-cli <command> [arguments]
        bbb-cli create-room room-name meeting-uid
+       bbb-cli delete-recording <recording-id>
        bbb-cli get-deleted-recordings
        bbb-cli get-processing-recordings
        bbb-cli get-published-recordings
@@ -42,6 +43,16 @@ case "$1" in
 	CALL="name=$2&meetingID=$3&isBreakout=false"
 	CMD=create
 	shift 2
+	;;
+    delete-recording)
+	if test "$2"; then
+	    CALL=recordID=$2
+	    CMD=deleteRecordings
+	    shift
+	else
+	    echo ERROR: missing recording ID
+	    echo see bbb-cli get-recordings for a list of recordings
+	fi >&2
 	;;
     get-deleted-recordings)
         CALL=state=deleted
@@ -71,7 +82,7 @@ case "$1" in
     get-room)
 	CALL="meetingID=$2"
 	CMD=getMeetingInfo
-	shift 1
+	shift
 	;;
     get-unpublished-recordings)
         CALL=state=unpublished
@@ -87,6 +98,10 @@ case "$1" in
 	exit 1
 	;;
 esac
+
+if test -z "$CMD"; then
+    exit 1
+fi
 
 CKSUM=`getCheckSum 2>/dev/null`
 if test -z "$CKSUM"; then

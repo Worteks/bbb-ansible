@@ -43,7 +43,7 @@
     src: names.j2
 - block:
   - name: Installs Nginx Custom Log Format Configuration
-    #notify: Reloads Nginx
+    notify: Reloads Nginx
     template:
       dest: /etc/nginx/conf.d/logfmt.conf
       group: root
@@ -58,3 +58,9 @@
   - ansible_fqdn not in groups['reverse']
   - ansible_hostname not in groups['reverse']
   - ansible_nodename not in groups['reverse']
+- name: Sets Nginx Workers Count
+  lineinfile:
+    dest: /etc/nginx/nginx.conf
+    line: "	worker_connections {{ nginx_worker_connections }};"
+    regexp: worker_connections
+  notify: Reloads Nginx

@@ -15,13 +15,12 @@
 - include_tasks: recording-importer.yaml
   when:
   - "'recording-importer' in scalelite_has_roles"
-- block:
-  - include_tasks: nginx.yaml
-  - include_tasks: utils.yaml
+- include_tasks: nginx.yaml
   when:
   - "'api' in scalelite_has_roles"
 - include_tasks: compose.yaml
 - include_tasks: init-setup.yaml
+- include_tasks: utils.yaml
 - include_tasks: prometheus.yaml
   when:
   - >

@@ -12,3 +12,12 @@ prometheus_port: 443
 scalelite_port: 443
 
 peertube_max_body_size: 8G
+
+reverse_htpasswd: {}
+#reverse_htpasswd:
+# kibana.example.com: |
+#    user1:$apr1$foo
+#    user2:$apr1$bar
+# csp.example.com: |
+#    usera:$apr1$plouf
+#    userb:$apr1$pouet

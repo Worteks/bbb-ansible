@@ -1,7 +1,7 @@
 bbbcsp_group: bbbcsp
 bbbcsp_user: bbbcsp
 bigbluebutton_conferencesstreamingplatform_source_ref: master
-bigbluebutton_conferencesstreamingplatform_source_repo: https://git.worteks.com/Wsweet/bbb-csp
+bigbluebutton_conferencesstreamingplatform_source_repo: https://github.com/Worteks/bbb-csp
 bigbluebutton_livestream_custom_source_ref: custom-ca
 bigbluebutton_livestream_custom_source_repo: https://github.com/Worteks/BigBlueButton-liveStreaming
 bigbluebutton_livestream_images_release: latest

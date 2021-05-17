@@ -26,6 +26,7 @@
   loop:
   - published
   - spool
+  - unpublished
   loop_control:
     loop_var: fl
   when:

@@ -1,3 +1,13 @@
+- name: "Installs {{ site_fqdn }} Htpasswd Configuration"
+  template:
+    dest: "/etc/nginx/htpasswd.{{ site_fqdn }}.conf"
+    group: www-data
+    mode: 0640
+    owner: root
+    src: htpasswd.j2
+  when:
+  - reverse_htpasswd is defined
+  - reverse_htpasswd[site_fqdn] is defined
 - name: "Installs {{ site_fqdn }} Virtualhost"
   notify: Reloads Nginx
   template:

@@ -1,3 +1,5 @@
 dependencies:
 - role: docker
 - role: nginx
+  vars:
+    nginx_worker_connections: 2048

@@ -1,21 +1,35 @@
-- name: Installs bbb-cli Configuration Directory
-  file:
-    dest: /etc/bbb-cli
-    group: root
-    mode: 0750
-    owner: root
-    state: directory
-- name: Installs bbb-cli Configuration
-  template:
-    dest: /etc/bbb-cli/api.conf
-    group: root
-    mode: 0640
-    owner: root
-    src: ./apiconf.j2
-- name: Installs bbb-cli
+- block:
+  - name: Installs bbb-cli Configuration Directory
+    file:
+      dest: /etc/bbb-cli
+      group: root
+      mode: 0750
+      owner: root
+      state: directory
+  - name: Installs bbb-cli Configuration
+    template:
+      dest: /etc/bbb-cli/api.conf
+      group: root
+      mode: 0640
+      owner: root
+      src: ./apiconf.j2
+  - name: Installs bbb-cli
+    copy:
+      dest: /usr/sbin/bbb-cli
+      group: root
+      mode: 0750
+      owner: root
+      src: ../../bigbluebutton/files/bbb-cli
+  when:
+  - "'api' in scalelite_has_roles"
+- name: Installs Scalelite Redis Check Script
+  delegate_to: "{{ srv }}"
+  loop: "{{ groups['redis_scalelite'] }}"
+  loop_control:
+    loop_var: srv
   copy:
-    dest: /usr/sbin/bbb-cli
+    dest: /usr/local/sbin/check-redis-scalelite
     group: root
     mode: 0750
     owner: root
-    src: ../../bigbluebutton/files/bbb-cli
+    src: check-redis-scalelite.sh
