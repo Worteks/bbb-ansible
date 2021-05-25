@@ -10,13 +10,13 @@ groups:
       summary: "BigBlueButton down (instance {{ $labels.instance }})"
       description: "BigBlueButton down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
   - alert: BigBlueButtonnLatencyHigh
-    expr: histogram_quantile(0.99, rate(bbb_api_latency_bucket[30m])) > 0.8
+    expr: histogram_quantile(0.99, rate(bbb_api_latency_bucket[10m])) > 3
     for: 5m
     labels:
       severity: warning
     annotations:
       summary: "BigBlueButton API latency high (instance {{ $labels.instance }})"
-      description: "BigBlueButton API p99 latency is higher than .8 seconds\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+      description: "BigBlueButton API p99 latency is higher than 3 seconds\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
   - alert: BigBlueButtonNginxDown
     expr: bbb_services_nginx_up == 0
     for: 2m

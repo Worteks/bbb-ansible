@@ -1,0 +1,11 @@
+groups:
+- name: Fail2ban
+  rules:
+  - alert: Fail2banDown
+    expr: fail2ban_up == 0
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Fail2ban down (instance {{ $labels.instance }})"
+      description: "Fail2ban instance is down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"

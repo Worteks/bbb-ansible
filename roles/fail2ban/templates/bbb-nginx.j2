@@ -1,0 +1,10 @@
+[bbb-nginx]
+bantime  = 6h
+enabled  = true
+{% if (firehol_trusted_networks | default([])) | length > 0 %}
+ignoreip = {{ firehol_trusted_networks | join(' ') }}
+{% elif( nginx_backends_ipfilter | default([])) | length > 0 %}
+ignoreip = {% for addr in nginx_backends_ipfilter %} {{ addr if (addr is match('/')) else (addr ~ '/32') }}{% endfor %}
+{% endif %}
+logpath  = /var/log/nginx/*access*.log
+port     = http,https

@@ -1,0 +1,4 @@
+- name: Installs Fail2ban
+  apt:
+    name: fail2ban
+    state: present

@@ -8,13 +8,6 @@
   - "{{ ansible_fqdn }}"
   loop_control:
     loop_var: h
-- name: Installs PeerTube Configuration Directory
-  file:
-    dest: /etc/peertube
-    group: root
-    mode: 0755
-    owner: 999
-    state: directory
 - name: Installs PeerTube Runtime Directories
   file:
     dest: "{{ dir }}"
@@ -23,8 +16,10 @@
     owner: 999
     state: directory
   loop:
+  - /etc/peertube
   - /var/lib/peertube
   - /var/lib/peertube/data
+  - /var/log/peertube
   loop_control:
     loop_var: dir
   when:

@@ -17,3 +17,9 @@
     mode: 0755
     owner: elasticsearch
     state: directory
+- include_role:
+    name: docker
+    tasks_from: check-pull.yaml
+  vars:
+    image_tag: "{{ elasticsearch_images_release }}"
+    image_url: "{{ elasticsearch_images_repo }}"

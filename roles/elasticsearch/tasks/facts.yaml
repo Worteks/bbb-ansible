@@ -1,6 +1,14 @@
 - name: Inits ElasticSearch Facts
   set_fact:
     es_nodes: []
+- name: Gather Facts from ElasticSearch
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['elasticsearch'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
 - name: Fetches ElasticSearch Nodes Names
   loop: "{{ groups['elasticsearch'] }}"
   loop_control:

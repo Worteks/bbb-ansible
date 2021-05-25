@@ -1,0 +1,28 @@
+- name: Installs Fail2ban Probe Script
+  copy:
+    dest: /usr/local/sbin/fail2ban-prometheus
+    group: root
+    mode: 0755
+    owner: root
+    src: prometheus-check_fail2ban.sh
+- name: Installs Fail2ban Probe Service
+  copy:
+    dest: "/etc/systemd/system/fail2ban-prometheus.{{ item }}"
+    group: root
+    mode: 0644
+    owner: root
+    src: "prometheus-check_fail2ban.{{ item }}"
+  loop:
+  - service
+  - timer
+  register: punit
+- name: Reloads Systemd Configuration
+  shell: systemctl daemon-reload
+  when:
+  - punit is defined
+  - punit is changed
+- name: Enables Fail2ban Prometheus Collection Job
+  service:
+    enabled: yes
+    name: fail2ban-prometheus.timer
+    state: started

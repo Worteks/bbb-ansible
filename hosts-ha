@@ -17,6 +17,7 @@ tmp_has_noexec=True
 
 [alertmanager]
 lachesis.example.com
+[bastion]
 [bbb]
 bbb-1.example.com
 bbb-2.example.com
@@ -144,6 +145,7 @@ nfs
 sshfs
 
 [bigbluebutton:children]
+bastion
 lb
 front
 logging
@@ -155,6 +157,7 @@ sharedfs
 
 [private:children]
 alertmanager
+bastion
 bbb
 bbbcsp
 cephfs

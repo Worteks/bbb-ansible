@@ -5,6 +5,29 @@
     mode: 0750
     owner: root
     state: directory
+- name: Lists Kibana Plugins
+  args:
+    chdir: /usr/share/kibana/plugins
+  changed_when: False
+  register: hasplugins
+  shell: ls
+- block:
+  - name: Checks Plugin Compatibility
+    args:
+      chdir: /usr/share/kibana/plugins
+    changed_when: False
+    loop: "{{ hasplugins.stdout_lines }}"
+    loop_control:
+      loop_var: pluginname
+    shell: |
+      if test -z "{{ pluginname }}"; then
+          echo wat;
+      elif ! grep '"kibanaVersion": "{{ kibana_images_release }}"' "./{{ pluginname }}/kibana.json"; then
+          rm -fr "./{{ pluginname }}";
+      fi
+  when:
+  - hasplugins is defined
+  - hasplugins.stdout_lines is defined
 - name: Installs Kibana Docker-Compose Configuration
   register: should_reload
   template:

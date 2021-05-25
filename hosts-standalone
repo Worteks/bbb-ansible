@@ -1,4 +1,5 @@
 [alertmanager]
+[bastion]
 [bbb]
 bbb-1.example.com
 [bbbcsp]
@@ -94,6 +95,7 @@ nfs
 sshfs
 
 [bigbluebutton:children]
+bastion
 lb
 front
 logging
@@ -105,6 +107,7 @@ sharedfs
 
 [private:children]
 alertmanager
+bastion
 bbb
 bbbcsp
 cephfs

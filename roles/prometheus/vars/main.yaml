@@ -4,6 +4,7 @@ prometheus_rules:
 - certificates
 - docker
 - elasticsearch
+- fail2ban
 - freeswitch
 - haproxy
 - jobs

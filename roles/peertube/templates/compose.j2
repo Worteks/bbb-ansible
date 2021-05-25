@@ -10,9 +10,10 @@ services:
     - "9000:9000"
     user: "999:0"
     volumes:
+    - /etc/peertube:/config
 {% if bbb_uses_selfsigned | default(True) %}
     - /etc/ssl/certs:/etc/ssl/certs
     - /usr/local/share/ca-certificates:/usr/local/share/ca-certificates
 {% endif %}
     - /var/lib/peertube:/data
-    - /etc/peertube:/config
+    - /var/log/peertube:/home/peertube/.npm/_logs

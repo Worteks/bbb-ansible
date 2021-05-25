@@ -344,7 +344,7 @@
       },
       "targets": [
         {
-          "expr": "sum(bbb_meetings_participants{target_type=~\"$kind\",instance=~\"$instance\"})",
+          "expr": "sum(bbb_meetings_participants{target_type=\"bigbluebutton\",instance=~\"$instance\"})",
           "instant": true,
           "interval": "",
           "legendFormat": "Total",
@@ -600,7 +600,7 @@
       },
       "targets": [
         {
-          "expr": "sum(bbb_room_participants_gcount{target_type=~\"$kind\",instance=~\"$instance\"})",
+          "expr": "sum(bbb_room_participants_gcount{target_type=\"bigbluebutton\",instance=~\"$instance\"})",
           "instant": true,
           "interval": "",
           "legendFormat": "Total",
@@ -806,7 +806,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(bbb_meetings_participant_clients{target_type=~\"$kind\",instance=~\"$instance\"}) by (type)",
+          "expr": "sum(bbb_meetings_participant_clients{target_type=\"bigbluebutton\",instance=~\"$instance\"}) by (type)",
           "interval": "",
           "legendFormat": "{{type}}",
           "refId": "A"

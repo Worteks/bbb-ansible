@@ -1,0 +1,6 @@
+[Unit]
+Description=Collect Fail2ban Metrics
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/fail2ban-prometheus

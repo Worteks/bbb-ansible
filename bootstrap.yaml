@@ -1,5 +1,5 @@
 # Finish hosts prep on dedicated instances
-- hosts: lb:postgres:redis:scalelite:bbb:bbbcsp:greenlight:moodle:peertube:prometheus:grafana:alertmanager:sshfs:nfs:openstreamingplatform:coturn:rtmp:kibana:elasticsearch:freeipa:reverse
+- hosts: lb:bastion:postgres:redis:scalelite:bbb:bbbcsp:greenlight:moodle:peertube:prometheus:grafana:alertmanager:sshfs:nfs:openstreamingplatform:coturn:rtmp:kibana:elasticsearch:freeipa:reverse
   tasks:
   - include_role:
       name: commons
@@ -304,8 +304,17 @@
   roles:
   - elasticsearch
 
+# Configures Fail2ban
+- hosts: bastion:bbb:coturn:lb_front:reverse
+  tasks:
+  - include_role:
+      name: fail2ban
+    when:
+    - setup_fail2ban | default(True)
+    - not (is_on_shared_hardware | default(False))
+
 # Configures Logs Forwarding
-- hosts: lb:postgres:redis:scalelite:bbb:bbbcsp:greenlight:moodle:peertube:prometheus:grafana:alertmanager:sshfs:nfs:openstreamingplatform:coturn:rtmp:kibana:elasticsearch:freeipa:reverse
+- hosts: lb:bastion:postgres:redis:scalelite:bbb:bbbcsp:greenlight:moodle:peertube:prometheus:grafana:alertmanager:sshfs:nfs:openstreamingplatform:coturn:rtmp:kibana:elasticsearch:freeipa:reverse
   tasks:
   - include_role:
       name: fluentd

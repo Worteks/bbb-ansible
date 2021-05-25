@@ -12,3 +12,9 @@
     mode: 0755
     owner: 1000
     state: directory
+- include_role:
+    name: docker
+    tasks_from: check-pull.yaml
+  vars:
+    image_tag: "{{ kibana_images_release }}"
+    image_url: "{{ kibana_images_repo }}"

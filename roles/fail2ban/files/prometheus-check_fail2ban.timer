@@ -1,0 +1,9 @@
+[Unit]
+Description=Run Fail2ban Metrics Collector
+
+[Timer]
+OnBootSec=5min
+OnCalendar=*:0/1
+
+[Install]
+WantedBy=timers.target

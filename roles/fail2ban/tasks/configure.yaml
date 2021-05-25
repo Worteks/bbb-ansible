@@ -1,0 +1,29 @@
+- name: Installs Fail2ban Custom Nginx Filter
+  copy:
+    dest: /etc/fail2ban/filter.d/bbb-nginx.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: nginx.conf
+  notify: Reloads Fail2ban
+- name: Installs Fail2ban Custom Nginx Jail
+  notify: Reloads Fail2ban
+  template:
+    dest: /etc/fail2ban/jail.d/bbb-nginx.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: bbb-nginx.j2
+- name: Configures Fail2ban Default SSH Jail
+  notify: Reloads Fail2ban
+  template:
+    dest: /etc/fail2ban/jail.d/defaults-debian.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: sshd.j2
+- name: Ensures Fail2ban running
+  service:
+    enabled: yes
+    name: fail2ban
+    state: started
