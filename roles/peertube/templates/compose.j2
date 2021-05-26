@@ -1,10 +1,19 @@
 version: '2.0'
 services:
   peertube:
-    image: {{ peertube_images_repo }}:{{ peertube_images_release }}
+{% if peertube_multipart_patch | default(False) %}
+    build:
+      context: /usr/src/docker-peertube
+      dockerfile: Dockerfile
+{% endif %}
     environment:
     - PEERTUBE_ADMIN_EMAIL=root@{{ peertube_fqdn | default(ansible_fqdn) }}
     - PT_INITIAL_ROOT_PASSWORD={{ peertube_initial_root_password }}
+{% if peertube_multipart_patch | default(False) %}
+    image: peertube-patched:{{ peertube_images_release }}
+{% else %}
+    image: {{ peertube_images_repo }}:{{ peertube_images_release }}
+{% endif %}
     ports:
     - "1935:1935"
     - "9000:9000"

@@ -25,6 +25,8 @@
     state: directory
   loop:
   - published
+  - recording
+  - recording/scalelite
   - spool
   - unpublished
   loop_control:

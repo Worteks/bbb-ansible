@@ -33,8 +33,3 @@
   setup:
   when:
   - groups['lb'] | length == 0
-- name: Forces Scalelite Image Release to Last Beta
-  set_fact:
-    scalelite_images_release: v1.1-beta.4
-  when:
-  - custom_scalelite_api | default(False)

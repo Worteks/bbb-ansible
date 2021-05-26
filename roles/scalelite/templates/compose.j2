@@ -27,6 +27,7 @@ services:
     ports:
     - "3000:3000"
     restart: unless-stopped
+    user: "2000"
     volumes:
 {% if bbb_uses_selfsigned | default(True) %}
     - /etc/ssl/certs:/etc/ssl/certs
