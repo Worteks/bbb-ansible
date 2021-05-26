@@ -14,7 +14,7 @@ printMetric()
     echo "$1 $4"
 }
 
-SPOOL_COUNT=$(find $RECORDINGS_ROOT/spool/  -maxdepth 1 -type d | grep -v "^$RECORDINGS_ROOT/spool/$" | awk 'END{print NR}')
+SPOOL_COUNT=$(find $RECORDINGS_ROOT/spool/  -maxdepth 1 -type f | grep -v "^$RECORDINGS_ROOT/spool/$" | awk 'END{print NR}')
 PUBLISHED_COUNT=$(find $RECORDINGS_ROOT/published/  -maxdepth 1 -type d | grep -v "^$RECORDINGS_ROOT/published/$" | awk 'END{print NR}')
 UP=0
 if test -d $RECORDINGS_ROOT/spool; then
