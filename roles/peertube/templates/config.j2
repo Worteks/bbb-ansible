@@ -130,7 +130,7 @@ redundancy:
 tracker:
   enabled: true
   private: true
-  reject_too_many_announces: false
+  reject_too_many_announces: true
 
 admin:
   email: 'admin@{{ peertube_fqdn | default(ansible_fqdn) }}'
@@ -143,6 +143,14 @@ csp:
   enabled: false
   report_only: true
   report_uri: ''
+
+security:
+  frameguard:
+{% if peertube_allow_embedded | default(False) %}
+    enabled: false
+{% else %}
+    enabled: true
+{% endif %}
 
 history:
   videos:

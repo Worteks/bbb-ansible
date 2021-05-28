@@ -4,7 +4,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 1,
-  "iteration": 1599984773221,
+  "iteration": 1622099801727,
   "links": [],
   "panels": [
     {
@@ -26,7 +26,6 @@
       "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "mappings": [
             {
               "from": "",
@@ -106,9 +105,7 @@
       "dashes": false,
       "datasource": "Prometheus",
       "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
+        "defaults": {},
         "overrides": []
       },
       "fill": 1,
@@ -198,9 +195,7 @@
       "columns": [],
       "datasource": "Prometheus",
       "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
+        "defaults": {},
         "overrides": []
       },
       "fontSize": "100%",
@@ -295,7 +290,6 @@
       "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "mappings": [
             {
               "$$hashKey": "object:409",
@@ -306,7 +300,6 @@
               "value": "null"
             }
           ],
-          "nullValueMode": "connected",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -363,9 +356,7 @@
       "dashes": false,
       "datasource": "Prometheus",
       "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
+        "defaults": {},
         "overrides": []
       },
       "fill": 1,
@@ -458,9 +449,7 @@
       "dashes": false,
       "datasource": "Prometheus",
       "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
+        "defaults": {},
         "overrides": []
       },
       "fill": 1,
@@ -551,7 +540,6 @@
       "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "mappings": [
             {
               "$$hashKey": "object:409",
@@ -562,7 +550,6 @@
               "value": "null"
             }
           ],
-          "nullValueMode": "connected",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -616,7 +603,6 @@
       "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -653,7 +639,7 @@
       },
       "targets": [
         {
-          "expr": "topk(4, sum by (instance) (bbb_meetings_participants{target_type=~\"$kind\",instance=~\"$instance\"}))",
+          "expr": "topk(3, sum by (instance) (bbb_meetings_participants{target_type=~\"$kind\",instance=~\"$instance\"}))",
           "instant": true,
           "interval": "",
           "legendFormat": "{{instance}}",
@@ -672,9 +658,7 @@
       "dashes": false,
       "datasource": null,
       "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
+        "defaults": {},
         "overrides": []
       },
       "fill": 1,
@@ -767,9 +751,7 @@
       "dashes": false,
       "datasource": "Prometheus",
       "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
+        "defaults": {},
         "overrides": []
       },
       "fill": 1,
@@ -859,7 +841,6 @@
       "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -896,7 +877,7 @@
       },
       "targets": [
         {
-          "expr": "topk(4, sum by (instance) (bbb_meetings_participants{target_type=~\"$kind\",instance=~\"$instance\"}))",
+          "expr": "topk(3, sum by (instance) (bbb_meetings_participants{target_type=~\"$kind\",instance=~\"$instance\"}))",
           "instant": false,
           "interval": "",
           "legendFormat": "{{instance}}",
@@ -915,9 +896,7 @@
       "dashes": false,
       "datasource": "Prometheus",
       "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
+        "defaults": {},
         "overrides": []
       },
       "fill": 1,
@@ -1010,9 +989,7 @@
       "dashes": false,
       "datasource": null,
       "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
+        "defaults": {},
         "overrides": []
       },
       "fill": 1,
@@ -1117,7 +1094,6 @@
       "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -1132,8 +1108,8 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
-        "w": 5,
+        "h": 5,
+        "w": 6,
         "x": 0,
         "y": 40
       },
@@ -1168,7 +1144,6 @@
       "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -1183,9 +1158,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 5,
+        "h": 5,
+        "w": 5,
+        "x": 6,
         "y": 40
       },
       "id": 18,
@@ -1221,7 +1196,6 @@
       "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -1236,9 +1210,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 9,
+        "h": 5,
+        "w": 5,
+        "x": 11,
         "y": 40
       },
       "id": 20,
@@ -1274,7 +1248,6 @@
       "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -1289,9 +1262,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 13,
+        "h": 5,
+        "w": 5,
+        "x": 16,
         "y": 40
       },
       "id": 10,
@@ -1330,7 +1303,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 44
+        "y": 45
       },
       "id": 44,
       "panels": [],
@@ -1354,16 +1327,14 @@
       "datasource": "Prometheus",
       "description": "Buckets (Y axis) represents the number of participants while the count in each bucket represents the number of rooms with that particular bucket's value. ",
       "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
+        "defaults": {},
         "overrides": []
       },
       "gridPos": {
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 45
+        "y": 46
       },
       "heatmap": {},
       "hideZeroBuckets": true,
@@ -1427,16 +1398,14 @@
       "datasource": "Prometheus",
       "description": "Buckets (Y axis) represents the number of listeners while the count in each bucket represents the number of rooms with that particular bucket's value. ",
       "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
+        "defaults": {},
         "overrides": []
       },
       "gridPos": {
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 45
+        "y": 46
       },
       "heatmap": {},
       "hideZeroBuckets": true,
@@ -1500,16 +1469,14 @@
       "datasource": "Prometheus",
       "description": "Buckets (Y axis) represents the number of voice participants while the count in each bucket represents the number of rooms with that particular bucket's value. ",
       "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
+        "defaults": {},
         "overrides": []
       },
       "gridPos": {
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 55
+        "y": 56
       },
       "heatmap": {},
       "hideZeroBuckets": true,
@@ -1573,16 +1540,14 @@
       "datasource": null,
       "description": "Buckets (Y axis) represents the number of video participants while the count in each bucket represents the number of rooms with that particular bucket's value. ",
       "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
+        "defaults": {},
         "overrides": []
       },
       "gridPos": {
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 55
+        "y": 56
       },
       "heatmap": {},
       "hideZeroBuckets": true,
@@ -1636,7 +1601,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 65
+        "y": 66
       },
       "id": 32,
       "panels": [],
@@ -1650,9 +1615,7 @@
       "dashes": false,
       "datasource": null,
       "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
+        "defaults": {},
         "overrides": []
       },
       "fill": 1,
@@ -1661,7 +1624,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 66
+        "y": 67
       },
       "hiddenSeries": false,
       "id": 36,
@@ -1765,9 +1728,7 @@
       "dashes": false,
       "datasource": "Prometheus",
       "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
+        "defaults": {},
         "overrides": []
       },
       "fill": 1,
@@ -1776,7 +1737,7 @@
         "h": 11,
         "w": 24,
         "x": 0,
-        "y": 74
+        "y": 75
       },
       "hiddenSeries": false,
       "id": 22,
@@ -1901,7 +1862,6 @@
         "allValue": null,
         "current": {
           "selected": true,
-          "tags": [],
           "text": "All",
           "value": [
             "$__all"
