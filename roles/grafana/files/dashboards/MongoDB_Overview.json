@@ -1785,7 +1785,7 @@
         "sort": 1,
         "tagValuesQuery": "/.*-(.*?)-.*/",
         "tags": [],
-        "tagsQuery": "label_values(mongodb_connections,kubernetes_pod_name)",
+        "tagsQuery": "label_values(mongodb_connections,instance)",
         "type": "query",
         "useTags": false
       }

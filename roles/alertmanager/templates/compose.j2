@@ -12,6 +12,7 @@ services:
 {% endfor %}
 {% endif %}
     - --storage.path=/data
+    - --web.external-url=https://{{ alertmanager_fqdn | default(ansible_fqdn) }}
     - --web.listen-address=:9093
     - --web.route-prefix=/
     image: {{ alertmanager_images_repo }}:{{ alertmanager_images_release }}

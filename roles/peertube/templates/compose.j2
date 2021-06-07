@@ -17,6 +17,7 @@ services:
     ports:
     - "1935:1935"
     - "9000:9000"
+    restart: unless-stopped
     user: "999:0"
     volumes:
     - /etc/peertube:/config

@@ -268,7 +268,7 @@ instance:
   code_of_conduct: "{{ peertube_instance_codeofconduct }}"
   moderation_information: ''
   creation_reason: "{{ peertube_instance_createreason }}"
-  administrator: ''
+  administrator: '{{ peertube_instance_administrator }}'
   maintenance_lifetime: ''
   business_model: "{{ peertube_instance_businessmodel }}"
   hardware_information: '{{ ansible_processor_vcpus }}CPU, {{ ansible_memory_mb['real']['total'] }}MB RAM'
@@ -288,6 +288,11 @@ instance:
     Disallow: /
   securitytxt:
     "# See https://github.com/Chocobozzz/PeerTube/blob/develop/SECURITY.md"
+
+services:
+  twitter:
+    username: {{ peertube_twitter_username }}
+    whitelisted: false
 
 followers:
   instance:

@@ -2,6 +2,7 @@ grafana_dashboards:
 - BigBlueButton
 - DockerEngine
 - ElasticSearch
+- Fail2ban
 - Fluentd
 - FreeSwitch
 - Go_Applications

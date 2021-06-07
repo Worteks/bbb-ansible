@@ -1,11 +1,12 @@
 #peertube_images_release: production-buster
-peertube_images_release: v3.2.0-buster
+peertube_images_release: v3.2.1-buster
 peertube_images_repo: docker.io/chocobozzz/peertube
 
 peertubeexporter_images_release: master
 peertubeexporter_images_repo: registry.gitlab.com/synacksynack/opsperator/docker-peertubeexporter
 
 peertube_initial_root_password: SomeS7rongseCr3t
+peertube_instance_administrator: Worteks
 peertube_instance_businessmodel: "Collect underpants...... step 2, ... and then profit!"
 peertube_instance_codeofconduct: "Don't be evil"
 peertube_instance_createreason: Streaming BigBlueButton Conferences
@@ -14,6 +15,7 @@ peertube_instance_name: BigBlueButtonTube
 peertube_instance_short_description: PeerTube, a federated (ActivityPub) video streaming platform using P2P (BitTorrent) directly in the web browser with WebTorrent and Angular.
 peertube_instance_terms: No terms for now
 peertube_is_nsfw: true
+peertube_twitter_username: ''
 
 peertube_languages:
 - en

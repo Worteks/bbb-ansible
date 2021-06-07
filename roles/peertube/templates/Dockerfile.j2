@@ -2,7 +2,7 @@ FROM {{ peertube_images_repo }}:{{ peertube_images_release }}
 
 ENV DEBIAN_FRONTEND=noninteractive \
     GITHUB_URL=https://raw.githubusercontent.com/expressjs/multer \
-    PR_REF=/97d386740f5ed4c4be09dfdd23e5b7fc3d940d42
+    PR_REF=97d386740f5ed4c4be09dfdd23e5b7fc3d940d42
 
 RUN set -x \
     && rm -rf /var/lib/apt/lists/* \

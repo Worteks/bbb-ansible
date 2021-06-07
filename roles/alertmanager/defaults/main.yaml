@@ -1,4 +1,4 @@
-alertmanager_images_release: v0.21.0
+alertmanager_images_release: v0.22.2
 alertmanager_images_repo: docker.io/prom/alertmanager
 
 alertmanager_notify_slack_send_resolved: True

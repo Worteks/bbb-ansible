@@ -52,6 +52,7 @@ services:
 {% if docker_hostnetwork | default(False) or ansible_fqdn in groups['postgres_scalelite'] or ansible_nodename in groups['postgres_scalelite'] or ansible_hostname in groups['postgres_scalelite'] %}
     network_mode: host
 {% endif %}
+    restart: unless-stopped
 {% if bbb_uses_selfsigned | default(True) %}
     volumes:
     - /etc/ssl/certs:/etc/ssl/certs
@@ -74,6 +75,7 @@ services:
 {% if docker_hostnetwork | default(False) or ansible_fqdn in groups['postgres_scalelite'] or ansible_nodename in groups['postgres_scalelite'] or ansible_hostname in groups['postgres_scalelite'] %}
     network_mode: host
 {% endif %}
+    restart: unless-stopped
     user: "2000"
     volumes:
 {% if bbb_uses_selfsigned | default(True) %}

@@ -2957,7 +2957,6 @@
   "style": "dark",
   "tags": [
     "fluentd",
-    "kubernetes",
     "logging"
   ],
   "templating": {

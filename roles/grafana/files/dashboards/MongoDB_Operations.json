@@ -96,7 +96,7 @@
           "hide": false,
           "interval": "$interval",
           "intervalFactor": 1,
-          "legendFormat": "{{kubernetes_namespace}}/{{kubernetes_pod_name}} ttl_delete",
+          "legendFormat": "{{instance}} ttl_delete",
           "refId": "B",
           "step": 300
         }
