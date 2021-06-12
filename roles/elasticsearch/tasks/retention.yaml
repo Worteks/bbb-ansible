@@ -1,0 +1,37 @@
+- name: Installs ElasticSearch Indices Purge Script
+  template:
+    dest: /usr/local/sbin/espurge
+    group: root
+    mode: 0750
+    owner: root
+    src: espurge.j2
+- name: Installs ElasticSearch Indices Purge Job
+  copy:
+    dest: "/etc/systemd/system/espurge.{{ item }}"
+    group: root
+    mode: 0644
+    owner: root
+    src: "espurge.{{ item }}"
+  loop:
+  - service
+  - timer
+  register: espunit
+- name: Reloads Systemd Configuration
+  shell: systemctl daemon-reload
+  when:
+  - espunit is defined
+  - espunit is changed
+- name: Enables ElasticSearcin Indices Purge Job on First ES Node
+  service:
+    enabled: yes
+    name: espurge.timer
+    state: started
+  when:
+  - groups['elasticsearch'][0] in [ ansible_hostname, ansible_fqdn, ansible_nodename ]
+- name: Disables ElasticSearcin Indices Purge Job on other ES Nodes
+  service:
+    enabled: no
+    name: espurge.timer
+    state: stopped
+  when:
+  - not (groups['elasticsearch'][0] in [ ansible_hostname, ansible_fqdn, ansible_nodename ])

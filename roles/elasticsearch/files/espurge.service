@@ -1,0 +1,6 @@
+[Unit]
+Description=Purges ElasticSearch Older Indices
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/espurge

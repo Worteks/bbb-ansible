@@ -2,7 +2,12 @@ groups:
 - name: KubernetesElasticSearch
   rules:
   - alert: ElasticSearchNodeDown
-    expr: elasticsearch_node_stats_up == 0
+# FIXME:
+# node stats metric broken as of 7.13
+# instead of fixing, they went with disabling corresponding tests. brilliant...
+# see https://github.com/prometheus-community/elasticsearch_exporter/commit/813e9cda36c8c718d8d3ce33ffabe8b41a7f546c
+#    expr: elasticsearch_node_stats_up == 0
+    expr: elasticsearch_index_stats_up == 0
     for: 5m
     labels:
       severity: warning

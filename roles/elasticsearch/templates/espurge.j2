@@ -1,0 +1,10 @@
+#!/bin/sh
+
+escli close-older "{{ elasticsearch_retention_days }}"
+escli list-index | awk '/ close logstash-/{print $3}' \
+    | while read idx;
+	do
+	    escli delete-index "$idx"
+	done
+
+exit 0

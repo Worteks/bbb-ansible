@@ -1,0 +1,9 @@
+[Unit]
+Description=Run ElasticSearch Indices Purge Job
+
+[Timer]
+OnBootSec=90min
+OnCalendar=0/6:00:00
+
+[Install]
+WantedBy=timers.target
