@@ -7,7 +7,7 @@
     - not (is_on_shared_hardware | default(False))
 
 # Configures Firewall
-- hosts: lb:postgres:redis:sshfs:nfs:reverse:coturn
+- hosts: lb:postgres:redis:sshfs:reverse:coturn
   tasks:
   - include_role:
       name: firehol

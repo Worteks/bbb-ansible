@@ -6,13 +6,13 @@
 #alertmanager_smtp_username: username
 
 # generate yours with openssl rand -hex 16
-coturn_auth_secret: 2bb5e9e3ff1737e8e4c9240bcb8dc887
+coturn_auth_secret: secret
 #coturn_cli_interface: eth1
 coturn_cli_password: secret
 coturn_postgres_password: coturnpw
 
-freeipa_registration_password: secret
-freeipa_registration_user: admin
+#freeipa_registration_password: secret
+#freeipa_registration_user: admin
 
 # Enables Fluentd GeoIP integration, telling Ansible where to get its db from:
 #geoip_database_url: http://myhttpserver.example.com/GeoLite2-City.tar.gz

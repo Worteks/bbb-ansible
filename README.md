@@ -37,7 +37,7 @@ Deploying BigBlueButton at scale with Ansible
 ## Requirements
 
  * Ansible 2.9+ on your deployment node, python-cryptography > 3, rsync
- * Ubuntu Xenial on your BigBlueButton nodes (bbb 2.2, or Bionic for bbb 2.3)
+ * Ubuntu Bionic on your BigBlueButton nodes (bbb 2.3, or Xenial for bbb 2.2)
  * Debian Buster for everything else (ubuntu might work, though untested so far)
 
 The rest depends on your context.
@@ -86,11 +86,21 @@ The rest depends on your context.
 
 ## Usage
 
-Edit inventory file (`./hosts`) and deployment variables (in `./group_vars`),
-sensitive data could be added to the `group_vars/private.yaml` file - start
-from a copy of the `private.yaml.sample` file, adding your own secrets. We may
-set public service hostnames and other global params in `group_vars/all.yaml`,
-then apply the `bootstrap` playbook:
+Create your own inventory file. Several examples are provided, setting up
+a standalone BBB server (`./hosts-standalone`), deploying a single instance
+for most services (`./hosts-test`) or including redundancy (`./hosts-ha`).
+
+```sh
+$ cp hosts-ha hosts-my
+$ ln -sf hosts-my hosts
+$ vi hosts
+```
+
+Set your own deployment variables (in `./group_vars`), sensitive data could be
+added to the `group_vars/private.yaml` file - start from a copy of the
+`private.yaml.sample` file, adding your own secrets. We may set public service
+hostnames and other global params in `group_vars/all.yaml`, then apply the
+`bootstrap` playbook:
 
 ```sh
 $ cp group_vars/private.yaml.sample group_vars/private.yaml
@@ -103,12 +113,34 @@ Dealing with distributed BBB setup, note that:
 
  - distributing Scalelite, the poller and recordings-importer container should
    only run once (use `scalelite_has_roles`, see `./roles/scalelite/defaults`,
-   controlling which workers should run on your nodes).
- - Postgres could be deployed on top of a DRBD device, though automation remains
-   incomplete and undocumented
+   controlling which workers should run on your nodes). Alternatively, a DRBD
+   volume could be shared, while pacemaker/corosync would deal with Scalelite
+   containers starts/stop
+ - Redis would be configured in a master/slave fashion by default, using
+   sentinels: it is required to also deploy an internal loadbalancer (`lb_back`
+   host group) for HAProxy to properly route client requests to your current
+   master node. Alternatively, DRBD/pacemaker/corosync could be used here as
+   well.
+ - Postgres could also be deployed on top of a DRBD device. Which is the only
+   way those playbooks currently offer to implement HA for Postgres.
 
-Deploying BBB-CSP, until publication to GitHub, make sure to pass the following
-extra vars: `-e gituser=abcdef@worteks.com -e gitpass=mysecret`.
+As a general rule, drbd/pacemaker/corosync deployment is not fully automated
+(initializing your drbd device, designating an initial master where you
+would create and mount your filesystems, then initializing corosync cluster
+and configuring resources, resource groups, ...).
+
+A quick way to proceed would be to first deploy services on all target nodes,
+without HA, ideally one hostgroup after the other. Then manually stop those
+services, deal with drbd & corosync init, such as your filesystems and services
+would failover to whichever drbd node is primary (samples given in
+`./roles/pacemaker/setup-peertube-db.md`, `./roles/pacemaker/setup-peertube.md`,
+...). Next we may edit our Ansible inventory adding the corresponding nodes to
+the `drbd` host group, which would ensure Ansible would no longer try to start,
+stop or enable services managed by corosync, nor create directories within
+shared filesystems on drbd backup nodes.
+
+Finally, note that using a VIP with corosync may not work everywhere, depending
+on your ability to allocate your nodes with arbitrary IPs.
 
 ## Third-Party Documentations
 
@@ -315,7 +347,7 @@ freeswitch:
 
 ## FIXMEs
 
- - redis-sentinel first fails to start
+ - [redis-sentinel first fails to start](./FIXME/redis)
    manual restart fixed, further playbook runs work
    could be due to redis-server being slow to startup?
    or something else? pending further investigations...
@@ -324,12 +356,14 @@ freeswitch:
    complete). After initial bootstrap, make sure to run the playbook
    another time...
  - Greenlight does not seem to trust our custom CA (OIDC), despite its
-   being trusted on the system (?)
+   being trusted on the system (?). Prefer using SAML if SSO also
+   uses self-signed certificates.
  - OpenStreaming should store recordings in /var/www/videos, apparently
    using mp4 files. though I found flv files in some /tmp/systemd-private
    directory, for the nginx-osp service. Unclear what went wrong. Having run
    several short tests, I don't always find the resulting mp4 files, nor
-   do I understand what's going wrong under the hood
+   do I understand what's going wrong under the hood. PeerTube is more
+   reliable, though quite a different product.
  - creating a BBB room with the "Automatically join me into the room"
    option selected, we sometimes end up with a 500. The room was
    properly created though. Joining back would work.
@@ -343,6 +377,3 @@ freeswitch:
  - Percona is DELETING releases of their mongodb exporter! we can't even trust
    a tagged release, ... fml. Also, they've rewrote the whole thing, as of
    0.20.x: should check how those work. Sticking to 0.11.x in the meantime
- - systemd exporter missing metrics, known to fail parsing process memory
-   limits on large servers (see
-   https://github.com/povilasv/systemd_exporter/issues/40)

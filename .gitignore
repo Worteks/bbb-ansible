@@ -1,6 +1,7 @@
 /.ansible-logs
 /facts-*
 /group_vars/private.yaml
+/hosts
 /test*.yaml
 /wip
 .pki*

@@ -13,16 +13,17 @@
       creates: /etc/docker-compose/scalelite/db-init.log
     delegate_to: "{{ groups['scalelite'][0] }}"
     run_once: yes
-    shell: docker exec -i scalelite-api bundle exec rake db:setup >db-init.log 2>&1
+    shell: |
+      docker exec -i scalelite-api bundle exec rake db:setup >db-init.log 2>&1;
+      echo init >db-upgrade-{{ scalelite_images_release }}.log 2>&1
   - name: Updates Scalelite Database
     args:
       chdir: /etc/docker-compose/scalelite
-      creates: /etc/docker-compose/scalelite/db-upgrade-1.1.b4.log
+      creates: "/etc/docker-compose/scalelite/db-upgrade-{{ scalelite_images_release }}.log"
     delegate_to: "{{ groups['scalelite'][0] }}"
     run_once: yes
-    shell: docker exec -i scalelite-api bundle exec rake db:migrate >db-upgrade-1.1.b4.log 2>&1
-    when:
-    - custom_scalelite_api | default(False)
+    shell: |
+      docker exec -i scalelite-api bundle exec rake db:migrate >db-upgrade-{{ scalelite_images_release }}.log 2>&1
   when:
   - ansible_fqdn not in groups['drbd']
 - block:
@@ -44,7 +45,9 @@
     args:
       chdir: /etc/docker-compose/scalelite
       creates: /etc/docker-compose/scalelite/db-init.log
-    shell: docker exec -i scalelite-api bundle exec rake db:setup >db-init.log 2>&1
+    shell: |
+      docker exec -i scalelite-api bundle exec rake db:setup >db-init.log 2>&1;
+      echo init >db-upgrade-{{ scalelite_images_release }}.log 2>&1
   - name: Marks DB initialized on other DRBD members
     copy:
       content: "# Done on DRBD primary node"
@@ -57,18 +60,17 @@
     - name: Updates Scalelite Database
       args:
         chdir: /etc/docker-compose/scalelite
-        creates: /etc/docker-compose/scalelite/db-upgrade-1.1.b4.log
-      shell: docker exec -i scalelite-api bundle exec rake db:migrate >db-upgrade-1.1.b4.log 2>&1
+        creates: "/etc/docker-compose/scalelite/db-upgrade-{{ scalelite_images_release }}.log"
+      shell: |
+        docker exec -i scalelite-api bundle exec rake db:migrate >db-upgrade-{{ scalelite_images_release }}.log 2>&1
     - name: Marks DB upgraded on other DRBD members
       copy:
         content: "# Done on DRBD primary node"
-        dest: /etc/docker-compose/scalelite/db-upgrade-1.1.b4.log
+        dest: "/etc/docker-compose/scalelite/db-upgrade-{{ scalelite_images_release }}.log"
         force: no
         group: root
         mode: 0644
         owner: root
-    when:
-    - custom_scalelite_api | default(False)
   when:
   - ansible_fqdn in groups['drbd']
   - drbd_is_primary | default(False)

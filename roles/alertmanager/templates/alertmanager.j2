@@ -1,18 +1,5 @@
 global:
   resolve_timeout: 5m
-{% if alertmanager_smtp_server | default(False) %}
-  smtp_smarthost: {{ alertmanager_smtp_server }}:{{ alertmanager_smtp_port }}
-{% if alertmanager_smtp_username %}
-{% if '@' in alertmanager_smtp_username %}
-  smtp_from: {{ alertmanager_smtp_username }}
-{% else %}
-  smtp_from: {{ alertmanager_smtp_username | default('alertmanager') }}@{{ alertmanager_smtp_domain | default(alertmanager_fqdn | default(ansible_fqdn)) }}
-{% endif %}
-{% else %}
-  smtp_from: {{ alertmanager_smtp_mailfrom | default('alertmanager@' ~ (alertmanager_smtp_domain | default(alertmanager_fqdn | default(ansible_fqdn)))) }}
-{% endif %}
-  smtp_require_tls: {{ 'True' if alertmanager_smtp_tls else 'Fals' }}e
-{% endif %}
 receivers:
 - name: deadmansswitch
 - name: default
@@ -27,15 +14,20 @@ receivers:
 {% if alertmanager_smtp_server and alertmanager_notify_smtp_address | default(False) %}
   email_configs:
 {% if alertmanager_smtp_username %}
+ -  auth_username: {{ alertmanager_smtp_username }}
+    auth_identity: {{ alertmanager_smtp_username }}
+    auth_password: {{ alertmanager_smtp_password }}
 {% if '@' in alertmanager_smtp_username %}
-  - from: {{ alertmanager_smtp_username }}
+    from: {{ alertmanager_smtp_username }}
 {% else %}
-  - from: {{ alertmanager_smtp_username | default('alertmanager') }}@{{ alertmanager_smtp_domain | default(alertmanager_fqdn | default(ansible_fqdn)) }}
+    from: {{ alertmanager_smtp_username | default('alertmanager') }}@{{ alertmanager_smtp_domain | default(alertmanager_fqdn | default(ansible_fqdn)) }}
 {% endif %}
 {% else %}
   - from: {{ alertmanager_smtp_mailfrom | default('alertmanager@' ~ (alertmanager_smtp_domain | default(alertmanager_fqdn | default(ansible_fqdn)))) }}
 {% endif %}
+    require_tls: {{ 'True' if alertmanager_smtp_tls else 'Fals' }}e
     send_resolved: {{ alertmanager_notify_smtp_send_resolved }}
+    smarthost: {{ alertmanager_smtp_server }}:{{ alertmanager_smtp_port }}
     to: {{ alertmanager_notify_smtp_address }}
 {% if bbb_uses_selfsigned | default(True) %}
     tls_config:
