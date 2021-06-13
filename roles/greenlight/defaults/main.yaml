@@ -2,7 +2,7 @@ blackbox_exporter_port: 9158
 blackbox_exporter_release: 0.17.0
 
 greenlight_help_url: https://docs.bigbluebutton.org/greenlight/gl-overview.html
-greenlight_images_release: release-2.8.4
+greenlight_images_release: release-2.8.7
 greenlight_images_repo: docker.io/bigbluebutton/greenlight
 
 greenlight_allow_local_accounts: True

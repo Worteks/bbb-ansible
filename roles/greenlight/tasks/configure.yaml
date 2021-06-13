@@ -13,7 +13,7 @@
     dest: /usr/src/greenlight
     repo: 'https://github.com/Worteks/greenlight'
     update: no
-    version: sso
+    version: updatesso-wip
   when:
   - >
       (greenlight_saml_endpoint | default(False))
