@@ -347,7 +347,7 @@ freeswitch:
 
 ## FIXMEs
 
- - [redis-sentinel first fails to start](./FIXME/redis)
+ - redis-sentinel first fails to start
    manual restart fixed, further playbook runs work
    could be due to redis-server being slow to startup?
    or something else? pending further investigations...
