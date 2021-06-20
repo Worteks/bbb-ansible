@@ -28,7 +28,6 @@ server {
     ssl_ciphers "{{ nginx_ssl_ciphers | join(':') }}";
     ssl_prefer_server_ciphers on;
     ssl_dhparam /etc/nginx/ssl/dh.pem;
-    add_header Strict-Transport-Security "max-age=31536001; includeSubDomains" always;
     access_log /var/log/nginx/greenlight.access.log {{ nginx_log_fmt | default('combined') }};
 
     location {{ greenlight_app_root }} {

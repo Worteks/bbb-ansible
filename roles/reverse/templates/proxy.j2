@@ -36,7 +36,9 @@ server {
     error_log /var/log/nginx/ssl-error-{{ site_fqdn }}.log;
     access_log /var/log/nginx/ssl-access-{{ site_fqdn }}.log;
     add_header Referrer-Policy "strict-origin-when-cross-origin";
+{% if add_hsts_headers | default(True) %}
     add_header Strict-Transport-Security "max-age=31536001; includeSubDomains" always;
+{% endif %}
 {% if x_frame_options_deny | default(True) %}
     add_header X-Frame-Options DENY;
 {% endif %}

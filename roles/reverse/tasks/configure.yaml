@@ -31,6 +31,7 @@
   loop_control:
     loop_var: node
   vars:
+    add_hsts_headers: false
     site_fqdn: "{{ hostvars[groups['greenlight'][0]]['greenlight_fqdn'] | default(hostvars[groups['greenlight'][0]]['ansible_fqdn']) }}"
     proxy_to: "{{ (groups['greenlight'] | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | join(',')).split(',') }}"
     proxy_port: "{{ greenlight_port }}"
