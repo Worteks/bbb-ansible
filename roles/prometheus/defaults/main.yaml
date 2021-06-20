@@ -1,3 +1,22 @@
+nginx_ssl_ciphers:
+- EECDH+ECDSA+AESGCM
+- EECDH+aRSA+AESGCM
+- EECDH+ECDSA+SHA512
+- EECDH+ECDSA+SHA384
+- EECDH+ECDSA+SHA256
+- '!aNULL'
+- '!eNULL'
+- '!LOW'
+- '!RC4'
+- '!3DES'
+- '!MD5'
+- '!EXP'
+- '!PSK'
+- '!SRP'
+- '!DSS'
+nginx_ssl_protocols:
+- TLSv1.2
+
 prometheus_cluster_name: bigbluebutton
 prometheus_eval_interval: 30s
 prometheus_images_release: v2.27.1

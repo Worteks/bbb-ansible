@@ -33,14 +33,6 @@
   when:
   - do_unsafe_dhparam | default(False)
 
-- name: Installs Nginx Names Hash Bucket Size Configuration
-  notify: Reloads Nginx
-  template:
-    dest: /etc/nginx/conf.d/names.conf
-    group: root
-    mode: 0644
-    owner: root
-    src: names.j2
 - block:
   - name: Installs Nginx Custom Log Format Configuration
     notify: Reloads Nginx

@@ -7,3 +7,22 @@ bigbluebutton_livestream_custom_source_repo: https://github.com/Worteks/BigBlueB
 bigbluebutton_livestream_images_release: latest
 bigbluebutton_livestream_images_repo: docker.io/aauzid/bigbluebutton-livestreaming
 peertube_initial_root_password: SomeS7rongseCr3t
+
+nginx_ssl_ciphers:
+- EECDH+ECDSA+AESGCM
+- EECDH+aRSA+AESGCM
+- EECDH+ECDSA+SHA512
+- EECDH+ECDSA+SHA384
+- EECDH+ECDSA+SHA256
+- '!aNULL'
+- '!eNULL'
+- '!LOW'
+- '!RC4'
+- '!3DES'
+- '!MD5'
+- '!EXP'
+- '!PSK'
+- '!SRP'
+- '!DSS'
+nginx_ssl_protocols:
+- TLSv1.2

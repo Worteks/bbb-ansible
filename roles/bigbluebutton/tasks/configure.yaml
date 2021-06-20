@@ -128,6 +128,13 @@
   when:
   - do_bbb_mp4_convert | default(False)
 
+- name: Sets HSTS Header
+  lineinfile:
+    dest: /etc/nginx/sites-available/bigbluebutton
+    line: '    add_header Strict-Transport-Security "max-age=31536001; includeSubDomains" always;'
+    regex: "add_header Strict-Transport-Security"
+  notify: Reloads Nginx
+
 - name: Configures BigBlueButton TURN Integration
   register: turn_conf
   template:

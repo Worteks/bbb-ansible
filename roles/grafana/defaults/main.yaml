@@ -29,3 +29,22 @@ grafana_postgres_database: grafana
 grafana_postgres_password: grafanapw
 grafana_postgres_port: 5432
 grafana_postgres_user: grafanausr
+
+nginx_ssl_ciphers:
+- EECDH+ECDSA+AESGCM
+- EECDH+aRSA+AESGCM
+- EECDH+ECDSA+SHA512
+- EECDH+ECDSA+SHA384
+- EECDH+ECDSA+SHA256
+- '!aNULL'
+- '!eNULL'
+- '!LOW'
+- '!RC4'
+- '!3DES'
+- '!MD5'
+- '!EXP'
+- '!PSK'
+- '!SRP'
+- '!DSS'
+nginx_ssl_protocols:
+- TLSv1.2

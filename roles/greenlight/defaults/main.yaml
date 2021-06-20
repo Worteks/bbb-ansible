@@ -1,6 +1,25 @@
 blackbox_exporter_port: 9158
 blackbox_exporter_release: 0.17.0
 
+nginx_ssl_ciphers:
+- EECDH+ECDSA+AESGCM
+- EECDH+aRSA+AESGCM
+- EECDH+ECDSA+SHA512
+- EECDH+ECDSA+SHA384
+- EECDH+ECDSA+SHA256
+- '!aNULL'
+- '!eNULL'
+- '!LOW'
+- '!RC4'
+- '!3DES'
+- '!MD5'
+- '!EXP'
+- '!PSK'
+- '!SRP'
+- '!DSS'
+nginx_ssl_protocols:
+- TLSv1.2
+
 greenlight_help_url: https://docs.bigbluebutton.org/greenlight/gl-overview.html
 greenlight_images_release: release-2.8.7
 greenlight_images_repo: docker.io/bigbluebutton/greenlight

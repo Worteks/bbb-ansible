@@ -36,6 +36,7 @@ server {
     error_log /var/log/nginx/ssl-error-{{ site_fqdn }}.log;
     access_log /var/log/nginx/ssl-access-{{ site_fqdn }}.log;
     add_header Referrer-Policy "strict-origin-when-cross-origin";
+    add_header Strict-Transport-Security "max-age=31536001; includeSubDomains" always;
 {% if x_frame_options_deny | default(True) %}
     add_header X-Frame-Options DENY;
 {% endif %}
@@ -44,11 +45,6 @@ server {
     add_header X-XSS-Protection "1; mode=block";
 {% endif %}
     ssl on;
-    ssl_ciphers "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH";
-    ssl_protocols TLSv1.2;
-    ssl_prefer_server_ciphers on;
-    ssl_session_cache shared:SSL:10m;
-    ssl_session_tickets off;
 {% if bbb_uses_selfsigned | default(True) %}
     ssl_certificate /etc/nginx/ssl/fullchain.pem;
     ssl_certificate_key /etc/nginx/ssl/privkey.pem;
@@ -56,6 +52,13 @@ server {
     ssl_certificate /etc/letsencrypt/live/{{ ansible_fqdn }}/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/{{ ansible_fqdn }}/privkey.pem;
 {% endif %}
+    ssl_ecdh_curve secp384r1;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 10m;
+    ssl_session_tickets off;
+    ssl_protocols {{ nginx_ssl_protocols | join(' ') }};
+    ssl_ciphers "{{ nginx_ssl_ciphers | join(':') }}";
+    ssl_prefer_server_ciphers on;
     ssl_dhparam /etc/nginx/ssl/dh.pem;
 {% if letsencrypt_challenge_account_thumbprint | default(False) %}
     location ~ ^/\.well-known/acme-challenge/([-_a-zA-Z0-9]+)$ {

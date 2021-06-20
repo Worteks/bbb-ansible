@@ -1,4 +1,36 @@
 - block:
+  - name: Ensures Peertube Live Chat Plugin Present
+    changed_when: False
+    failed_when: False
+    register: livechatplugin
+    stat:
+      path: /var/lib/peertube/data/plugins/peertube-plugin-livechat
+  - name: Installs Peertube Live Chat Plugin
+    register: lcrestart
+    shell: docker exec peertube_peertube_1 /bin/sh -c "npm run plugin:install -- --npm-name peertube-plugin-livechat
+    when:
+    - livechatplugin is defined
+    - livechatplugin.stat is defined
+    - not livechatplugin.stat.exists
+  when:
+  - peertube_livechat_plugin | default(False)
+- block:
+  - name: Ensures Peertube Chapters Plugin Present
+    changed_when: False
+    failed_when: False
+    register: chaptersplugin
+    stat:
+      path: /var/lib/peertube/data/plugins/peertube-plugin-chapters
+  - name: Installs Peertube Chapters Plugin
+    register: crestart
+    shell: docker exec peertube_peertube_1 /bin/sh -c "npm run plugin:install -- --npm-name peertube-plugin-chapters
+    when:
+    - chaptersplugin is defined
+    - chaptersplugin.stat is defined
+    - not chaptersplugin.stat.exists
+  when:
+  - peertube_chapters_plugin | default(False)
+- block:
   - name: Ensures Peertube Auth LDAP Plugin Present
     changed_when: False
     failed_when: False
@@ -90,3 +122,7 @@
        and lrestart is changed)
       or (srestart is defined
        and srestart is changed)
+      or (crestart is defined
+       and crestart is changed)
+      or (lcrestart is defined
+       and lcrestart is changed)

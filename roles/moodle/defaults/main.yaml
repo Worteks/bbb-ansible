@@ -16,3 +16,22 @@ moodle_source_ref: MOODLE_311_STABLE
 moodle_source_repo: https://github.com/moodle/moodle
 
 moodle_upgrade_key:
+
+nginx_ssl_ciphers:
+- EECDH+ECDSA+AESGCM
+- EECDH+aRSA+AESGCM
+- EECDH+ECDSA+SHA512
+- EECDH+ECDSA+SHA384
+- EECDH+ECDSA+SHA256
+- '!aNULL'
+- '!eNULL'
+- '!LOW'
+- '!RC4'
+- '!3DES'
+- '!MD5'
+- '!EXP'
+- '!PSK'
+- '!SRP'
+- '!DSS'
+nginx_ssl_protocols:
+- TLSv1.2

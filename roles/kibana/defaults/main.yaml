@@ -2,7 +2,26 @@ kibana_es_request_timeout: 30
 
 #kibana_fqdn: kibana.example.com        defaults to fqdn
 
-kibana_images_release: 7.13.0
+kibana_images_release: 7.13.2
 kibana_images_repo: docker.elastic.co/kibana/kibana
 
 kibana_prometheus_plugin: "https://github.com/pjhampton/kibana-prometheus-exporter/releases/download/{{ kibana_images_release }}/kibanaPrometheusExporter-{{ kibana_images_release }}.zip"
+
+nginx_ssl_ciphers:
+- EECDH+ECDSA+AESGCM
+- EECDH+aRSA+AESGCM
+- EECDH+ECDSA+SHA512
+- EECDH+ECDSA+SHA384
+- EECDH+ECDSA+SHA256
+- '!aNULL'
+- '!eNULL'
+- '!LOW'
+- '!RC4'
+- '!3DES'
+- '!MD5'
+- '!EXP'
+- '!PSK'
+- '!SRP'
+- '!DSS'
+nginx_ssl_protocols:
+- TLSv1.2

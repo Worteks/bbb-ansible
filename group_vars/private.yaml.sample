@@ -51,6 +51,25 @@ greenlight_registrations: open
 peertube_initial_root_password: secret
 peertube_postgres_password: secret
 
+#peertube_ldap_base: dc=demo,dc=local
+#peertube_ldap_bind_dn: cn=admin,dc=demo,dc=local
+#peertube_ldap_endpoint: ldap://directory.example.com:1636
+#peertube_ldap_password: changeme
+#peertube_ldap_uid: uid
+
+#peertube_oidc_client_id: peertube
+#peertube_oidc_client_secret: changeme
+#peertube_oidc_site: https://auth.example.com
+#peertube_oidc_scope: openid email profile
+#peertube_oidc_uid_field: preferred_username
+#peertube_oidc_mail_field: email
+
+# Integrationg BBB-CSP with PeerTube, instead of using PeerTube
+# root account, we would create (manually) an user with limited
+# privileges, and write down its login/password here:
+#peertube_rtmp_password: secret-for-bbbcsp-user
+#peertube_rtmp_user: bbbcsp
+
 #peertube_smtp_domain: example.com
 #peertube_smtp_password: secret
 #peertube_smtp_port: 587

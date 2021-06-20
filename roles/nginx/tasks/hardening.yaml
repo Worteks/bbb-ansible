@@ -1,0 +1,16 @@
+- name: Disables Server Tokens
+  copy:
+    dest: /etc/nginx/conf.d/server-tokens.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: server-tokens.conf
+  notify: Reloads Nginx
+- name: Installs Nginx Names Hash Bucket Size Configuration
+  notify: Reloads Nginx
+  template:
+    dest: /etc/nginx/conf.d/names.conf
+    group: root
+    mode: 0644
+    owner: root
+    src: names.j2

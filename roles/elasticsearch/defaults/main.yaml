@@ -3,7 +3,7 @@ elasticsearch_cluster_name: es-bbb
 elasticsearch_exporter_release: 1.2.0
 elasticsearch_exporter_port: 9114
 
-elasticsearch_images_release: 7.13.0
+elasticsearch_images_release: 7.13.2
 elasticsearch_images_repo: docker.elastic.co/elasticsearch/elasticsearch
 
 elasticsearch_jvm_xms: 512m

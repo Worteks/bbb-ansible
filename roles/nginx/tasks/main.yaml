@@ -15,6 +15,7 @@
   when:
   - bbb_uses_selfsigned | default(True)
 - include_tasks: configure.yaml
+- include_tasks: hardening.yaml
 - include_tasks: prometheus.yaml
   when:
   - >

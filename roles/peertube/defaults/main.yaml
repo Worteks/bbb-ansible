@@ -1,3 +1,22 @@
+nginx_ssl_ciphers:
+- EECDH+ECDSA+AESGCM
+- EECDH+aRSA+AESGCM
+- EECDH+ECDSA+SHA512
+- EECDH+ECDSA+SHA384
+- EECDH+ECDSA+SHA256
+- '!aNULL'
+- '!eNULL'
+- '!LOW'
+- '!RC4'
+- '!3DES'
+- '!MD5'
+- '!EXP'
+- '!PSK'
+- '!SRP'
+- '!DSS'
+nginx_ssl_protocols:
+- TLSv1.2
+
 #peertube_images_release: production-buster
 peertube_images_release: v3.2.1-buster
 peertube_images_repo: docker.io/chocobozzz/peertube
@@ -24,7 +43,7 @@ peertube_languages:
 
 peertube_ldap_base: dc=demo,dc=local
 peertube_ldap_bind_dn: cn=admin,dc=demo,dc=local
-peertubet_ldap_endpoint: ldap://directory.example.com:1636
+#peertube_ldap_endpoint: ldap://directory.example.com:1636
 peertube_ldap_password: changeme
 peertube_ldap_uid: uid
 
@@ -32,7 +51,7 @@ peertube_max_body_size: 8G
 
 peertube_multipart_patch: True
 
-peertube_oidc_client_id: greenlight
+peertube_oidc_client_id: peertube
 peertube_oidc_client_secret: changeme
 #peertube_oidc_site: https://auth.example.com
 peertube_oidc_scope: openid email profile

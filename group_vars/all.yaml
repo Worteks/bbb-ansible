@@ -83,6 +83,7 @@ timezone: Europe/Paris
 #- 192.168.255.0/24
 
 # PeerTube Instance Configuration
+#peertube_chapters_plugin: True
 #peertube_instance_administrator: BBB Admin
 #peertube_instance_businessmodel: "Collect underpants...... step 2, ... and then profit!"
 #peertube_instance_codeofconduct: "Don't be evil"
@@ -92,6 +93,7 @@ timezone: Europe/Paris
 #peertube_instance_short_description: PeerTube, a federated (ActivityPub) video streaming platform using P2P (BitTorrent) directly in the web browser with WebTorrent and Angular.
 #peertube_instance_terms: No terms for now
 #peertube_is_nsfw: true
+#peertube_livechat_plugin: True
 #peertube_twitter_username: '@your-handle'
 
 # Postgres should trust connections BBB LAN
