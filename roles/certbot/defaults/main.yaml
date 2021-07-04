@@ -1,2 +1,3 @@
 bigbluebutton_letsencrypt_address: r00t@example.com
 certbot_post_hooks: []
+certbot_renew_day_of_month: '*'

@@ -14,4 +14,10 @@
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
-0 */12 * * * root test -x /usr/bin/certbot -a \! -d /run/systemd/system && perl -e 'sleep int(rand(43200))' && certbot -q {% if certbot_post_hooks | length > 0 %}--post-hook {{ certbot_post_hooks | join(' --post-hook ') }}{% endif %} renew
+{% if certbot_hack_renew | default(False) %}
+0 */12 {{ certbot_renew_day_of_month }} * * root test -x /usr/bin/certbot && perl -e 'sleep int(rand(43200))' && /usr/local/sbin/certbot-renew-hack
+{% elif (certbot_post_hooks | default([])) | length > 0 %}
+0 */12 {{ certbot_renew_day_of_month }} * * root test -x /usr/bin/certbot -a \! -d /run/systemd/system && perl -e 'sleep int(rand(43200))' && certbot -q --post-hook {{ certbot_post_hooks | join(' --post-hook ') }} renew
+{% else %}
+0 */12 {{ certbot_renew_day_of_month }} * * root test -x /usr/bin/certbot -a \! -d /run/systemd/system && perl -e 'sleep int(rand(43200))' && certbot -q renew
+{% endif %}

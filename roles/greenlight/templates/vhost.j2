@@ -81,7 +81,7 @@ server {
     }
 {% if greenlight_app_root != "/" %}
 
-    location = / {
+    location / {
 	return 307 {{ greenlight_app_root }};
     }
 {% endif %}

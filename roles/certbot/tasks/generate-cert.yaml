@@ -8,14 +8,27 @@
       --staple-ocsp --agree-tos --no-eff-email
   when:
   - bigbluebutton_letsencrypt_address | default(False)
+- name: Installs Certbot Renewal Hack
+  template:
+    dest: /usr/local/sbin/certbot-renew-hack
+    group: root
+    mode: 0750
+    owner: root
+    src: hack.j2
+  when:
+  - certbot_hack_renew | default(False)
+- name: Fixes LetsEncrypt Renewal Cron Job
+  template:
+    dest: /etc/cron.d/certbot
+    group: root
+    mode: 0644
+    owner: root
+    src: renew.j2
+  when:
+  - >
+      (certbot_post_hooks | length > 0)
+      or (certbot_hack_renew | default(False))
 - block:
-  - name: Fixes LetsEncrypt Renewal Cron Job
-    template:
-      dest: /etc/cron.d/certbot
-      group: root
-      mode: 0644
-      owner: root
-      src: renew.j2
   - name: Fixes LetsEncrypt Renewal Unit
     lineinfile:
       dest: /lib/systemd/system/certbot.service

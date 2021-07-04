@@ -1,0 +1,29 @@
+#!/bin/sh
+
+(
+    sleep 1
+    echo Y
+{% for dnsname in cert_fqdn %}
+    sleep 1
+    echo
+{% endfor %}
+) | certbot certonly --manual \
+{% for dnsname in cert_fqdn %}
+    -d {{ dnsname }} \
+{% endfor %}
+    --staple-ocsp \
+    --agree-tos \
+    --no-eff-email -m {{ bigbluebutton_letsencrypt_address }}
+
+if ! test $? -eq 0; then
+    echo failed to renew certificate
+    exit 1
+{% if (certbot_post_hooks | default([])) | length > 0 %}
+else
+{% for post in certbot_post_hooks %}
+    {{ post }} || echo failed on {{ post }} >&2
+{% endfor %}
+fi
+{% endif %}
+
+exit 0
