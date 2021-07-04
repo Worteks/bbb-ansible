@@ -123,6 +123,12 @@ Dealing with distributed BBB setup, note that:
    well.
  - Postgres could also be deployed on top of a DRBD device. Which is the only
    way those playbooks currently offer to implement HA for Postgres.
+ - reverses hosting the same sites would need to share LetsEncrypt account
+   data, such as whichever node responds to LE challenge, it would do so with
+   the same account that did initially request a certificate. During first
+   deployment, only one of your reverses would pass that task. You could then
+   synchronize SSL certs and virtualhosts to the other nodes and re-apply
+   the bootstrap playbook.
 
 As a general rule, drbd/pacemaker/corosync deployment is not fully automated
 (initializing your drbd device, designating an initial master where you
