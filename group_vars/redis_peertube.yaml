@@ -1,14 +1,19 @@
+firehol_app_filtered_ports:
+- name: redis
+  value: tcp/6379
+- name: sentinel
+  value: tcp/26379
 firehol_app_opened_ports:
 - name: ssh
   value: tcp/22
-- name: redis
-  value: tcp/6379
 - name: nodexp
   value: tcp/9142
 - name: systemdxp
   value: tcp/9147
 - name: redisxp
   value: tcp/9179
+
+redis_hostgroup: redis_peertube
 
 # using xen pv
 #setup_firewall: False
