@@ -11,9 +11,11 @@
     src: sentinel.systemd
   register: sentinel_unit
   when:
-  - groups[my_hostgroup] | length > 1
-  - redis_standalone is not defined
+  - groups[redis_hostgroup] | length > 1
+  - not (redis_standalone | default(False))
   - ansible_fqdn not in groups['drbd']
+  - ansible_hostname not in groups['drbd']
+  - ansible_nodename not in groups['drbd']
 - name: Removes Sentinel Unit
   file:
     dest: /etc/systemd/system/redis-sentinel.service
@@ -21,8 +23,8 @@
   register: sentinel_unit_clean
   when:
   - >
-     redis_standalone is defined
-     or groups[my_hostgroup] | length < 2
+     (redis_standalone | default(False))
+     or groups[redis_hostgroup] | length < 2
      or ansible_fqdn in groups['drbd']
      or ansible_hostname in groups['drbd']
      or ansible_nodename in groups['drbd']
@@ -47,4 +49,7 @@
     when:
     - not (drbd_is_primary | default(False))
   when:
-  - ansible_nodename in groups['drbd']
+  - >
+      ansible_nodename in groups['drbd']
+      or ansible_hostname in groups['drbd']
+      or ansible_fqdn in groups['drbd']

@@ -1,0 +1,37 @@
+#greenlight_saml_commonname_field: uid
+#greenlight_saml_email_field: mail
+#greenlight_saml_endpoint: https://auth.example.com/saml/singleSignOn
+#greenlight_saml_nameid_format: "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"
+#greenlight_saml_issuer: bigbluebutton
+#greenlight_saml_uid_field: uid
+#greenlight_saml_username_field: uid
+
+#greenlight_ldap_ca_path: /path/to/custom/ca/on/ansible/node.crt
+
+#greenlight_oidc_authorization_endpoint: /oauth2/authorize
+#greenlight_oidc_ca_path: /path/to/custom/ca/on/ansible/node.crt
+#greenlight_oidc_client_id: greenlight
+#greenlight_oidc_client_secret: qb1xt0j8tbj1f6vmy8ti2qa6nywegpggbpzu2b38
+#greenlight_oidc_endpoint: "{{ greenlight_oidc_site }}{{ greenlight_oidc_authorization_endpoint }}"
+#greenlight_oidc_site: https://auth.example.com
+#greenlight_oidc_token_endpoint: /oauth2/token
+##greenlight_oidc_logout_endpoint: /oauth2/slo
+#greenlight_oidc_uid_field: sub
+
+firehol_app_opened_ports:
+- name: ssh
+  value: tcp/22
+- name: http
+  value: tcp/80
+- name: https
+  value: tcp/443
+- name: nodexp
+  value: tcp/9142
+- name: nginxxp
+  value: tcp/9143
+- name: nginxluaxp
+  value: tcp/9145
+- name: systemdxp
+  value: tcp/9147
+- name: greenlightxp
+  value: tcp/9158

@@ -1,0 +1,22 @@
+- name: "Checks SRV_MOUNT:{{ lvm_id | default(1) }} configured"
+  changed_when: False
+  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+  failed_when: False
+  register: haslv
+  run_once: yes
+  shell: |
+    crm configure show | grep "primitive SRV_MOUNT_{{ lvm_id | default(1) }} "
+- name: "Configures SRV_MOUNT:{{ lvm_id | default(1) }} primitive"
+  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+  run_once: yes
+  shell: |
+    crm configure primitive SRV_MOUNT_{{ lvm_id | default(1) }} \
+        ocf:heartbeat:Filesystem \
+        device="/dev/mapper/{{ vg_name | default('data') }}-{{ lv_name | default('fixme') }}" \
+        directory="{{ lv_path | default('/media') }}" \
+        fstype="xfs" options="noatime,nodiratime,noexec,nodev,nosuid" \
+        op monitor interval="40s"
+  when:
+  - haslv is defined
+  - haslv.rc is defined
+  - (haslv.rc | default(0)) != 0

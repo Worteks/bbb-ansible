@@ -7,7 +7,8 @@
       path: /var/lib/peertube/data/plugins/peertube-plugin-livechat
   - name: Installs Peertube Live Chat Plugin
     register: lcrestart
-    shell: docker exec peertube_peertube_1 /bin/sh -c "npm run plugin:install -- --npm-name peertube-plugin-livechat
+    shell: |
+      docker exec peertube_peertube_1 /bin/sh -c "npm run plugin:install -- --npm-name peertube-plugin-livechat"
     when:
     - livechatplugin is defined
     - livechatplugin.stat is defined
@@ -23,7 +24,8 @@
       path: /var/lib/peertube/data/plugins/peertube-plugin-chapters
   - name: Installs Peertube Chapters Plugin
     register: crestart
-    shell: docker exec peertube_peertube_1 /bin/sh -c "npm run plugin:install -- --npm-name peertube-plugin-chapters
+    shell: |
+      docker exec peertube_peertube_1 /bin/sh -c "npm run plugin:install -- --npm-name peertube-plugin-chapters"
     when:
     - chaptersplugin is defined
     - chaptersplugin.stat is defined
@@ -39,7 +41,8 @@
       path: /var/lib/peertube/data/plugins/peertube-plugin-auth-ldap
   - name: Installs Peertube Auth LDAP Plugin
     register: lrestart
-    shell: docker exec peertube_peertube_1 /bin/sh -c "npm run plugin:install -- --npm-name peertube-plugin-auth-ldap"
+    shell: |
+      docker exec peertube_peertube_1 /bin/sh -c "npm run plugin:install -- --npm-name peertube-plugin-auth-ldap"
     when:
     - ldapplugin is defined
     - ldapplugin.stat is defined
@@ -62,7 +65,8 @@
       path: /var/lib/peertube/data/plugins/peertube-plugin-auth-saml2
   - name: Installs Peertube Auth SAML2 Plugin
     register: srestart
-    shell: docker exec peertube_peertube_1 /bin/sh -c "npm run plugin:install -- --npm-name peertube-plugin-auth-saml2"
+    shell: |
+      docker exec peertube_peertube_1 /bin/sh -c "npm run plugin:install -- --npm-name peertube-plugin-auth-saml2"
     when:
     - ldapplugin is defined
     - ldapplugin.stat is defined
@@ -85,7 +89,8 @@
       path: /var/lib/peertube/data/plugins/peertube-plugin-auth-openid-connect
   - name: Installs Peertube Auth OIDC Plugin
     register: orestart
-    shell: docker exec peertube_peertube_1 /bin/sh -c "npm run plugin:install -- --npm-name peertube-plugin-auth-openid-connect"
+    shell: |
+      docker exec peertube_peertube_1 /bin/sh -c "npm run plugin:install -- --npm-name peertube-plugin-auth-openid-connect"
     when:
     - ldapplugin is defined
     - ldapplugin.stat is defined

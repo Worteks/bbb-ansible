@@ -36,15 +36,73 @@
     shell: "sysctl -w kernel.shmmax={{ (postgres_shared_buffers_mbytes * 1024 * 1024 * 125 / 100) | round }}"
   when:
   - (postgres_shared_buffers_mbytes | int) > 1024
-- name: Ensures Postgres is Running & Starts on Boot
-  service:
-    enabled: yes
-    name: postgresql
-    state: started
+- name: Checks Permission on Postgres Data Directory
+  changed_when: False
+  register: pgdata
+  stat:
+    path: /var/lib/postgres
+- name: Fixes Permissions on Postgres Data Directory
+  args:
+    warn: False
+  shell: |
+    chown -R postgres:postgres /var/lib/postgres
+  when:
+  - pgdata is defined
+  - pgdata.stat is defined
+  - >
+      (pgdata.stat.pw_name is defined
+       and pgdata.stat.pw_name != 'postgres')
+      or (pgdata.stat.gr_name is defined
+          and pgdata.stat.gr_name != 'postgres')
+- block:
+  - include_tasks: dbinit.yaml
+  - name: Ensures Postgres is Running & Starts on Boot
+    service:
+      enabled: yes
+      name: postgresql
+      state: started
   when:
   - ansible_fqdn not in groups['drbd']
   - ansible_hostname not in groups['drbd']
   - ansible_nodename not in groups['drbd']
+- block:
+  - include_tasks: dbinit.yaml
+    when:
+    - >
+         (ansible_nodename in groups['drbd']
+          and drbd_is_primary | default(False))
+         or (ansible_hostname in groups['drbd']
+             and drbd_is_primary | default(False))
+         or (ansible_fqdn in groups['drbd']
+             and drbd_is_primary | default(False))
+  - include_role:
+      name: pacemaker
+      tasks_from: add-service.yaml
+    loop:
+    - postgres_coturn
+    - postgres_greenlight
+    - postgres_grafana
+    - postgres_peertube
+    - postgres_scalelite
+    loop_control:
+      loop_var: apply_to
+    vars:
+      #corosync_hostgroup: "{{ apply_to }}"
+      service_id: Postgresql-rsc
+      service_name: postgresql
+      service_type: lsb
+    when:
+    - groups[apply_to] | length > 0
+    - >
+        ansible_nodename in groups[apply_to]
+        or ansible_hostname in groups[apply_to]
+        or ansible_fqdn in groups[apply_to]
+  when:
+  - >
+      ansible_fqdn in groups['drbd']
+      or ansible_hostname in groups['drbd']
+      or ansible_nodename in groups['drbd']
+  - corosync_hostgroup | default(False)
 - name: Installs Postgres User Ansible Working Directory
   file:
     dest: "{{ fl }}"
@@ -59,6 +117,34 @@
     loop_var: fl
   when:
   - >
-      ansible_nodename not in groups['drbd']
+      (ansible_nodename not in groups['drbd']
+       and ansible_hostname not in groups['drbd']
+       and ansible_fqdn not in groups['drbd'])
       or (ansible_nodename in groups['drbd']
           and drbd_is_primary | default(False))
+      or (ansible_hostname in groups['drbd']
+          and drbd_is_primary | default(False))
+      or (ansible_fqdn in groups['drbd']
+          and drbd_is_primary | default(False))
+- include_role:
+    name: pacemaker
+    tasks_from: finish-setup.yaml
+  loop:
+  - postgres_coturn
+  - postgres_greenlight
+  - postgres_grafana
+  - postgres_peertube
+  - postgres_scalelite
+  loop_control:
+    loop_var: apply_to
+  when:
+  - >
+      ansible_fqdn in groups['drbd']
+      or ansible_hostname in groups['drbd']
+      or ansible_nodename in groups['drbd']
+  - groups[apply_to] | length > 0
+  - >
+      ansible_nodename in groups[apply_to]
+      or ansible_hostname in groups[apply_to]
+      or ansible_fqdn in groups[apply_to]
+  - corosync_hostgroup | default(False)

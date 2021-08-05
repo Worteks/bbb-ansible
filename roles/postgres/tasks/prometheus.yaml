@@ -58,7 +58,7 @@
                                                                      if (ansible_fqdn in groups['postgres_greenlight']
                                                                          or ansible_hostname in groups['postgres_greenlight']
                                                                          or ansible_nodename in groups['postgres_greenlight'])
-                                                                     else 'postgres'))))) }}"
+                                                                     else 'postgres')))))) }}"
     postgres_exporter_password: "{{ scalelite_postgres_password
                                  if (ansible_fqdn in groups['postgres_scalelite']
                                      or ansible_hostname in groups['postgres_scalelite']
@@ -87,7 +87,7 @@
                                                                      if (ansible_fqdn in groups['postgres_greenlight']
                                                                          or ansible_hostname in groups['postgres_greenlight']
                                                                          or ansible_nodename in groups['postgres_greenlight'])
-                                                                     else 'postgres'))))) }}"
+                                                                     else 'postgres')))))) }}"
     postgres_exporter_user: "{{ scalelite_postgres_user
                                  if (ansible_fqdn in groups['postgres_scalelite']
                                      or ansible_hostname in groups['postgres_scalelite']
@@ -116,4 +116,4 @@
                                                                      if (ansible_fqdn in groups['postgres_greenlight']
                                                                          or ansible_hostname in groups['postgres_greenlight']
                                                                          or ansible_nodename in groups['postgres_greenlight'])
-                                                                     else 'postgres'))))) }}"
+                                                                     else 'postgres')))))) }}"

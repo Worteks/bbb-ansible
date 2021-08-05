@@ -12,3 +12,12 @@
     src: /etc/nginx/sites-available/peertube.conf
     state: link
   notify: Reloads Nginx
+- include_role:
+    name: pacemaker
+    tasks_from: finish-setup.yaml
+  when:
+  - >
+      ansible_fqdn in groups['drbd']
+      or ansible_hostname in groups['drbd']
+      or ansible_nodename in groups['drbd']
+  - corosync_hostgroup | default(False)

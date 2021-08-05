@@ -5,7 +5,7 @@ After=redis-server.service
 [Service]
 User=redisexporter
 Group=redisexporter
-ExecStart=/usr/bin/redis_exporter --include-system-metrics --redis.addr=redis://{{ '127.0.0.1' if (ansible_fqdn not in groups['drbd'] or redis_exporter_should_run | default(False)) else (corosync_vip | default('127.0.0.1')) }}:{{ redis_port }} --web.listen-address=:{{ redis_exporter_port }}
+ExecStart=/usr/bin/redis_exporter --include-system-metrics --redis.addr=redis://{{ '127.0.0.1' if ((ansible_fqdn not in groups['drbd'] and ansible_nodename not in groups['drbd'] and ansible_hostname not in groups['drbd']) or redis_exporter_should_run | default(False)) else (corosync_vip | default('127.0.0.1')) }}:{{ redis_port }} --web.listen-address=:{{ redis_exporter_port }}
 Restart=always
 
 [Install]

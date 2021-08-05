@@ -3,6 +3,7 @@ coturn_bind_addresses: []
 #- 10.1.2.3
 #- 10.2.3.4
 coturn_bind_interface: False
+coturn_do_insecure: True
 
 #coturn_cli_interface: eth1 / defaults loopback
 #coturn_cli_password: secret

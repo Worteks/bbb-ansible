@@ -1,20 +1,23 @@
 - name: Fails on Missing Variables
+  any_errors_fatal: true
   fail:
     msg: |
       Could not find {{ ansible_fqdn }} in Corosync members
   when:
   - ansible_fqdn not in corosync_members
 - name: Fails on Invalid Variables
+  any_errors_fatal: true
   fail:
     msg: |
       Should have at least 2 Corosync members
   when:
   - corosync_members | length < 2
-- name: Installs Pacemaker & Corosync
+- name: Installs Pacemaker, Corosync & LVM
   apt:
     name:
     - corosync
     - crmsh
+    - lvm2
     - pacemaker
     - pcs
     state: present

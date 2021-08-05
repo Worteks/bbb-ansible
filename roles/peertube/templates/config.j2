@@ -140,7 +140,11 @@ remote_redundancy:
     accept_from: 'anybody'
 
 csp:
+{% if peertube_csp_enable %}
+  enabled: true
+{% else %}
   enabled: false
+{% endif %}
   report_only: true
   report_uri: ''
 

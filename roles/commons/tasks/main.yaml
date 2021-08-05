@@ -1,4 +1,6 @@
+- include_tasks: rootfs.yaml
 - include_tasks: commons.yaml
+- include_tasks: certs-trusted.yaml
 - include_tasks: locale.yaml
   when:
   - ansible_distribution in [ 'Debian', 'Devuan', 'Ubuntu' ]
@@ -8,6 +10,7 @@
   - groups['freeipa'] | length > 0
   - ansible_fqdn not in groups['freeipa']
   - ansible_hostname not in groups['freeipa']
+  - ansible_nodename not in groups['freeipa']
 - include_tasks: update.yaml
 - include_tasks: prometheus.yaml
   when:

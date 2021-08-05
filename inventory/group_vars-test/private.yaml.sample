@@ -1,0 +1,84 @@
+#alertmanager_smtp_domain: example.com
+#alertmanager_smtp_password: secret
+#alertmanager_smtp_port: 25
+#alertmanager_smtp_server: smtp.example.com
+#alertmanager_smtp_tls: False
+#alertmanager_smtp_username: username
+
+# generate yours with openssl rand -hex 16
+coturn_auth_secret: secret
+#coturn_cli_interface: eth1
+coturn_cli_password: secret
+coturn_postgres_password: coturnpw
+
+#freeipa_registration_password: secret
+#freeipa_registration_user: admin
+
+# Enables Fluentd GeoIP integration, telling Ansible where to get its db from:
+#geoip_database_url: http://myhttpserver.example.com/GeoLite2-City.tar.gz
+
+grafana_admin_account: admin
+grafana_admin_password: secret
+
+greenlight_admin_account: admin
+greenlight_admin_email: greenlight@demo.local
+greenlight_admin_password: secret
+
+greenlight_allow_local_accounts: True
+# greenlight_base_secret generated with openssl rand -hex 64
+greenlight_base_secret: secret
+greenlight_postgres_password: secret
+greenlight_registrations: open
+
+#greenlight_smtp_auth: plain
+#greenlight_smtp_domain: example.com
+#greenlight_smtp_mailfrom: noreply@example.com
+#greenlight_smtp_password: secret
+#greenlight_smtp_port: 465
+#greenlight_smtp_server: smtp.example.com
+#greenlight_smtp_starttls: False
+#greenlight_smtp_testuser: False
+#greenlight_smtp_tls: True
+#greenlight_smtp_username: username
+
+# Having registered one of your server to Certbot, and sharing the content of
+# its /etc/letsencrypt/account accross multiple servers (assuming sound
+# round-robin or other HA-like setup), we may set the following to ensure that
+# regardless of which server Certbot would check with, while signing a new
+# certificate request, the same response would be served back:
+#letsencrypt_challenge_account_thumbprint: my-certbot-thumbprint
+
+peertube_initial_root_password: secret
+peertube_postgres_password: secret
+
+#peertube_ldap_base: dc=demo,dc=local
+#peertube_ldap_bind_dn: cn=admin,dc=demo,dc=local
+#peertube_ldap_endpoint: ldap://directory.example.com:1636
+#peertube_ldap_password: changeme
+#peertube_ldap_uid: uid
+
+#peertube_oidc_client_id: peertube
+#peertube_oidc_client_secret: changeme
+#peertube_oidc_site: https://auth.example.com
+#peertube_oidc_scope: openid email profile
+#peertube_oidc_uid_field: preferred_username
+#peertube_oidc_mail_field: email
+
+# Integrationg BBB-CSP with PeerTube, instead of using PeerTube
+# root account, we would create (manually) an user with limited
+# privileges, and write down its login/password here:
+#peertube_rtmp_password: secret-for-bbbcsp-user
+#peertube_rtmp_user: bbbcsp
+
+#peertube_smtp_domain: example.com
+#peertube_smtp_password: secret
+#peertube_smtp_port: 587
+#peertube_smtp_server: smtp.example.com
+#peertube_smtp_starttls: True
+#peertube_smtp_username: username
+
+# scalelite_base_secret generated with openssl rand -hex 64
+scalelite_base_secret: secret
+# scalelite_lb_secret generated with openssl rand -hex 24
+scalelite_lb_secret: secret
+scalelite_postgres_password: secret

@@ -6,6 +6,15 @@
     owner: root
     src: server-tokens.conf
   notify: Reloads Nginx
+  when:
+  - >
+      (ansible_hostname not in groups['bbb']
+       and ansible_nodename not in groups['bbb']
+       and ansible_fqdn not in groups['bbb'])
+      or (ansible_distribution_release != 'bionic'
+          and (ansible_hostname in groups['bbb']
+               or ansible_nodename in groups['bbb']
+               or ansible_fqdn in groups['bbb']))
 - name: Installs Nginx Names Hash Bucket Size Configuration
   notify: Reloads Nginx
   template:

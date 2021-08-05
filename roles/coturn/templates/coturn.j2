@@ -1,4 +1,6 @@
+{% if coturn_do_insecure %}
 listening-port={{ coturn_plain_port }}
+{% endif %}
 tls-listening-port={{ coturn_tls_port }}
 min-port={{ coturn_min_port }}
 max-port={{ coturn_max_port }}

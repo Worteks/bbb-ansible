@@ -11,6 +11,8 @@
     owner: root
     src: "bbb-{{ 'proxy' if ((ansible_hostname in groups['bbb']
                               and ansible_hostname in groups['greenlight'])
+                             or (ansible_nodename in groups['bbb']
+                                 and ansible_nodename in groups['greenlight'])
                              or (ansible_fqdn in groups['bbb']
                                  and ansible_fqdn in groups['greenlight']))
                          else 'rewrite'

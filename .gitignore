@@ -1,10 +1,13 @@
 /.ansible-logs
+/.pki*
 /facts-*
-/group_vars/private.yaml
 /hosts
+/inventory/group_vars*/private.yaml
+/inventory/*-my
+/old
+/roles/coturn/files/schema.sql
 /test*.yaml
 /wip
-.pki*
 *.log
 *.[0-9]
 .*.sw[a-z]

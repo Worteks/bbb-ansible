@@ -12,29 +12,37 @@
     src: /etc/nginx/sites-available/scalelite.conf
     state: link
   notify: Reloads Nginx
-- name: Checks for Playbacks Directory
-  changed_when: False
-  failed_when: False
-  stat:
-    path: /var/scalelite-recordings/playback
-  register: hasplaybacks
 - block:
-  - name: Starts Scalelite Nginx Container
-    shell: |
-      docker rm -f extractplaybacks || echo OK;
-      docker run --entrypoint /bin/sh \
-          --name extractplaybacks \
-          -d "{{ scalelite_images_repo }}:{{ scalelite_images_release }}-nginx" \
-          -c "sleep 86400"
-  - name: Extracts Scalelite Playbacks
-    shell: docker cp extractplaybacks:/var/bigbluebutton/playback /var/scalelite-recordings/playback
-  - name: Terminates Scalelite Nginx Container
-    shell: docker rm -f extractplaybacks
+  - name: Checks for Playbacks Directory
+    changed_when: False
+    failed_when: False
+    register: hasplaybacks
+    stat:
+      path: /var/scalelite-recordings/playback
+  - block:
+    - name: Starts Scalelite Nginx Container
+      shell: |
+        docker rm -f extractplaybacks || echo OK;
+        docker run --entrypoint /bin/sh \
+            --name extractplaybacks \
+            -d "{{ scalelite_images_repo }}:{{ scalelite_images_release }}-nginx" \
+            -c "sleep 86400"
+    - name: Extracts Scalelite Playbacks
+      shell: docker cp extractplaybacks:/var/bigbluebutton/playback /var/scalelite-recordings/playback
+    - name: Terminates Scalelite Nginx Container
+      shell: docker rm -f extractplaybacks
+    when:
+    - hasplaybacks is defined
+    - hasplaybacks.stat is defined
+    - not hasplaybacks.stat.exists
   when:
-  - hasplaybacks is defined
-  - hasplaybacks.stat is defined
-  - not hasplaybacks.stat.exists
   - >
-      (ansible_fqdn not in groups['drbd'])
+      (ansible_nodename not in groups['drbd']
+       and ansible_hostname not in groups['drbd']
+       and ansible_fqdn not in groups['drbd'])
+      or (ansible_nodename in groups['drbd']
+          and drbd_is_primary | default(False))
+      or (ansible_hostname in groups['drbd']
+          and drbd_is_primary | default(False))
       or (ansible_fqdn in groups['drbd']
           and drbd_is_primary | default(False))

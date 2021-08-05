@@ -1,18 +1,53 @@
 - name: Fails on Missing Variables
+  any_errors_fatal: true
   fail:
     msg: |
       Could not find {{ ansible_fqdn }} in DRBD members
   when:
-  - ansible_fqdn not in drbd_members
+  - ansible_fqdn not in corosync_members
 - name: Fails on Invalid Variables
+  any_errors_fatal: true
   fail:
     msg: |
       Should have at least 2 DRBD members
   when:
-  - drbd_members | length < 2
-- name: Installs DRBD
+  - corosync_members | length < 2
+- name: Checks DRBD Parent Device exists
+  changed_when: False
+  register: drbd_parent_exists
+  stat:
+    path: "{{ drbd_parent_device }}"
+- name: Fails when DRBD Parent Device does not exist
+  fail:
+    msg: |
+     Can not setup DRBD - {{ drbd_parent_device }} not found on {{ ansible_fqdn }}
+  when:
+  - drbd_parent_exists is defined
+  - drbd_parent_exists.stat is defined
+  - drbd_parent_exists.stat.isblk is not defined
+- name: Check Devices
+  args:
+    warn: False
+  changed_when: False
+  failed_when: False
+  register: drbd_parent_mounted
+  shell: |
+    mount | grep "^{{ drbd_parent_device }}"
+- name: Fails when DRBD Parent Device already used
+  any_errors_fatal: true
+  fail:
+    msg: |
+      Can not setup DRBD -- {{ drbd_parent_device }} is currently mounted on {{ ansible_fqdn }}
+  when:
+  - drbd_parent_mounted is defined
+  - drbd_parent_mounted.rc is defined
+  - (drbd_parent_mounted.rc | default(1)) == 0
+- name: Installs DRBD Tools
   apt:
-    name: drbd-utils
+    name:
+    - drbd-utils
+    - lvm2
+    - xfsprogs
     state: present
 - name: Ensures DRBD Module Would be Loaded on Boot
   lineinfile:

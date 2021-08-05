@@ -1,35 +1,9 @@
 - block:
-  - name: Lists LetsEncrypt Account Data from Primary Reverse
-    args:
-      chdir: /etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org
-    delegate_to: "{{ groups['reverse'][0] }}"
-    register: le_account
-    run_once: yes
-    shell: find . -type f
-  - name: Synchronizes LetsEncrypt Account Data from Primary Reverse to Ansible Node
-    delegate_to: "{{ groups['reverse'][0] }}"
-    fetch:
-      dest: "{{ playbook_dir }}/.pki/reverse-letsencrypt"
-      group: root
-      owner: root
-      src: "/etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org/{{ file }}"
-    loop_control:
-      loop_var: file
-    loop: "{{ le_account.stdout_lines }}"
-    run_once: yes
-    when:
-    - le_account is defined
-    - le_account.stdout_lines is defined
-    - le_account.stdout_lines | length > 0
-  - name: Sends LetsEncrypt Account Data to Reverses
-    synchronize:
-      dest: /etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org
-      group: True
-      owner: True
-      perms: True
-      src: "{{ playbook_dir }}/.pki/reverse-letsencrypt/{{ groups['reverse'][0] }}/etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org"
-    when:
-    - ansible_nodename != groups['reverse'][0]
+  - include_role:
+    - name: certbot
+      tasks_from: sync-account.yaml
+    vars:
+      certbot_cluster_name: reverse
   - name: Initializes Domains List Fact
     set_fact:
       cert_fqdn: []

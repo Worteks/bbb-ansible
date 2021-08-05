@@ -1,0 +1,88 @@
+- name: Lists LVM primitives
+  changed_when: False
+  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+  failed_when: False
+  register: haslvms
+  run_once: yes
+  shell: |
+    crm configure show | awk '/^primitive/{print $2}' | grep ^LVM
+- name: Lists Mount primitives
+  changed_when: False
+  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+  failed_when: False
+  register: hasmounts
+  run_once: yes
+  shell: |
+    crm configure show | awk '/^primitive/{print $2}' | grep ^SRV_MOUNT
+- name: Lists IP primitives
+  changed_when: False
+  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+  failed_when: False
+  register: hasips
+  run_once: yes
+  shell: |
+    crm configure show | awk '/^primitive/{print $2}' | grep ^IP
+- name: Lists Services primitives
+  changed_when: False
+  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+  failed_when: False
+  register: hassvcs
+  run_once: yes
+  shell: |
+    crm configure show | awk '/^primitive/{print $2}' | grep -v ^IP | grep -E '.*-rsc'
+- name: Sets Resource Group Facts
+  set_fact:
+    group_deps: "{{ ((haslvms.stdout_lines | default([]))
+                     + (hasmounts.stdout_lines | default([]))
+                     + (hasips.stdout_lines | default([]))
+                     + (hassvcs.stdout_lines | default([]))) | join(' ') }}"
+- name: Checks Resource Group Configured
+  changed_when: False
+  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+  failed_when: False
+  register: hasgroup
+  run_once: yes
+  shell: |
+    crm configure show | grep '^group APCLUSTER {{ group_deps }}'
+- name: Configures Resource Group
+  block:
+  - name: Checks Prior Resource Group Definition
+    changed_when: False
+    delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+    failed_when: False
+    register: hasoldgroup
+    run_once: yes
+    shell: |
+      crm configure show | grep '^group APCLUSTER '
+  - block:
+    - name: Checks Prior Order Definition
+      changed_when: False
+      delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+      failed_when: False
+      register: hasoldorder
+      run_once: yes
+      shell: |
+        crm configure show | grep '^order APCLUSTER_after_DRBD_{{ drbd_id | default("r0") }}'
+    - name: Removes Prior Order Definition
+      delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+      run_once: yes
+      shell: |
+        crm configure delete 'APCLUSTER_after_DRBD_{{ drbd_id | default("r0") }}'
+    - name: Removes Prior Resource Group Definition
+      delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+      run_once: yes
+      shell: |
+        crm configure delete APCLUSTER
+    when:
+    - hasoldgroup is defined
+    - hasoldgroup.rc is defined
+    - (hasoldgroup.rc | default(1)) == 0
+  - name: Creates Resource Group
+    delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+    run_once: yes
+    shell: |
+      crm configure group APCLUSTER {{ group_deps }}
+  when:
+  - hasgroup is defined
+  - hasgroup.rc is defined
+  - (hasgroup.rc | default(0)) != 0

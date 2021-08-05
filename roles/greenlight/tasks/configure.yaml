@@ -55,4 +55,5 @@
     tasks_from: service.yaml
   vars:
     service_description: Greenlight
+    service_force_drbd: True
     service_name: greenlight

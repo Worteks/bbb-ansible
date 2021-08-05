@@ -1,0 +1,34 @@
+corosync_hostgroup: drbd_scalelite
+corosync_members:
+- scalelite-1.friends.intra.example.com
+- scalelite-2.friends.intra.example.com
+corosync_multicast_address: 239.255.1.5
+corosync_vip: 10.42.253.176
+drbd_filesystems:
+- mountpoint: /var/scalelite-recordings
+  name: recordings
+  size: 20G
+drbd_resource_name: recordings
+firehol_app_opened_ports:
+- name: ssh
+  value: tcp/22
+- name: http
+  value: tcp/80
+- name: https
+  value: tcp/443
+- name: pacemaker
+  value: tcp/2224
+- name: corosync
+  value: udp/5442
+- name: nodexp
+  value: tcp/9142
+- name: nginxxp
+  value: tcp/9143
+- name: nginxluaxp
+  value: tcp/9145
+- name: systemdxp
+  value: tcp/9147
+- name: haclusterxp
+  value: tcp/9664
+- name: bbbxp
+  value: tcp/9688

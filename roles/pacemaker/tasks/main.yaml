@@ -2,3 +2,7 @@
 - include_tasks: corosync.yaml
 - include_tasks: pacemaker.yaml
 - include_tasks: prometheus.yaml
+- include_tasks: add-vip.yaml
+  vars:
+    vip: "{{ corosync_vip }}"
+  when: corosync_vip | default(False)

@@ -6,6 +6,24 @@
     mode: 0644
     owner: root
     src: redis.j2
+- name: Checks Permission on Redis Data Directory
+  changed_when: False
+  register: redisdata
+  stat:
+    path: /var/lib/redis
+- name: Fixes Permissions on Redis Data Directory
+  args:
+    warn: False
+  shell: |
+    chown -R redis:redis /var/lib/redis
+  when:
+  - redisdata is defined
+  - redisdata.stat is defined
+  - >
+      (redisdata.stat.pw_name is defined
+       and redisdata.stat.pw_name != 'redis')
+      or (redisdata.stat.gr_name is defined
+          and redisdata.stat.gr_name != 'redis')
 - name: Ensures Redis Server is Running & Starts on Boot
   service:
     enabled: yes
@@ -15,3 +33,46 @@
   - ansible_fqdn not in groups['drbd']
   - ansible_hostname not in groups['drbd']
   - ansible_nodename not in groups['drbd']
+- include_role:
+    name: pacemaker
+    tasks_from: add-service.yaml
+  loop:
+  - redis_peertube
+  - redis_scalelite
+  loop_control:
+    loop_var: apply_to
+  vars:
+    #corosync_hostgroup: "{{ apply_to }}"
+    service_id: Redis-rsc
+    service_name: redis-server
+    service_type: lsb
+  when:
+  - >
+      ansible_fqdn in groups['drbd']
+      or ansible_hostname in groups['drbd']
+      or ansible_nodename in groups['drbd']
+  - groups[apply_to] | length > 0
+  - >
+      ansible_nodename in groups[apply_to]
+      or ansible_hostname in groups[apply_to]
+      or ansible_fqdn in groups[apply_to]
+  - corosync_hostgroup | default(False)
+- include_role:
+    name: pacemaker
+    tasks_from: finish-setup.yaml
+  loop:
+  - redis_peertube
+  - redis_scalelite
+  loop_control:
+    loop_var: apply_to
+  when:
+  - >
+      ansible_fqdn in groups['drbd']
+      or ansible_hostname in groups['drbd']
+      or ansible_nodename in groups['drbd']
+  - groups[apply_to] | length > 0
+  - >
+      ansible_nodename in groups[apply_to]
+      or ansible_hostname in groups[apply_to]
+      or ansible_fqdn in groups[apply_to]
+  - corosync_hostgroup | default(False)

@@ -1,0 +1,42 @@
+- block:
+  - name: Checks Root Filesystem Type
+    args:
+      creates: /root/.ansible/fs-expand
+      warn: False
+    changed_when: False
+    register: has_rootfs
+    shell: |
+      mount | awk '/ \/ /{print $5}'
+  - block:
+    - name: Resolves Root Device
+      args:
+        creates: /root/.ansible/fs-expand
+        warn: False
+      changed_when: False
+      register: has_rootdev
+      shell: |
+        mount | awk '/ \/ /{print $1}'
+    - name: Expands EXT RootFS
+      args:
+        creates: /root/.ansible/fs-expand
+      shell: |
+        resize2fs {{ has_rootdev.stdout_lines[0] }} && date >/root/.ansible/fs-expand
+      when:
+      - has_rootdev is defined
+      - has_rootdev.stdout_lines is defined
+      - has_rootdev.stdout_lines | length > 0
+    when:
+    - has_rootfs is defined
+    - has_rootfs.stdout_lines is defined
+    - has_rootfs.stdout_lines | length > 0
+    - '"ext" in has_rootfs.stdout_lines[0]'
+  - name: Expands XFS RootFS
+    args:
+      creates: /root/.ansible/fs-expand
+    shell: |
+      xfs_growfs / && date >/root/.ansible/fs-expand
+    when:
+    - '"xfs" in has_rootfs.stdout_lines[0]'
+  when:
+  - do_resize_rootfs | default(False)
+  - not (is_on_shared_hardware | default(False))

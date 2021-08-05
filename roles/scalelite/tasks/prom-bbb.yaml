@@ -29,3 +29,26 @@
                                   or ansible_hostname in groups['drbd']
                                   or ansible_nodename in groups['drbd'])
                               else False }}"
+- block:
+  - include_role:
+      name: pacemaker
+      tasks_from: add-service.yaml
+    vars:
+      service_id: Nginxxp-rsc
+      service_name: nginx-exporter
+      service_timeout: 200
+      service_type: systemd
+  - include_role:
+      name: pacemaker
+      tasks_from: add-service.yaml
+    vars:
+      service_id: Scalelitexp-rsc
+      service_name: scalelite-exporter
+      service_timeout: 300
+      service_type: systemd
+  when:
+  - >
+      ansible_fqdn in groups['drbd']
+      or ansible_hostname in groups['drbd']
+      or ansible_nodename in groups['drbd']
+  - corosync_hostgroup | default(False)

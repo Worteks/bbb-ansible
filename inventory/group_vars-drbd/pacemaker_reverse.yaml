@@ -1,0 +1,28 @@
+corosync_bindnetaddr: 192.168.255.1
+corosync_members:
+- reverse-1.friends.intra.example.com
+- reverse-2.friends.intra.example.com
+corosync_multicast_address: 239.255.1.1
+corosync_vip: 10.42.253.150
+firehol_app_filtered_ports:
+- name: ssh
+  value: tcp/22
+- name: nodexp
+  value: tcp/9142
+- name: nginxxp
+  value: tcp/9143
+- name: nginxluaxp
+  value: tcp/9145
+- name: systemdxp
+  value: tcp/9147
+- name: pacemaker
+  value: tcp/2224
+- name: corosync
+  value: tcp/5442
+- name: haclusterxp
+  value: tcp/9664
+firehol_app_opened_ports:
+- name: http
+  value: tcp/80
+- name: https
+  value: tcp/443

@@ -51,4 +51,7 @@
     when:
     - not (drbd_is_primary | default(False))
   when:
-  - ansible_nodename in groups['drbd']
+  - >
+      ansible_nodename in groups['drbd']
+      or ansible_hostname in groups['drbd']
+      or ansible_fqdn in groups['drbd']

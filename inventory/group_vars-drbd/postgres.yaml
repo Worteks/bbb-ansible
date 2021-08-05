@@ -1,0 +1,1 @@
+firehol_trusted_networks: "{{ postgres_trusted_clients }}"

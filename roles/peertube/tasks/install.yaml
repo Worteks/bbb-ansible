@@ -25,7 +25,7 @@
     args:
       chdir: /usr/src/docker-peertube
     shell: |
-      docker build -t peertube-patched:{{ peertube_images_release }}
+      docker build -t peertube-patched:{{ peertube_images_release }} . >custom-image-build.$(date +%s).log 2>&1
     when:
     - ptdkr is defined
     - ptdkr is changed

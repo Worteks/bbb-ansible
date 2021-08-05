@@ -54,8 +54,8 @@
              or ansible_nodename in groups['drbd']
              or ansible_hostname in groups['drbd']))
        or (ansible_fqdn not in groups['drbd']
-          and ansible_nodename not in groups['drbd']
-          and ansible_hostname not in groups['drbd'])
+           and ansible_nodename not in groups['drbd']
+           and ansible_hostname not in groups['drbd'])
 - block:
   - name: Ensures Redis Exporter is Disabled on DRBD Members
     service:

@@ -5,52 +5,43 @@
        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 {% if groups['coturn'] | length > 0 %}
 {% for node in groups['coturn'] %}
+{% if hostvars[node]['coturn_do_insecure'] | default(True) %}
     <bean id="stun{{ loop.index0 }}" class="org.bigbluebutton.web.services.turn.StunServer">
 	<constructor-arg index="0" value="stun:{{ hostvars[node]['coturn_fqdn'] | default(hostvars[node]['ansible_fqdn']) }}"/>
     </bean>
     <bean id="turn{{ (loop.index0 | int) * 2 }}" class="org.bigbluebutton.web.services.turn.TurnServer">
 	<constructor-arg index="0" value="{{ hostvars[node]['coturn_auth_secret'] }}"/>
-{% if debug_coturn_no_turns_proto | default(False) %}
-	<constructor-arg index="1" value="turn:{{ hostvars[node]['coturn_fqdn'] | default(hostvars[node]['ansible_fqdn']) }}:{{ hostvars[node]['coturn_tls_port'] | default(turn_default_tls_port) }}?transport=tcp"/>
-{% else %}
-	<constructor-arg index="1" value="turns:{{ hostvars[node]['coturn_fqdn'] | default(hostvars[node]['ansible_fqdn']) }}:{{ hostvars[node]['coturn_tls_port'] | default(turn_default_tls_port) }}?transport=tcp"/>
-{% endif %}
+	<constructor-arg index="1" value="turn:{{ hostvars[node]['coturn_fqdn'] | default(hostvars[node]['ansible_fqdn']) }}:{{ hostvars[node]['coturn_plain_port'] | default(turn_default_plain_port) }}?transport=tcp"/>
 	<constructor-arg index="2" value="86400"/>
     </bean>
+{% endif %}
     <bean id="turn{{ ((loop.index0 | int) * 2) + 1 }}" class="org.bigbluebutton.web.services.turn.TurnServer">
 	<constructor-arg index="0" value="{{ hostvars[node]['coturn_auth_secret'] }}"/>
-{% if debug_coturn_all_tls | default(False) %}
-{% if debug_coturn_no_turns_proto | default(False) %}
-	<constructor-arg index="1" value="turn:{{ hostvars[node]['coturn_fqdn'] | default(hostvars[node]['ansible_fqdn']) }}:{{ hostvars[node]['coturn_tls_port'] | default(turn_default_plain_port) }}?transport=tcp"/>
-{% else %}
-	<constructor-arg index="1" value="turns:{{ hostvars[node]['coturn_fqdn'] | default(hostvars[node]['ansible_fqdn']) }}:{{ hostvars[node]['coturn_tls_port'] | default(turn_default_plain_port) }}?transport=tcp"/>
-{% endif %}
-{% else %}
-	<constructor-arg index="1" value="turn:{{ hostvars[node]['coturn_fqdn'] | default(hostvars[node]['ansible_fqdn']) }}:{{ hostvars[node]['coturn_plain_port'] | default(turn_default_plain_port) }}?transport=tcp"/>
-{% endif %}
+	<constructor-arg index="1" value="turns:{{ hostvars[node]['coturn_fqdn'] | default(hostvars[node]['ansible_fqdn']) }}:{{ hostvars[node]['coturn_tls_port'] | default(turn_default_tls_port) }}?transport=tcp"/>
 	<constructor-arg index="2" value="86400"/>
     </bean>
 {% endfor %}
 {% elif external_turn_secret | default(False) and external_turn_fqdn | default(False) %}
+{% if coturn_do_insecure | default(True) %}
     <bean id="stun0" class="org.bigbluebutton.web.services.turn.StunServer">
 	<constructor-arg index="0" value="stun:{{ external_turn_fqdn }}"/>
     </bean>
     <bean id="turn0" class="org.bigbluebutton.web.services.turn.TurnServer">
 	<constructor-arg index="0" value="{{ external_turn_secret }}"/>
-	<constructor-arg index="1" value="turns:{{ external_turn_fqdn }}:{{ turn_default_tls_port }}?transport=tcp"/>
-	<constructor-arg index="2" value="86400"/>
-    </bean>
-    <bean id="turn1" class="org.bigbluebutton.web.services.turn.TurnServer">
-	<constructor-arg index="0" value="{{ external_turn_secret }}"/>
 	<constructor-arg index="1" value="turn:{{ external_turn_fqdn }}:{{ turn_default_plain_port }}?transport=tcp"/>
 	<constructor-arg index="2" value="86400"/>
     </bean>
-{% else %}
+{% endif %}
+    <bean id="turn1" class="org.bigbluebutton.web.services.turn.TurnServer">
+	<constructor-arg index="0" value="{{ external_turn_secret }}"/>
+	<constructor-arg index="1" value="turns:{{ external_turn_fqdn }}:{{ turn_default_tls_port }}?transport=tcp"/>
+	<constructor-arg index="2" value="86400"/>
+    </bean>
+{% elif coturn_do_insecure | default(True) %}
     <bean id="stun0" class="org.bigbluebutton.web.services.turn.StunServer">
 	<constructor-arg index="0" value="stun:stun.freeswitch.org"/>
     </bean>
 {% endif %}
-
 
     <bean id="stunTurnService"
 	  class="org.bigbluebutton.web.services.turn.StunTurnService">
@@ -58,9 +49,13 @@
 	    <set>
 {% if groups['coturn'] | length > 0 %}
 {% for node in groups['coturn'] %}
+{% if hostvars[node]['coturn_do_insecure'] | default(True) %}
 		<ref bean="stun{{ loop.index0 }}"/>
+{% endif %}
 {% endfor %}
-{% else %}
+{% elif external_turn_secret | default(False) and external_turn_fqdn | default(False) and coturn_do_insecure | default(True) %}
+		<ref bean="stun0"/>
+{% elif coturn_do_insecure | default(True) %}
 		<ref bean="stun0"/>
 {% endif %}
 	    </set>
@@ -69,14 +64,24 @@
 	    <set>
 {% if groups['coturn'] | length > 0 %}
 {% for node in groups['coturn'] %}
+{% if hostvars[node]['coturn_do_insecure'] | default(True) %}
 		<ref bean="turn{{ (loop.index0 | int) * 2 }}"/>
+{% endif %}
 		<ref bean="turn{{ ((loop.index0 | int) * 2) + 1 }}"/>
 {% endfor %}
 {% elif external_turn_secret | default(False) and external_turn_fqdn | default(False) %}
+{% if coturn_do_insecure | default(True) %}
 		<ref bean="turn0"/>
+{% endif %}
 		<ref bean="turn1"/>
 {% endif %}
 	    </set>
 	</property>
+{% if bigbluebutton_version in [ 23, '23' ] %}
+	<property name="remoteIceCandidates">
+	    <set>
+	    </set>
+	</property>
+{% endif %}
     </bean>
 </beans>

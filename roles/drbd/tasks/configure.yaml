@@ -8,16 +8,25 @@
     src: resource.j2
 - name: Tests State of DRBD Resource
   changed_when: False
+  delegate_to: "{{ corosync_members[0] }}"
   failed_when: False
   register: dstate
-  shell: "drbdadm dstate {{ drbd_resource_name }}"
+  run_once: yes
+  shell: |
+    drbdadm dstate {{ drbd_resource_name }}
 - block:
   - name: Initializes Device Metadata
-    shell: "drbdadm create-md {{ drbd_resource_name }}"
-  - name: Starts DRBD Resource
-    shell: "drbdadm up {{ drbd_resource_name }}"
-  - name: Marks Primary Node and Finish Device Initialization
-    delegate_to: "{{ drbd_members[0] }}"
-    shell: "drbdadm -- --overwrite-data-of-peer primary {{ drbd_resource_name }}"
+    shell: |
+      echo yes | drbdadm create-md {{ drbd_resource_name }}
+  - include_tasks: up.yaml
+  - include_tasks: make-primary.yaml
   when:
   - '"No valid meta data found" in dstate.stderr'
+- include_role:
+    name: pacemaker
+    tasks_from: add-drbd.yaml
+  vars:
+    drbd_id: "{{ corosync_drbd_id | default('r0') }}"
+    drbd_name: "{{ drbd_resource_name }}"
+  when:
+  - corosync_hostgroup | default(False)

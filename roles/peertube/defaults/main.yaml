@@ -17,8 +17,10 @@ nginx_ssl_ciphers:
 nginx_ssl_protocols:
 - TLSv1.2
 
+peertube_csp_enable: True
+
 #peertube_images_release: production-buster
-peertube_images_release: v3.2.1-buster
+peertube_images_release: v3.3.0-buster
 peertube_images_repo: docker.io/chocobozzz/peertube
 
 peertubeexporter_images_release: master

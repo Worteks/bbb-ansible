@@ -11,8 +11,8 @@
     name: redis-sentinel
     state: restarted
   when:
-  - groups[my_hostgroup] | length > 1
-  - redis_standalone is not defined
+  - groups[redis_hostgroup] | length > 1
+  - not (redis_standalone | default(False))
   - ansible_fqdn not in groups['drbd']
   - ansible_hostname not in groups['drbd']
   - ansible_nodename not in groups['drbd']

@@ -1,0 +1,15 @@
+- block:
+  - name: Marks Primary Node and Finish Device Initialization
+    delegate_to: "{{ corosync_members[0] }}"
+    run_once: yes
+    shell: |
+      drbdadm -- --overwrite-data-of-peer primary {{ drbd_resource_name }}
+  - name: Gives it a few seconds
+    delegate_to: "{{ corosync_members[0] }}"
+    pause:
+      seconds: 5
+    run_once: yes
+  when:
+  - drbd_resource_name | default(False)
+  - corosync_members is defined
+  - corosync_members | length > 0

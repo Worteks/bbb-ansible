@@ -1,0 +1,121 @@
+- name: Sets PKI Root Directory Fact
+  delegate_to: localhost
+  run_once: yes
+  set_fact:
+    pki_root: "{{ playbook_dir }}/.pki"
+- name: Checks for Existing Account on Secondary Node
+  delegate_to: "{{ groups[certbot_cluster_name | default('reverse')][1] }}"
+  failed_when: False
+  register: hasacnttoo
+  run_once: yes
+  stat:
+    path: /etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org/directory
+- block:
+  - name: Registers to LetsEncrypt on Primary Node
+    args:
+      creates: /etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org/directory
+    delegate_to: "{{ groups[certbot_cluster_name | default('reverse')][0] }}"
+    register: lekeyone
+    run_once: yes
+    shell: |
+       certbot register --agree-tos --no-eff \
+          -m {{ bigbluebutton_letsencrypt_address }}
+  - name: Resolves LetsEncrypt Account UUID
+    args:
+      chdir: /etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org/directory
+    changed_when: False
+    delegate_to: "{{ groups[certbot_cluster_name | default('reverse')][0] }}"
+    register: has_certbot_account
+    run_once: yes
+    shell: ls
+  - name: Copy LetsEncrypt Account data from Primary Node to Ansible Node
+    delegate_to: "{{ groups[certbot_cluster_name | default('reverse')][0] }}"
+    fetch:
+      dest: "{{ pki_root }}/certbot-{{ certbot_cluster_name | default('reverse') }}"
+      group: root
+      mode: 0600
+      owner: root
+      src: "/etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org/directory/{{ has_certbot_account.stdout_lines[0] }}/{{ fl }}"
+    loop:
+    - meta.json
+    - private_key.json
+    - regr.json
+    loop_control:
+      loop_var: fl
+    run_once: yes
+  - name: Send Account data to Reverse Members
+    loop:
+    - meta.json
+    - private_key.json
+    - regr.json
+    loop_control:
+      loop_var: fl
+    register: lekeytoo
+    synchronize:
+      dest: "/etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org/directory/{{ has_certbot_account.stdout_lines[0] }}/{{ fl }}"
+      group: True
+      owner: True
+      perms: True
+      src: "{{ pki_root }}/certbot-{{ certbot_cluster_name | default('reverse') }}/{{ groups[certbot_cluster_name | default('reverse')][0] }}/etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org/directory/{{ has_certbot_account.stdout_lines[0] }}/{{ fl }}"
+    when:
+    - ansible_fqdn != groups[certbot_cluster_name | default('reverse')][0]
+  when:
+  - hasacnttoo is defined
+  - hasacnttoo.stat is defined
+  - not hasacnttoo.stat.exists
+- block:
+  - name: Checks for Existing Account on Primary Node
+    delegate_to: "{{ groups[certbot_cluster_name | default('reverse')][0] }}"
+    failed_when: False
+    register: hasacntone
+    run_once: yes
+    stat:
+      path: /etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org
+  - block:
+    - name: Resolves LetsEncrypt Account UUID
+      args:
+        chdir: /etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org/directory
+      changed_when: False
+      delegate_to: "{{ groups[certbot_cluster_name | default('reverse')][1] }}"
+      register: bkp_has_certbot_account
+      run_once: yes
+    shell: ls
+    - name: Copy LetsEncrypt Account data from Secondary Node to Ansible Node
+      delegate_to: "{{ groups[certbot_cluster_name | default('reverse')][1] }}"
+      fetch:
+        dest: "{{ pki_root }}/certbot-{{ certbot_cluster_name | default('reverse') }}"
+        group: root
+        mode: 0600
+        owner: root
+        src: "/etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org/directory/{{ bkp_has_certbot_account.stdout_lines[0] }}/{{ fl }}"
+      loop:
+      - meta.json
+      - private_key.json
+      - regr.json
+      loop_control:
+        loop_var: fl
+      run_once: yes
+    - name: Send Account to Corosync Members
+      loop:
+      - meta.json
+      - private_key.json
+      - regr.json
+      loop_control:
+        loop_var: fl
+      register: corokeytri
+      synchronize:
+        dest: "/etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org/directory/{{ bkp_has_certbot_account.stdout_lines[0] }}/{{ fl }}"
+        group: True
+        owner: True
+        perms: True
+        src: "{{ pki_root }}/certbot-{{ certbot_cluster_name | default('reverse') }}/{{ groups[certbot_cluster_name | default('reverse')][0] }}/etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org/directory/{{ bkp_has_certbot_account.stdout_lines[0] }}/{{ fl }}"
+      when:
+      - ansible_fqdn != groups[certbot_cluster_name | default('reverse')][1]
+    when:
+    - hasacntone is defined
+    - hasacntone.stat is defined
+    - not hasacntone.stat.exists
+  when:
+  - hasacnttoo is defined
+  - hasacnttoo.stat is defined
+  - hasacnttoo.stat.exists

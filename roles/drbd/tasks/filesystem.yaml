@@ -1,15 +1,29 @@
-- name: Checks LV {{ fs['name'] }}
-  changed_when: False
-  failed_when: False
-  register: hasvg
-  shell: |
-    lvs | grep {{ fs['name'] }}
 - block:
-  - name: "Creates LV {{ fs['name'] }}"
+  - name: "Checks LV {{ fs['name'] }}"
+    changed_when: False
+    failed_when: False
+    register: haslv
     shell: |
-      lvcreate -n {{ fs['name'] }} -L {{ fs['size'] }} data \
-      && mkfs.{{ fs['type'] | default('xfs') }} /dev/data/{{ fs['name'] }}
+      lvs | grep "{{ fs['name'] }}"
+  - block:
+    - name: "Creates LV {{ fs['name'] }}"
+      shell: |
+        echo y | lvcreate -n "{{ fs['name'] }}" -L "{{ fs['size'] | default('10G') }}" "{{ vg_name | default('data') }}"
+    - name: "Creates Fileystem {{ fs['name'] }}"
+      shell: |
+        mkfs.{{ fs['type'] | default('xfs') }} /dev/{{ vg_name | default('data') }}/{{ fs['name'] }}
+    when:
+    - haslv is defined
+    - haslv.rc is defined
+    - (haslv.rc | default(0)) != 0
+  - include_role:
+      name: pacemaker
+      tasks_from: add-mountpoint.yaml
+    vars:
+      lv_name: "{{ fs['name'] }}"
+      lv_path: "{{ fs['mountpoint'] }}"
+    when:
+    - corosync_hostgroup | default(False)
+    - fs['mountpoint'] is defined
   when:
-  - haslv is defined
-  - haslv.rc is defined
-  - (haslv.rc | default(0)) != 0
+  - fs['name'] is defined

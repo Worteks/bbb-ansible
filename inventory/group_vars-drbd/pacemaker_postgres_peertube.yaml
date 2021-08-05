@@ -1,0 +1,36 @@
+corosync_hostgroup: drbd_postgres_peertube
+corosync_members:
+- bbb-postgres-1.friends.intra.example.com
+- bbb-postgres-2.friends.intra.example.com
+corosync_multicast_address: 239.255.1.2
+corosync_vip: 10.42.253.163
+drbd_filesystems:
+- mountpoint: /var/lib/postgresql
+  name: postgres
+  size: 8G
+- mountpoint: /var/lib/redis
+  name: redis
+  size: 2G
+drbd_resource_name: postgres
+firehol_app_filtered_ports:
+- name: postgres
+  value: tcp/5432
+- name: redis
+  value: tcp/6379
+firehol_app_opened_ports:
+- name: ssh
+  value: tcp/22
+- name: pacemaker
+  value: tcp/2224
+- name: corosync
+  value: udp/5442
+- name: nodexp
+  value: tcp/9142
+- name: postgresxp
+  value: tcp/9144
+- name: systemdxp
+  value: tcp/9147
+- name: redisxp
+  value: tcp/9179
+- name: haclusterxp
+  value: tcp/9664

@@ -34,6 +34,8 @@
         or (config_changed is defined
          and config_changed is changed)
   when:
-  - ansible_fqdn not in groups['drbd']
-  - ansible_hostname not in groups['drbd']
-  - ansible_nodename not in groups['drbd']
+  - >
+      (service_force_drbd | default(False))
+      or (ansible_fqdn not in groups['drbd']
+          and ansible_hostname not in groups['drbd']
+          and ansible_nodename not in groups['drbd'])

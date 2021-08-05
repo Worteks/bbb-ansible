@@ -1,0 +1,26 @@
+corosync_members:
+- bbb-csp-1.friends.intra.example.com
+- bbb-csp-2.friends.intra.example.com
+corosync_multicast_address: 239.255.1.7
+corosync_vip: 10.42.253.171
+firehol_app_opened_ports:
+- name: ssh
+  value: tcp/22
+- name: http
+  value: tcp/80
+- name: https
+  value: tcp/443
+- name: pacemaker
+  value: tcp/2224
+- name: corosync
+  value: udp/5442
+- name: nodexp
+  value: tcp/9142
+- name: nginxxp
+  value: tcp/9143
+- name: nginxluaxp
+  value: tcp/9145
+- name: systemdxp
+  value: tcp/9147
+- name: haclusterxp
+  value: tcp/9664

@@ -1,6 +1,5 @@
 dependencies:
 - role: nginx
   vars:
-    init_certbot_account: "{{ ansible_nodename == groups['reverse'][0] }}"
     nginx_stats_port: 8083
     nginx_worker_connections: 16384

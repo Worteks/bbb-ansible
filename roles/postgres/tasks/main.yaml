@@ -57,8 +57,14 @@
         or ansible_nodename in groups['postgres_scalelite']
   when:
   - >
-      ansible_nodename not in groups['drbd']
+      (ansible_nodename not in groups['drbd']
+       and ansible_hostname not in groups['drbd']
+       and ansible_fqdn not in groups['drbd'])
       or (ansible_nodename in groups['drbd']
+          and drbd_is_primary | default(False))
+      or (ansible_hostname in groups['drbd']
+          and drbd_is_primary | default(False))
+      or (ansible_fqdn in groups['drbd']
           and drbd_is_primary | default(False))
 - include_tasks: prometheus.yaml
   when:

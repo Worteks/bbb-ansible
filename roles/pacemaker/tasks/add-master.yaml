@@ -1,0 +1,19 @@
+- name: Checks Master/Slave Configured
+  changed_when: False
+  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+  failed_when: False
+  register: hasms
+  run_once: yes
+  shell: |
+    crm configure show | grep '^ms {{ drbd_ms_name | default("ms_DRBD_" ~ (drbd_id | default("r0"))) }} '
+- name: Creates Master/Slave Primitive
+  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+  run_once: yes
+  shell: |
+    crm configure ms {{ drbd_ms_name | default("ms_DRBD_" ~ (drbd_id | default("r0"))) }} \
+        DRBD_{{ drbd_id | default("r0") }} \
+        meta master-max="1" master-node-max="1" clone-max="2" clone-node-max="1" notify="true"
+  when:
+  - hasms is defined
+  - hasms.rc is defined
+  - (hasms.rc | default(0)) != 0

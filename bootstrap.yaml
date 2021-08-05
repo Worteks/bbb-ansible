@@ -31,6 +31,7 @@
       cert_fqdn: "{{ bigbluebutton_fqdn | default(ansible_fqdn) }}"
     when:
     - ansible_hostname not in groups['greenlight']
+    - ansible_nodename not in groups['greenlight']
     - ansible_fqdn not in groups['greenlight']
     - bbb_uses_selfsigned | default(True)
 - hosts: greenlight
@@ -100,12 +101,6 @@
 - hosts: coturn
   serial: 1
   tasks:
-  - fail:
-      msg: |
-        Coturn FQDN has to be set, deploying multiple servers
-    when:
-    - groups['coturn'] | length > 1
-    - not (coturn_fqdn | default(False))
   - include_role:
       name: pki
       tasks_from: generate-cert.yaml
@@ -147,8 +142,10 @@
     - bbb_uses_selfsigned | default(True)
     - ansible_fqdn not in groups['prometheus']
     - ansible_hostname not in groups['prometheus']
+    - ansible_nodename not in groups['prometheus']
     - ansible_fqdn not in groups['grafana']
     - ansible_hostname not in groups['grafana']
+    - ansible_nodename not in groups['grafana']
 - hosts: prometheus
   serial: 1
   tasks:
@@ -167,6 +164,7 @@
     - bbb_uses_selfsigned | default(True)
     - ansible_fqdn not in groups['grafana']
     - ansible_hostname not in groups['grafana']
+    - ansible_nodename not in groups['grafana']
 - hosts: grafana
   serial: 1
   tasks:
@@ -184,6 +182,62 @@
     when:
     - bbb_uses_selfsigned | default(True)
 
+# Setup Pacemaker / Corosync on elligible groups
+- hosts: pacemaker
+  tasks:
+  - include_role:
+      name: pacemaker
+    loop:
+    - bbbcsp
+    - peertube
+    - postgres_coturn
+    - postgres_grafana
+    - postgres_greenlight
+    - postgres_openstreamingplatform
+    - postgres_peertube
+    - postgres_scalelite
+    - redis_peertube
+    - redis_scalelite
+    - reverse
+    - scalelite
+    loop_control:
+      loop_var: apply_to
+    when:
+    - groups[apply_to] | length > 1
+    - >
+        ansible_nodename in groups[apply_to]
+        or ansible_hostname in groups[apply_to]
+        or ansible_fqdn in groups[apply_to]
+    - (corosync_members | default([])) | length > 1
+    - corosync_multicast_address | default(False)
+
+# Setup DRBD on elligible groups
+- hosts: drbd
+  tasks:
+  - include_role:
+      name: drbd
+    loop:
+    - peertube
+    - postgres_coturn
+    - postgres_grafana
+    - postgres_greenlight
+    - postgres_openstreamingplatform
+    - postgres_peertube
+    - postgres_scalelite
+    - redis_peertube
+    - redis_scalelite
+    - scalelite
+    loop_control:
+      loop_var: apply_to
+    when:
+    - groups[apply_to] | length > 1
+    - >
+        ansible_nodename in groups[apply_to]
+        or ansible_hostname in groups[apply_to]
+        or ansible_fqdn in groups[apply_to]
+    - (corosync_members | default([])) | length > 1
+    - drbd_resource_name | default(False)
+
 # Prepare Shared FS
 # a demo deployment would come without any network filesystem
 # otherwise: only one of these would be required, distributing Scalelite
@@ -191,24 +245,18 @@
   roles:
   - nfs
 - hosts: scalelite
-  roles:
-  - cephfs
-  when:
-  - groups['cephfs'] | length > 0
+  tasks:
+  - include_role:
+      name: cephfs
+    when:
+    - groups['cephfs'] | length > 0
 - hosts: sshfs
   roles:
   - sshfs
 
 # Installs Redis
 # only required when deploying PeerTube or Scalelite
-- hosts: redis_peertube
-  vars:
-    my_hostgroup: redis_peertube
-  roles:
-  - redis
-- hosts: redis_scalelite
-  vars:
-    my_hostgroup: redis_scalelite
+- hosts: redis_peertube:redis_scalelite
   roles:
   - redis
 

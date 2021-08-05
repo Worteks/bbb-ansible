@@ -56,8 +56,8 @@ hz 10
 dynamic-hz yes
 aof-rewrite-incremental-fsync yes
 rdb-save-incremental-fsync yes
-{% if groups[my_hostgroup] | length > 1 and redis_standalone is not defined and ansible_fqdn not in groups['drbd'] %}
-{% if groups[my_hostgroup] | length > 2 %}
+{% if groups[redis_hostgroup] | length > 1 and (not (redis_standalone | default(False))) and ansible_fqdn not in groups['drbd'] and ansible_nodename not in groups['drbd'] and ansible_hostname not in groups['drbd'] %}
+{% if groups[redis_hostgroup] | length > 2 and (groups[redis_hostgroup] | length > (redis_min_slave_to_write | int)) %}
 min-slaves-to-write {{ redis_min_slave_to_write }}
 {% else %}
 min-slaves-to-write 0
@@ -66,8 +66,8 @@ min-slaves-max-lag 10
 repl-backlog-size 8m
 slave-priority {{ redis_slave_priority }}
 {% endif %}
-{% if ((groups[my_hostgroup] | first) != ansible_nodename) and redis_standalone is not defined and ansible_fqdn not in groups['drbd'] %}
-slaveof {{ hostvars[groups[my_hostgroup][0]]['ansible_default_ipv4']['address'] }} {{ redis_port }}
+{% if ((groups[redis_hostgroup] | first) not in [ ansible_nodename, ansible_fqdn, ansible_hostname ]) and (not (redis_standalone | default(False))) and ansible_fqdn not in groups['drbd'] and ansible_nodename not in groups['drbd'] and ansible_hostname not in groups['drbd'] %}
+slaveof {{ hostvars[groups[redis_hostgroup][0]]['ansible_default_ipv4']['address'] }} {{ redis_port }}
 appendonly no
 {% else %}
 appendonly yes

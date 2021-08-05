@@ -10,10 +10,10 @@
     when:
     - ansible_distribution in [ 'Debian', 'Devuan', 'Ubuntu' ]
   - name: Upgrades System (rhel)
+    register: sysupgradetoo
     yum:
       name: '*'
       state: latest
-    register: sysupgradetoo
     when:
     - ansible_distribution in [ 'CentOS', 'Fedora', 'RedHat' ]
   - name: Marks Up-to-Date
@@ -21,8 +21,10 @@
       chdir: /root/.ansible
     shell: date >bbb-mark
   - block:
-    - shell: ( sleep 2 && reboot ) &
-    - wait_for_connection:
+    - name: Reboots System
+      shell: ( sleep 2 && reboot ) &
+    - name: Waits for System to Reboot
+      wait_for_connection:
         delay: 10
     when:
     - >

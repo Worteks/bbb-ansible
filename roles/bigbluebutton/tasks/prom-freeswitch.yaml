@@ -6,17 +6,18 @@
     owner: root
     state: directory
 - name: Installs FreeSwitch Exporter Image Sources
-  copy:
+  register: has_dkrfile
+  template:
     dest: /usr/src/freeswitch-exporter/Dockerfile
     group: root
     mode: 0644
     owner: root
-    src: Dockerfile.freeswitch-exporter
-  register: has_dkrfile
+    src: fs-exporter-docker.j2
 - name: Builds FreeSwitch Exporter Image
   args:
     chdir: /usr/src/freeswitch-exporter
-  shell: docker build -t freeswitch-exporter .
+  shell: |
+    docker build -t freeswitch-exporter:{{ freeswitch_exporter_release }} . >custom-image-build.$(date +%s).log 2>&1
   when:
   - has_dkrfile is defined
   - has_dkrfile is changed

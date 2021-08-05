@@ -8,7 +8,19 @@
   - "{{ ansible_fqdn }}"
   loop_control:
     loop_var: h
-- name: Installs PeerTube Runtime Directories
+- name: Installs PeerTube Runtime Directories (local)
+  file:
+    dest: "{{ dir }}"
+    group: root
+    mode: 0755
+    owner: 999
+    state: directory
+  loop_control:
+    loop_var: dir
+  loop:
+  - /etc/peertube
+  - /var/log/peertube
+- name: Installs PeerTube Runtime Directories (shared)
   file:
     dest: "{{ dir }}"
     group: root
@@ -16,10 +28,8 @@
     owner: 999
     state: directory
   loop:
-  - /etc/peertube
   - /var/lib/peertube
   - /var/lib/peertube/data
-  - /var/log/peertube
   loop_control:
     loop_var: dir
   when:
@@ -61,3 +71,25 @@
     service_name: peertube
     service_standby: "{{ False if ((groups['peertube'] | first) == ansible_nodename)
                                else True }}"
+- block:
+  - include_role:
+      name: pacemaker
+      tasks_from: add-service.yaml
+    vars:
+      service_id: Peertube-rsc
+      service_name: peertube
+      service_timeout: 150
+      service_type: systemd
+  - include_role:
+      name: pacemaker
+      tasks_from: add-service.yaml
+    vars:
+      service_id: Nginx-rsc
+      service_name: nginx
+      service_type: lsb
+  when:
+  - >
+      ansible_fqdn in groups['drbd']
+      or ansible_hostname in groups['drbd']
+      or ansible_nodename in groups['drbd']
+  - corosync_hostgroup | default(False)

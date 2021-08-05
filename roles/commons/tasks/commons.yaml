@@ -8,7 +8,16 @@
       src: aptbwlimit.j2
     when:
     - apt_bw_limit_kb | default(False)
-  - name: Install Common Packages
+  - name: Installs APT noexec hook
+    copy:
+      dest: /etc/apt/apt.conf.d/50remount-tmp
+      group: root
+      mode: 0644
+      owner: root
+      src: apt-remount-mnt.conf
+    when:
+    - apt_remount_tmp_exec | default(False)
+  - name: Installs Common Packages
     apt:
       name:
       - ca-certificates
@@ -33,16 +42,6 @@
       src: unattended.j2
   when:
   - ansible_distribution in [ 'Debian', 'Devuan', 'Ubuntu' ]
-
-- name: Creates certs-trusted Group
-  group:
-    name: certs-trusted
-    state: present
-#- name: Ensures Nagios User Member of certs-trusted Group
-#  user:
-#    append: yes
-#    groups: certs-trusted
-#    name: nagios
 
 - name: Installs Empty Vimrc
   copy:

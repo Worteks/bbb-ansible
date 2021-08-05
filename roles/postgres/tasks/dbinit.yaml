@@ -1,0 +1,9 @@
+- name: Initializes Postgres Database
+  args:
+    creates: "/var/lib/postgresql/{{ postgres_version }}/main"
+  become: yes
+  become_user: postgres
+  environment:
+    PATH: "/usr/lib/postgresql/{{ postgres_version }}/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+  shell: |
+    initdb -D /var/lib/postgresql/{{ postgres_version }}/main --auth-local peer --auth-host md5

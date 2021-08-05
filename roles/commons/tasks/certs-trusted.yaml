@@ -1,0 +1,21 @@
+- name: Creates certs-trusted Group
+  group:
+    name: certs-trusted
+    state: present
+- block:
+  - name: Checks for Nagios Users Presence
+    changed_when: False
+    failed_when: False
+    register: hasngusr
+    shell: getent passwd | grep nagios
+  - name: Ensures Nagios User is a Member of the certs-trusted Group
+    user:
+      append: yes
+      groups: certs-trusted
+      name: nagios
+    when:
+    - hasngusr is defined
+    - hasngusr.rc is defined
+    - (hasngusr.rc | default(1)) == 0
+  when:
+  - add_nagios_to_certs_trusted | default(False)

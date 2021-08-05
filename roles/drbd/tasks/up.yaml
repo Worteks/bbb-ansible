@@ -1,0 +1,13 @@
+- block:
+  - name: Starts DRBD Resource
+    failed_when: False
+    shell: "drbdadm up {{ drbd_resource_name }}"
+  - name: Gives it a few seconds
+    delegate_to: "{{ corosync_members[0] }}"
+    pause:
+      seconds: 5
+    run_once: yes
+  when:
+  - drbd_resource_name | default(False)
+  - corosync_members is defined
+  - corosync_members | length > 0

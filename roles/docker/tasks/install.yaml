@@ -5,25 +5,29 @@
     - gnupg2
     - software-properties-common
 
-- name: Installs Docker GPG key
-  args:
-    creates: /etc/apt/sources.list.d/docker.list
-    warn: False
-  shell: wget --quiet -O - https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-- name: Installs Docker APT Configuration
-  register: srcs
-  template:
-    dest: /etc/apt/sources.list.d/docker.list
-    group: root
-    mode: 0644
-    owner: root
-    src: apt.j2
-- name: Updates APT Cache
-  apt:
-    update_cache: yes
+- block:
+  - name: Installs Docker GPG key
+    args:
+      creates: /etc/apt/sources.list.d/docker.list
+      warn: False
+    shell: |
+      wget --quiet -O - 'https://download.docker.com/linux/ubuntu/gpg' | apt-key add -
+  - name: Installs Docker APT Configuration
+    register: srcs
+    template:
+      dest: /etc/apt/sources.list.d/docker.list
+      group: root
+      mode: 0644
+      owner: root
+      src: apt.j2
+  - name: Updates APT Cache
+    apt:
+      update_cache: yes
+    when:
+    - srcs is defined
+    - srcs is changed
   when:
-  - srcs is defined
-  - srcs is changed
+  - ansible_distribution_release != 'bionic'
 
 - name: Installs Docker-CE
   apt:

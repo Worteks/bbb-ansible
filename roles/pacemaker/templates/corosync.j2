@@ -11,7 +11,13 @@ totem {
 {% if corosync_bindnetaddr | default(False) %}
 		bindnetaddr: {{ corosync_bindnetaddr }}
 {% elif corosync_interface is defined %}
+{% if hostvars[ansible_nodename] is defined %}
 		bindnetaddr: {{ hostvars[ansible_nodename]['ansible_' ~ corosync_interface]['ipv4']['network'] }}
+{% elif hostvars[ansible_hostname] is defined %}
+		bindnetaddr: {{ hostvars[ansible_hostname]['ansible_' ~ corosync_interface]['ipv4']['network'] }}
+{% else %}
+		bindnetaddr: {{ hostvars[ansible_fqdn]['ansible_' ~ corosync_interface]['ipv4']['network'] }}
+{% endif %}
 {% else %}
 		bindnetaddr: {{ ansible_default_ipv4['network'] }}
 {% endif %}

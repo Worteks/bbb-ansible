@@ -4,11 +4,6 @@ drbd_parent_device: /dev/sda
 # DRBD device
 drbd_child_device: /dev/drbd1
 
-# DRBD members
-drbd_members: []
-#- node1.example.com
-#- node2.example.com
-
 # DRBD resource name
 drbd_resource_name: my-database
 

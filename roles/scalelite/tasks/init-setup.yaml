@@ -25,6 +25,8 @@
     shell: |
       docker exec -i scalelite-api bundle exec rake db:migrate >db-upgrade-{{ scalelite_images_release }}.log 2>&1
   when:
+  - ansible_nodename not in groups['drbd']
+  - ansible_hostname not in groups['drbd']
   - ansible_fqdn not in groups['drbd']
 - block:
   - name: Waits for Scalelite API
@@ -33,14 +35,6 @@
     retries: 20
     shell: docker exec -it scalelite-api uptime
     until: is_started.rc == 0
-## FIXME:
-## when DRBD, the scalelite systemd unit it not started by Ansible
-## make sure that the proper primitive was declared, and service was started on DRBD primary node
-## note that DRBD can't start scalelite until the scalelite role was applied at least once
-## ... same goes for postgres/redis. wouldn't have worked, had I not first deployed those roles
-## without DRBD, then reset databases and configured my distributed volumes, and only then
-## configured corosync with all resources in place
-## tldr: we're fucked ...
   - name: Initializes Scalelite Database
     args:
       chdir: /etc/docker-compose/scalelite
@@ -72,5 +66,8 @@
         mode: 0644
         owner: root
   when:
-  - ansible_fqdn in groups['drbd']
+  - >
+      ansible_nodename in groups['drbd']
+      or ansible_hostname in groups['drbd']
+      or ansible_fqdn in groups['drbd']
   - drbd_is_primary | default(False)

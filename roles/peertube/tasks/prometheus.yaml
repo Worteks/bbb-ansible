@@ -27,3 +27,35 @@
     service_name: peertube-exporter
     service_standby: "{{ False if ((groups['peertube'] | first) == ansible_nodename)
                                else True }}"
+- block:
+  - include_role:
+      name: pacemaker
+      tasks_from: add-service.yaml
+    vars:
+      service_id: Nginxxp-rsc
+      service_name: nginx-exporter
+      service_timeout: 200
+      service_type: systemd
+  - include_role:
+      name: pacemaker
+      tasks_from: add-service.yaml
+    vars:
+      service_id: Peertubexp-rsc
+      service_name: peertube-exporter
+      service_timeout: 300
+      service_type: systemd
+  when:
+  - >
+      ansible_fqdn in groups['drbd']
+      or ansible_hostname in groups['drbd']
+      or ansible_nodename in groups['drbd']
+  - corosync_hostgroup | default(False)
+- include_role:
+    name: pacemaker
+    tasks_from: finish-setup.yaml
+  when:
+  - >
+      ansible_fqdn in groups['drbd']
+      or ansible_hostname in groups['drbd']
+      or ansible_nodename in groups['drbd']
+  - corosync_hostgroup | default(False)

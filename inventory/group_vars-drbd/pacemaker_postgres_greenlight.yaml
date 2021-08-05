@@ -1,0 +1,39 @@
+corosync_hostgroup: drbd_postgres_greenlight
+corosync_members:
+- greenlight-1.friends.intra.example.com
+- greenlight-2.friends.intra.example.com
+corosync_multicast_address: 239.255.1.6
+corosync_vip: 10.42.253.160
+drbd_filesystems:
+- mountpoint: /var/lib/postgresql
+  name: postgres
+  size: 8G
+drbd_resource_name: postgres
+firehol_app_filtered_ports:
+- name: postgres
+  value: tcp/5432
+firehol_app_opened_ports:
+- name: ssh
+  value: tcp/22
+- name: http
+  value: tcp/80
+- name: https
+  value: tcp/443
+- name: pacemaker
+  value: tcp/2224
+- name: corosync
+  value: udp/5442
+- name: nodexp
+  value: tcp/9142
+- name: nginxxp
+  value: tcp/9143
+- name: postgresxp
+  value: tcp/9144
+- name: nginxluaxp
+  value: tcp/9145
+- name: systemdxp
+  value: tcp/9147
+- name: greenlightxp
+  value: tcp/9158
+- name: haclusterxp
+  value: tcp/9664

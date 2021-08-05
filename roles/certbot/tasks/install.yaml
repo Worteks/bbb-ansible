@@ -2,12 +2,3 @@
   apt:
     name: certbot
     state: present
-- name: Registers to LetsEncrypt
-  args:
-    creates: /etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org
-  shell: |
-     certbot register --agree-tos --no-eff \
-        -m {{ bigbluebutton_letsencrypt_address }}
-  when:
-  - bigbluebutton_letsencrypt_address | default(False)
-  - init_certbot_account | default(True)

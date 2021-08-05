@@ -6,6 +6,9 @@
 - include_tasks: facts.yaml
 - include_tasks: install.yaml
 - include_role:
+    name: commons
+    tasks_from: certs-trusted.yaml
+- include_role:
     name: certbot
   when:
   - not (bbb_uses_selfsigned | default(True))

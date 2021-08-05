@@ -23,7 +23,23 @@ else
 {% for post in certbot_post_hooks %}
     {{ post }} || echo failed on {{ post }} >&2
 {% endfor %}
-fi
 {% endif %}
+fi
+
+for daemon in nginx coturn
+do
+    if systemctl is-active $daemon; then
+	if test "$daemon" = nginx; then
+	    if ! nginx -t; then
+		echo "WARNING: invalid nginx configuration - discarding reload"
+		echo "Nginx needs to be reloaded, to serve clients using your new certificate"
+		continue
+	    fi
+	    systemctl reload $daemon
+	else
+	    systemctl restart $daemon
+	fi
+    fi
+done
 
 exit 0

@@ -86,14 +86,21 @@ The rest depends on your context.
 
 ## Usage
 
-Create your own inventory file. Several examples are provided, setting up
-a standalone BBB server (`./hosts-standalone`), deploying a single instance
-for most services (`./hosts-test`) or including redundancy (`./hosts-ha`).
+Create your own inventory file. Several examples are provided, in the
+`./inventory` subfolder, setting up:
+
+ - a standalone BBB server (`hosts-standalone` & `group_vars-standalone`)
+ - a single instance for most services (`hosts-test` & `group_vars-test`)
+ - a pair of instances for most services (`hosts-ha` & `group_vars-ha`)
+ - HA using corosync/pacemaker/drbd (`hosts-drbd` & `group_vars-drbd`)
 
 ```sh
-$ cp hosts-ha hosts-my
-$ ln -sf hosts-my hosts
+$ cp inventory/hosts-ha inventory/hosts-my
+$ cp -r inventory/group_vars-ha inventory/group_vars-my
+$ ln -sf inventory/hosts-my hosts
+$ ln -sf inventory/group_vars-my group_vars
 $ vi hosts
+$ vi group_vars/*yaml
 ```
 
 Set your own deployment variables (in `./group_vars`), sensitive data could be
@@ -130,23 +137,9 @@ Dealing with distributed BBB setup, note that:
    synchronize SSL certs and virtualhosts to the other nodes and re-apply
    the bootstrap playbook.
 
-As a general rule, drbd/pacemaker/corosync deployment is not fully automated
-(initializing your drbd device, designating an initial master where you
-would create and mount your filesystems, then initializing corosync cluster
-and configuring resources, resource groups, ...).
-
-A quick way to proceed would be to first deploy services on all target nodes,
-without HA, ideally one hostgroup after the other. Then manually stop those
-services, deal with drbd & corosync init, such as your filesystems and services
-would failover to whichever drbd node is primary (samples given in
-`./roles/pacemaker/setup-peertube-db.md`, `./roles/pacemaker/setup-peertube.md`,
-...). Next we may edit our Ansible inventory adding the corresponding nodes to
-the `drbd` host group, which would ensure Ansible would no longer try to start,
-stop or enable services managed by corosync, nor create directories within
-shared filesystems on drbd backup nodes.
-
-Finally, note that using a VIP with corosync may not work everywhere, depending
-on your ability to allocate your nodes with arbitrary IPs.
+Note that using a VIP with corosync may not work everywhere, depending on your
+ability to allocate your nodes with arbitrary IPs. Clouds like Azure are known
+to prevent this. Scaleway would do. When in doubt, prefer bare-metal.
 
 ## Third-Party Documentations
 
@@ -176,6 +169,8 @@ on your ability to allocate your nodes with arbitrary IPs.
 #### RTMP LiveStream
 
  * https://github.com/aau-zid/BigBlueButton-liveStreaming
+ * https://github.com/aau-zid/BigBlueButton-liveStreaming/issues/27
+ * https://github.com/aau-zid/BigBlueButton-liveStreaming/issues/62
  * https://github.com/aau-zid/BigBlueButton-liveStreaming/issues/78#issuecomment-729534249
  * https://github.com/bigbluebutton/bigbluebutton/issues/8295
  * https://groups.google.com/g/bigbluebutton-dev/c/vZli5bhB1ZQ
@@ -353,6 +348,8 @@ freeswitch:
 
 ## FIXMEs
 
+ - latest DRBD/Pacemaker additions were tested, using variables shipping in
+   samples - may not be as stable as the rest of our roles.
  - redis-sentinel first fails to start
    manual restart fixed, further playbook runs work
    could be due to redis-server being slow to startup?

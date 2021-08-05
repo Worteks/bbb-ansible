@@ -13,20 +13,6 @@
     mode: 0644
     owner: root
     src: backend.j2
-#- name: Installs BigBlueButton Conferences Streaming Platform PM2 Ecosystem
-#  template:
-#    dest: /usr/src/bbb-csp/ecosystem.config.js
-#    group: root
-#    mode: 0644
-#    owner: root
-#    src: ecosystem.j2
-#- include_role:
-#    name: nodejs
-#    tasks_from: service.yaml
-#  vars:
-#    pm2_ecosystem_path: /usr/src/bbb-csp
-#    pm2_runtime_homedir: /var/lib/pm2
-#    pm2_runtime_user: "{{ bbbcsp_user }}"
 - name: Installs BigBlueButton Conferences Streaming Platform Unit
   notify: Reloads BBB CSP
   register: bbbcsp_unit

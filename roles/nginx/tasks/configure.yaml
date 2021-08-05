@@ -3,12 +3,6 @@
     register: has_dh
     stat:
       path: /etc/nginx/ssl/dh.pem
-# https://github.com/ansible/ansible/issues/61967#issuecomment-529309393
-# how to lose 4h, generating a f-ing DH on a PoC
-# but hey... it's secure ...
-# also: could there be a bug?
-# openssl_dhparam always re-generates dh.pem
-# doc suggests force=no is the default, and should preserve prior existing DH
   - name: "Generates DH Params (sit tight: this WILL take a while)"
     notify: Reloads Nginx
     openssl_dhparam:

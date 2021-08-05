@@ -15,6 +15,7 @@
   register: has_demo
   when:
   - groups['scalelite'] | length == 0
+  - groups['greenlight'] | length == 0
 
 - name: Installs BigBlueButton WebHoooks
   apt:
@@ -144,12 +145,6 @@
     owner: root
     src: turn.j2
 
-# TODO / FIXME
-# Meteor does not seem to trust our custom CA
-# which is normal: NodeJS doesn't use system trust store, and instead
-# ship with its own, static, trust store. Setting up TLS with a custom
-# CA, there's probably a lib in between that allows to load such chain
-# of certificates, ... pending further investigations
 - name: Fixes Meteor TLS Errors
   register: meteor_fixed
   lineinfile:

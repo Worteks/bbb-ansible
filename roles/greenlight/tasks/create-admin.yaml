@@ -1,8 +1,45 @@
-- name: Creates Greenlight initial Admin Account
+- name: Checks Greenlight Container is Running
   args:
-    chdir: /etc/docker-compose/greenlight
     creates: /etc/docker-compose/greenlight/greenlight-initial-admin.log
   delegate_to: "{{ groups['greenlight'][0] }}"
+  changed_when: False
+  register: hasctnr
   run_once: True
   shell: |
-    docker exec greenlight /bin/sh -c 'bundle exec rake user:create["{{ greenlight_admin_account }}","{{ greenlight_admin_email }}","{{ greenlight_admin_password }}","admin"]' >greenlight-initial-admin.log 2>&1
+    docker ps | grep greenlight
+- name: Fails when Greenlight Container Missing
+  fail:
+    msg: |
+      Could not find Greenlight container on {{ ansible_nodename }}
+  when:
+  - hasctnr is defined
+  - hasctnr.rc is defined
+  - (hasctnr.rc | default(0)) != 0
+- name: Checks for Existing Initial Admin Account
+  delegate_to: "{{ groups['greenlight'][0] }}"
+  failed_when: False
+  register: hasadmin
+  run_once: True
+  stat:
+    path: /etc/docker-compose/greenlight/greenlight-initial-admin.log
+- block:
+  - name: Leaves Greenlight Time to Initializes its Database
+    delegate_to: "{{ groups['greenlight'][0] }}"
+    pause:
+      seconds: 60
+    run_once: yes
+    when:
+    - did_start is defined
+    - did_start is changed
+  - name: Creates Greenlight initial Admin Account
+    args:
+      chdir: /etc/docker-compose/greenlight
+      creates: /etc/docker-compose/greenlight/greenlight-initial-admin.log
+    delegate_to: "{{ groups['greenlight'][0] }}"
+    run_once: True
+    shell: |
+      docker exec greenlight /bin/sh -c 'bundle exec rake user:create["{{ greenlight_admin_account }}","{{ greenlight_admin_email }}","{{ greenlight_admin_password }}","admin"]' >greenlight-initial-admin.log 2>&1
+  when:
+  - hasadmin is defined
+  - hasadmin.stat is defined
+  - not hasadmin.stat.exists
