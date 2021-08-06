@@ -7,9 +7,13 @@
     groups: elasticsearch
     name: elasticsearch
 - name: Resolves ElasticSearch User ID
+  args:
+    executable: /bin/bash
   changed_when: False
   register: elasticsearch_user_id
-  shell: "getent passwd elasticsearch | awk -F: '{print $3;exit;}'"
+  shell: |
+    set -o pipefail && \
+    getent passwd elasticsearch | awk -F: '{print $3;exit;}'
 - name: Installs ElasticSearch Database Directory
   file:
     dest: /var/lib/elasticsearch

@@ -1,5 +1,5 @@
 # Finish hosts prep on dedicated instances
-- hosts: lb:bastion:postgres:redis:scalelite:bbb:bbbcsp:greenlight:moodle:peertube:prometheus:grafana:alertmanager:sshfs:nfs:openstreamingplatform:coturn:rtmp:kibana:elasticsearch:freeipa:reverse
+- hosts: bigbluebutton:elasticsearch:freeipa
   tasks:
   - include_role:
       name: commons
@@ -37,7 +37,8 @@
 - hosts: greenlight
   serial: 1
   tasks:
-  - fail:
+  - name: Fail on missing Greenlight FQDN
+    fail:
       msg: |
         Greenlight FQDN has to be set, deploying multiple servers
     when:
@@ -53,7 +54,8 @@
 - hosts: peertube
   serial: 1
   tasks:
-  - fail:
+  - name: Fail on missing PeerTube FQDN
+    fail:
       msg: |
        PeerTube FQDN has to be set, deploying multiple servers
     when:
@@ -69,7 +71,8 @@
 - hosts: scalelite
   serial: 1
   tasks:
-  - fail:
+  - name: Fail on missing Scalelite FQDN
+    fail:
       msg: |
         Scalelite FQDN has to be set, deploying multiple servers
     when:
@@ -85,7 +88,8 @@
 - hosts: bbbcsp
   serial: 1
   tasks:
-  - fail:
+  - name: Fail on missing BBB-CSP FQDN
+    fail:
       msg: |
        BigBlueButton Conferences Streaming Platform FQDN has to be set, deploying multiple servers
     when:
@@ -111,7 +115,8 @@
 - hosts: kibana
   serial: 1
   tasks:
-  - fail:
+  - name: Fail on missing Kibana FQDN
+    fail:
       msg: |
         Kibana FQDN has to be set, deploying multiple servers
     when:
@@ -127,7 +132,8 @@
 - hosts: alertmanager
   serial: 1
   tasks:
-  - fail:
+  - name: Fail on missing AlertManager FQDN
+    fail:
       msg: |
         AlertManager FQDN has to be set, deploying multiple servers
     when:
@@ -149,7 +155,8 @@
 - hosts: prometheus
   serial: 1
   tasks:
-  - fail:
+  - name: Fail on missing Prometheus FQDN
+    fail:
       msg: |
         Prometheus FQDN has to be set, deploying multiple servers
     when:
@@ -168,7 +175,8 @@
 - hosts: grafana
   serial: 1
   tasks:
-  - fail:
+  - name: Fail on missing Grafana FQDN
+    fail:
       msg: |
         Grafana FQDN has to be set, deploying multiple servers
     when:
@@ -319,6 +327,7 @@
     when:
     - not (ansible_fqdn in groups['lb_back'])
     - not (ansible_hostname in groups['lb_back'])
+    - not (ansible_nodename in groups['lb_back'])
 
 # Installs Nginx Reverse Proxy
 - hosts: reverse
@@ -362,7 +371,7 @@
     - not (is_on_shared_hardware | default(False))
 
 # Configures Logs Forwarding
-- hosts: lb:bastion:postgres:redis:scalelite:bbb:bbbcsp:greenlight:moodle:peertube:prometheus:grafana:alertmanager:sshfs:nfs:openstreamingplatform:coturn:rtmp:kibana:elasticsearch:freeipa:reverse
+- hosts: bigbluebutton:elasticsearch:freeipa
   tasks:
   - include_role:
       name: fluentd

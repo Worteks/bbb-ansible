@@ -17,7 +17,8 @@
   - name: Fixes Coturn Database Permissions
     args:
       chdir: /var/lib/coturn
-    shell: chown -R turnserver:turnserver .
+    command: |
+      chown -R turnserver:turnserver .
     when:
     - fixed_perms is defined
     - fixed_perms is changed
@@ -49,7 +50,8 @@
   register: turnunit2
 - name: Reloads Systemd Configuration
   register: unit_configured
-  shell: systemctl daemon-reload
+  systemd:
+    daemon_reload: yes
   when:
   - >
       (turnunit is defined
@@ -61,9 +63,9 @@
     args:
       chdir: /etc/network
     changed_when: False
+    command: "grep {{ coturn_dummy_address }} interfaces"
     failed_when: False
     register: dummychk
-    shell: "grep {{ coturn_dummy_address }} interfaces"
   - block:
     - name: Adds Loopback Configuration if NAT-ed
       blockinfile:
@@ -74,7 +76,7 @@
         path: /etc/network/interfaces
       register: dummycfg
     - name: Installs Dummy Route
-      shell: ip addr add {{ coturn_dummy_address }}/32 dev lo
+      command: "ip addr add {{ coturn_dummy_address }}/32 dev lo"
       when:
       - dummycfg is defined
       - dummycfg is changed

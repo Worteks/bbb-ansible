@@ -29,7 +29,8 @@
      or ansible_hostname in groups['drbd']
      or ansible_nodename in groups['drbd']
 - name: Reloads Systemd Configuration
-  shell: systemctl daemon-reload
+  systemd:
+    daemon_reload: yes
   when:
   - >
       (sentinel_unit_clean is defined

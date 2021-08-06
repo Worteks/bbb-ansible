@@ -1,3 +1,10 @@
+- name: Fail if Greenlight HA without Database Hosts
+  fail:
+    msg: |
+      You should configure at least one Postgres Host running more than one Greenlight
+  when:
+  - groups['greenlight'] | length > 1
+  - groups['postgres_greenlight'] | length == 0
 - name: Gather Facts from Postgres
   delegate_to: "{{ srv }}"
   delegate_facts: True

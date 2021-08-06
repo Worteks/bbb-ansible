@@ -17,7 +17,8 @@
   - timer
   register: espunit
 - name: Reloads Systemd Configuration
-  shell: systemctl daemon-reload
+  systemd:
+    daemon_reload: yes
   when:
   - espunit is defined
   - espunit is changed

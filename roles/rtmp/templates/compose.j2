@@ -12,7 +12,7 @@ services:
     - BBB_ATTENDEE_PASSWORD={{ stream_attendee_password }}
 {% endif %}
     - BBB_DOWNLOAD_MEETING=false
-    - BBB_MEETING_ID={{ bbb_meeting.stdout_lines[0] }}
+    - BBB_MEETING_ID={{ bbb_meeting.stdout_lines[bbb_meeting.stdout_lines | length - 1] }}
 {% if stream_moderator_password | default(False) %}
     - BBB_MODERATOR_PASSWORD={{ stream_moderator_password }}
     - BBB_START_MEETING=true
@@ -27,7 +27,7 @@ services:
     - BBB_SECRET={{ hostvars[groups['scalelite'][0]]['scalelite_lb_secret'] }}
     - BBB_URL=https://{{ hostvars[groups['scalelite'][0]]['scalelite_fqdn'] | default(hostvars[groups['scalelite'][0]]['ansible_fqdn']) }}/bigbluebutton/api
 {% else %}
-    - BBB_SECRET={{ bbb_secret.stdout_lines[0] }}
+    - BBB_SECRET={{ bbb_secret.stdout_lines[bbb_secret.stdout_lines | length - 1] }}
     - BBB_URL=https://{{ hostvars[groups['bbb'][0]]['ansible_fqdn'] }}/bigbluebutton/api
 {% endif %}
 {% if stream_chat %}

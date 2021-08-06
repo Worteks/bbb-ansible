@@ -4,7 +4,7 @@
     group: root
     mode: 0644
     owner: root
-    url: "https://github.com/prometheus/haproxy_exporter/releases/download/v{{ haproxy_exporter_release }}/haproxy_exporter-{{ haproxy_exporter_release }}.linux-amd64.tar.gz"
+    url: "{{ haproxy_exporter_repo }}/releases/download/v{{ haproxy_exporter_release }}/haproxy_exporter-{{ haproxy_exporter_release }}.linux-amd64.tar.gz"
 - name: Extracts HAProxy Exporter
   args:
     chdir: /usr/src
@@ -38,7 +38,8 @@
     owner: root
     src: exporter.j2
 - name: Reloads Systemd Configuration
-  shell: systemctl daemon-reload
+  systemd:
+    daemon_reload: yes
   when:
   - exporter_unit is defined
   - exporter_unit is changed

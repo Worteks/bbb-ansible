@@ -32,9 +32,11 @@
 - name: Fetches Freeswitch Event Socket Password
   args:
     chdir: /opt/freeswitch/etc/freeswitch/autoload_configs
+    executable: /bin/bash
   changed_when: False
   register: fs_secret
-  shell: "awk '/password/{print $3}' event_socket.conf.xml | sed -e 's|.*value=.||' -e 's|./>$||'"
+  shell: |
+    set -o pipefail && awk '/password/{print $3}' event_socket.conf.xml | sed -e 's|.*value=.||' -e 's|./>$||'
 - name: Installs FreeSwitch Exporter Configuration
   register: config_changed
   template:

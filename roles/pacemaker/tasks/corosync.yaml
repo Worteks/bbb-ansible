@@ -24,10 +24,10 @@
     args:
       chdir: /etc/corosync
       creates: /etc/corosync/authkey
+    command: corosync-keygen
     delegate_to: "{{ corosync_members[0] }}"
     register: corokeyone
     run_once: yes
-    shell: corosync-keygen
   - name: Copy Corosync Auth Key from Primary Node to Ansible Node
     delegate_to: "{{ corosync_members[0] }}"
     fetch:

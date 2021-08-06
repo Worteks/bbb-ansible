@@ -2,9 +2,10 @@
   args:
     chdir: /var/log/nginx
   changed_when: False
+  command: |
+    ls *access*.log
   failed_when: False
   register: nginx_logs
-  shell: ls *access*.log 2>/dev/null
 - name: Installs Fluentd Configuration
   notify: Reloads Fluentd
   template:

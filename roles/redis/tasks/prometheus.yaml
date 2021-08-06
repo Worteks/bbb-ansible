@@ -4,7 +4,7 @@
     group: root
     mode: 0644
     owner: root
-    url: "https://github.com/oliver006/redis_exporter/releases/download/v{{ redis_exporter_release }}/redis_exporter-v{{ redis_exporter_release }}.linux-amd64.tar.gz"
+    url: "{{ redis_exporter_repo }}/releases/download/v{{ redis_exporter_release }}/redis_exporter-v{{ redis_exporter_release }}.linux-amd64.tar.gz"
 - name: Extracts Redis Exporter
   args:
     chdir: /usr/src
@@ -38,7 +38,8 @@
     owner: root
     src: exporter.j2
 - name: Reloads Systemd Configuration
-  shell: systemctl daemon-reload
+  systemd:
+    daemon_reload: yes
   when:
   - exporter_unit is defined
   - exporter_unit is changed
@@ -48,14 +49,9 @@
     name: redis-exporter
     state: started
   when:
-  - >
-       (redis_exporter_should_run | default(False)
-        and (ansible_fqdn in groups['drbd']
-             or ansible_nodename in groups['drbd']
-             or ansible_hostname in groups['drbd']))
-       or (ansible_fqdn not in groups['drbd']
-           and ansible_nodename not in groups['drbd']
-           and ansible_hostname not in groups['drbd'])
+  - ansible_fqdn not in groups['drbd']
+  - ansible_nodename not in groups['drbd']
+  - ansible_hostname not in groups['drbd']
 - block:
   - name: Ensures Redis Exporter is Disabled on DRBD Members
     service:
@@ -67,8 +63,35 @@
       state: stopped
     when:
     - not (drbd_is_primary | default(False))
+  - include_role:
+      name: pacemaker
+      tasks_from: add-service.yaml
+    loop: "{{ redis_drbd_groups }}"
+    loop_control:
+      loop_var: apply_to
+    vars:
+      service_id: Redisxp-rsc
+      service_name: redis-exporter
+      service_type: systemd
+    when:
+    - groups[apply_to] | length > 0
+    - >
+        ansible_nodename in groups[apply_to]
+        or ansible_hostname in groups[apply_to]
+        or ansible_fqdn in groups[apply_to]
+  - include_role:
+      name: pacemaker
+      tasks_from: finish-setup.yaml
+    loop: "{{ redis_drbd_groups }}"
+    loop_control:
+      loop_var: apply_to
+    when:
+    - groups[apply_to] | length > 0
+    - >
+        ansible_nodename in groups[apply_to]
+        or ansible_hostname in groups[apply_to]
+        or ansible_fqdn in groups[apply_to]
   when:
-  - not (redis_exporter_should_run | default(False))
   - >
       ansible_fqdn in groups['drbd']
       or ansible_hostname in groups['drbd']

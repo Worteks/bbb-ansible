@@ -1,12 +1,13 @@
 - name: Checks Greenlight Container is Running
   args:
     creates: /etc/docker-compose/greenlight/greenlight-initial-admin.log
+    executable: /bin/bash
   delegate_to: "{{ groups['greenlight'][0] }}"
   changed_when: False
   register: hasctnr
   run_once: True
   shell: |
-    docker ps | grep greenlight
+    set -o pipefail && docker ps | grep greenlight
 - name: Fails when Greenlight Container Missing
   fail:
     msg: |
@@ -38,7 +39,9 @@
     delegate_to: "{{ groups['greenlight'][0] }}"
     run_once: True
     shell: |
-      docker exec greenlight /bin/sh -c 'bundle exec rake user:create["{{ greenlight_admin_account }}","{{ greenlight_admin_email }}","{{ greenlight_admin_password }}","admin"]' >greenlight-initial-admin.log 2>&1
+      docker exec greenlight /bin/sh -c \
+        'bundle exec rake user:create["{{ greenlight_admin_account }}","{{ greenlight_admin_email }}","{{ greenlight_admin_password }}","admin"]' \
+        >greenlight-initial-admin.log 2>&1
   when:
   - hasadmin is defined
   - hasadmin.stat is defined

@@ -15,8 +15,9 @@
     owner: root
     src: xp-defaults.j2
 - name: "Reloads Systemd Configuration (db={{ postgres_exporter_db }})"
+  systemd:
+    daemon_reload: yes
   register: reconfigured
-  shell: systemctl daemon-reload
   when:
   - >
       (exporter_unit is defined
@@ -41,14 +42,9 @@
     - restarted is defined
     - not (restarted is changed)
   when:
-  - >
-       (postgres_exporter_should_run | default(False)
-        and (ansible_fqdn in groups['drbd']
-             or ansible_nodename in groups['drbd']
-             or ansible_hostname in groups['drbd']))
-       or (ansible_fqdn not in groups['drbd']
-          and ansible_nodename not in groups['drbd']
-          and ansible_hostname not in groups['drbd'])
+  - ansible_fqdn not in groups['drbd']
+  - ansible_nodename not in groups['drbd']
+  - ansible_hostname not in groups['drbd']
 - block:
   - name: Ensures Postgres Exporter is Disabled on DRBD Members
     service:
@@ -60,9 +56,37 @@
       state: stopped
     when:
     - not (drbd_is_primary | default(False))
+  - include_role:
+      name: pacemaker
+      tasks_from: add-service.yaml
+    loop: "{{ postgres_drbd_groups }}"
+    loop_control:
+      loop_var: apply_to
+    vars:
+      service_id: Postgresqlxp-rsc
+      service_name: "postgres-exporter-{{ postgres_exporter_db }}"
+      service_type: systemd
+    when:
+    - groups[apply_to] | length > 0
+    - >
+        ansible_nodename in groups[apply_to]
+        or ansible_hostname in groups[apply_to]
+        or ansible_fqdn in groups[apply_to]
+  - include_role:
+      name: pacemaker
+      tasks_from: finish-setup.yaml
+    loop: "{{ postgres_drbd_groups }}"
+    loop_control:
+      loop_var: apply_to
+    when:
+    - groups[apply_to] | length > 0
+    - >
+        ansible_nodename in groups[apply_to]
+        or ansible_hostname in groups[apply_to]
+        or ansible_fqdn in groups[apply_to]
   when:
-  - not (postgres_exporter_should_run | default(False))
   - >
       ansible_fqdn in groups['drbd']
       or ansible_hostname in groups['drbd']
       or ansible_nodename in groups['drbd']
+  - corosync_hostgroup | default(False)

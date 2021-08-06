@@ -11,7 +11,7 @@
     group: root
     mode: 0644
     owner: root
-    url: "https://github.com/nginxinc/nginx-prometheus-exporter/releases/download/v{{ nginx_exporter_release }}/nginx-prometheus-exporter-{{ nginx_exporter_release }}-linux-amd64.tar.gz"
+    url: "{{ nginx_exporter_repo }}/releases/download/v{{ nginx_exporter_release }}/nginx-prometheus-exporter-{{ nginx_exporter_release }}-linux-amd64.tar.gz"
 - name: Extracts Nginx Exporter
   args:
     chdir: "/usr/src/nginx-exporter-v{{ nginx_exporter_release }}.linux-amd64"
@@ -45,7 +45,8 @@
     owner: root
     src: exporter.j2
 - name: Reloads Systemd Configuration
-  shell: systemctl daemon-reload
+  systemd:
+    daemon_reload: yes
   when:
   - exporter_unit is defined
   - exporter_unit is changed
@@ -56,7 +57,7 @@
     state: started
   when:
   - >
-       (nginx_exporter_should_run | default(False)
+       (nginx_drbd_should_run
         and (ansible_fqdn in groups['drbd']
              or ansible_nodename in groups['drbd']
              or ansible_hostname in groups['drbd']))
@@ -75,7 +76,7 @@
     when:
     - not (drbd_is_primary | default(False))
   when:
-  - not (nginx_exporter_should_run | default(False))
+  - not nginx_drbd_should_run
   - >
       ansible_fqdn in groups['drbd']
       or ansible_hostname in groups['drbd']

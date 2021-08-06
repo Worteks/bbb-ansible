@@ -9,8 +9,8 @@
   args:
     chdir: /usr/share/kibana/plugins
   changed_when: False
+  command: ls
   register: hasplugins
-  shell: ls
 - block:
   - name: Checks Plugin Compatibility
     args:

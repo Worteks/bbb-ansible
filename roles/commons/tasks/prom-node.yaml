@@ -11,7 +11,7 @@
     group: root
     mode: 0644
     owner: root
-    url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_release }}/node_exporter-{{ node_exporter_release }}.linux-amd64.tar.gz"
+    url: "{{ node_exporter_repo }}/releases/download/v{{ node_exporter_release }}/node_exporter-{{ node_exporter_release }}.linux-amd64.tar.gz"
 - name: Extracts Node Exporter
   args:
     chdir: /usr/src
@@ -37,7 +37,8 @@
     owner: root
     src: node-xp.j2
 - name: Reloads Systemd Configuration
-  shell: systemctl daemon-reload
+  systemd:
+    daemon_reload: yes
   when:
   - exporter_unit is defined
   - exporter_unit is changed

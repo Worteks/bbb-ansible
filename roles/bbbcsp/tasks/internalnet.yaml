@@ -6,10 +6,12 @@
                                 if (groups['bbb'] | length > 1 and groups['scalelite'] | length > 1 and groups['reverse'] | length > 0)
                                 else (hostvars[groups['scalelite'][0]]['ansible_default_ipv4']['address']
                                     if (groups['bbb'] | length > 1 and groups['scalelite'] | length > 0)
-                                    else (hostvars[groups['bbb'][0]]['bigbluebutton_dummy_address'] | default(hostvars[groups['bbb'][0]]['ansible_default_ipv4']['address'])))) }}"
+                                    else (hostvars[groups['bbb'][0]]['bigbluebutton_dummy_address']
+                                          | default(hostvars[groups['bbb'][0]]['ansible_default_ipv4']['address'])))) }}"
     bbb_fqdn: "{{ (scalelite_fqdn | default(hostvars[groups['scalelite'][0]]['scalelite_fqdn'] | default(hostvars[groups['scalelite'][0]]['ansible_fqdn'])))
                       if (groups['scalelite'] | length > 0)
-                      else (bigbluebutton_fqdn | default(hostvars[groups['bbb'][0]]['bigbluebutton_fqdn'] | default(hostvars[groups['bbb'][0]]['ansible_fqdn']))) }}"
+                      else (bigbluebutton_fqdn | default(hostvars[groups['bbb'][0]]['bigbluebutton_fqdn']
+                                                         | default(hostvars[groups['bbb'][0]]['ansible_fqdn']))) }}"
     pt_api_address: "{{ (hostvars[groups['lb_front'][0]]['corosync_vip'] | default(hostvars[groups['lb_front'][0]]['ansible_default_ipv4']['address']))
                             if (groups['peertube'] | length > 1 and groups['lb_front'] | length > 0)
                             else (hostvars[groups['reverse'][0]]['corosync_vip'] | default(hostvars[groups['reverse'][0]]['ansible_default_ipv4']['address'])

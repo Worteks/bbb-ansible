@@ -17,4 +17,5 @@
   args:
     warn: False
   changed_when: False
-  shell: chown -R www-data:www-data /opt/osp
+  command: |
+    chown -R www-data:www-data /opt/osp

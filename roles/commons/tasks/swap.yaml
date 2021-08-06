@@ -1,6 +1,6 @@
 - block:
   - name: Creates Swap File
-    shell: "dd if=/dev/zero of=/swapfile bs=1M count={{ swap_size | default(1024) }}"
+    command: "dd if=/dev/zero of=/swapfile bs=1M count={{ swap_size | default(1024) }}"
   - name: Sets Proper Permissions on Swap File
     file:
       dest: /swapfile
@@ -8,12 +8,12 @@
       mode: 0600
       owner: root
   - name: Makes Swap Filesystem
-    shell: mkswap /swapfile
+    command: mkswap /swapfile
   - name: Adds Swap Entry to /etc/fstab
     lineinfile:
       dest: /etc/fstab
       line: /swapfile none swap sw 0 0
   - name: Mounts Swap Devices
-    shell: swapon -a
+    command: swapon -a
   when:
   - (ansible_swapfree_mb | int) == 0

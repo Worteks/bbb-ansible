@@ -7,32 +7,49 @@
   - ansible_fqdn not in groups['drbd']
   - ansible_nodename not in groups['drbd']
   - ansible_hostname not in groups['drbd']
+
 - name: Checks DRBD Up
   changed_when: False
+  command: |
+    grep -E 'cs:(Connected|Sync(Source|Target))' /proc/drbd
   failed_when: False
   register: drbddev
-  shell: |
-    grep -E 'cs:(Connected|Sync(Source|Target))' /proc/drbd
 - include_tasks: up.yaml
   when:
   - drbddev is defined
   - drbddev.rc is defined
   - (drbddev.rc | default(0)) != 0
+
 - name: Checks DRBD Inactive
   changed_when: False
+  command: |
+    grep 'ro:Secondary/Secondary' /proc/drbd
   failed_when: False
   register: drbd2sec
-  shell: "grep ro:Secondary/Secondary /proc/drbd"
 - include_tasks: make-primary.yaml
   when:
   - drbd2sec is defined
   - drbd2sec.rc is defined
   - (drbd2sec.rc | default(1)) == 0
+
+- name: Checks DRBD Split-Brain
+  changed_when: False
+  command: |
+    grep 'ro:Primary/Primary' /proc/drbd
+  failed_when: False
+  register: drbd2prim
+- include_tasks: fix-splitbrain.yaml
+  when:
+  - drbd2prim is defined
+  - drbd2prim.rc is defined
+  - (drbd2prim.rc | default(1)) == 0
+
 - name: Checks DRBD Status
   changed_when: False
   failed_when: False
   register: drbdproc
-  shell: "grep ro:Primary /proc/drbd"
+  command: |
+    grep 'ro:Primary' /proc/drbd
 - name: Sets DRBD Facts
   set_fact:
     drbd_is_primary: "{{ True if (drbdproc is defined

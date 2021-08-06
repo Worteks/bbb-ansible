@@ -20,6 +20,8 @@
   args:
     chdir: /usr/src
     creates: "/usr/src/{{ i.dr }}"
+  command: |
+    tar -xf {{ i.fl }}
   loop:
   - fl: nginx.tar.gz
     dr: nginx-1.17.3
@@ -29,19 +31,21 @@
     dr: nginx-goodies-nginx-sticky-module-ng-08a395c66e42
   loop_control:
     loop_var: i
-  shell: "tar -xf {{ i.fl }}"
 - name: Extracts Nginx Sources (zip)
   args:
     chdir: /usr/src
     creates: /usr/src/nginx-rtmp-module-1.2.1
-  shell: unzip rtmp.zip
+  command: unzip rtmp.zip
 - name: Prepares to Build Nginx
   args:
     chdir: /usr/src/nginx-1.17.3
     creates: /usr/src/nginx-1.17.3/configure.log
   environment:
     PATH: /usr/src/nginx-1.17.3:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-  shell: configure --with-http_ssl_module --with-http_v2_module --with-http_auth_request_module --add-module=../nginx-rtmp-module-1.2.1 --add-module=../nginx-goodies-nginx-sticky-module-ng-08a395c66e42 --with-zlib=../zlib-1.2.11 --with-cc-opt="-Wimplicit-fallthrough=0" >configure.log 2>&1
+  shell: |
+    configure --with-http_ssl_module --with-http_v2_module --with-http_auth_request_module --add-module=../nginx-rtmp-module-1.2.1 \
+      --add-module=../nginx-goodies-nginx-sticky-module-ng-08a395c66e42 --with-zlib=../zlib-1.2.11 --with-cc-opt="-Wimplicit-fallthrough=0" \
+      >configure.log 2>&1
 - name: Builds and Installs Nginx
   args:
     chdir: /usr/src/nginx-1.17.3
@@ -57,7 +61,8 @@
     src: /usr/src/openstreamingplatform/setup/nginx/nginx-osp.service
   register: nginx_unit
 - name: Reloads Systemd Configuration
-  shell: systemctl daemon-reload
+  systemd:
+    daemon_reload: yes
   when:
   - nginx_unit is defined
   - nginx_unit is changed

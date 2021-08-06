@@ -1,17 +1,26 @@
 - name: Fetches BigBlueButton API Secret
+  args:
+    executable: /bin/bash
   changed_when: False
-  delegate_to: "{{ groups['bbb'][0] }}"
+  delegate_to: "{{ stream_hosted_on | default(groups['bbb'][0]) }}"
   register: bbb_secret
   run_once: yes
-  shell: bbb-conf --secret | awk '/Secret:/{print $2}'
+  shell: |
+    set -o pipefail && \
+    bbb-conf --secret | awk '/Secret:/{print $2}'
   when:
-  - groups['scalelite'] | length == 0
+  - >
+      (groups['scalelite'] | length == 0)
+      or stream_hosted_on | default(False)
 - name: "Resolves Meeting ID for {{ stream_meeting_id }}"
+  args:
+    executable: /bin/bash
   changed_when: False
   delegate_to: "{{ stream_hosted_on | default(groups['bbb'][0]) }}"
   register: bbb_meeting
   run_once: yes
-  shell: >
+  shell: |
+    set -o pipefail && \
     bbb-cli get-rooms \
         | grep -A1 "<meetingName>{{ stream_meeting_id }}</meetingName>" \
         | grep '<meetingID>' \

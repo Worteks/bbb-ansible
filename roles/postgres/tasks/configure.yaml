@@ -33,7 +33,7 @@
       regexp: kernel.shmmax
       line: "kernel.shmmax = {{ (postgres_shared_buffers_mbytes * 1024 * 1024 * 125 / 100) | round }}"
   - name: Applies new Sysctl Configuration
-    shell: "sysctl -w kernel.shmmax={{ (postgres_shared_buffers_mbytes * 1024 * 1024 * 125 / 100) | round }}"
+    command: "sysctl -w kernel.shmmax={{ (postgres_shared_buffers_mbytes * 1024 * 1024 * 125 / 100) | round }}"
   when:
   - (postgres_shared_buffers_mbytes | int) > 1024
 - name: Checks Permission on Postgres Data Directory
@@ -78,12 +78,7 @@
   - include_role:
       name: pacemaker
       tasks_from: add-service.yaml
-    loop:
-    - postgres_coturn
-    - postgres_greenlight
-    - postgres_grafana
-    - postgres_peertube
-    - postgres_scalelite
+    loop: "{{ postgres_drbd_groups }}"
     loop_control:
       loop_var: apply_to
     vars:
@@ -129,12 +124,7 @@
 - include_role:
     name: pacemaker
     tasks_from: finish-setup.yaml
-  loop:
-  - postgres_coturn
-  - postgres_greenlight
-  - postgres_grafana
-  - postgres_peertube
-  - postgres_scalelite
+  loop: "{{ postgres_drbd_groups }}"
   loop_control:
     loop_var: apply_to
   when:

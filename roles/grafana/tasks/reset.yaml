@@ -4,9 +4,10 @@
     name: grafana
     state: stopped
 - name: Purges Grafana Configuration & Database
+  changed_when: False
+  command: "find {{ fl }} -type f -delete"
   loop:
   - /var/lib/grafana
   - /etc/grafana
   loop_control:
     loop_var: fl
-  shell: "find {{ fl }} -type f -delete"

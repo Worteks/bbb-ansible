@@ -6,7 +6,8 @@
   - name: Clones BigBlueButton Conferences Streaming Platform Sources from Git (with auth)
     expect:
       chdir: /usr/src
-      command: git clone -b "{{ bigbluebutton_conferencesstreamingplatform_source_ref }}" "{{ bigbluebutton_conferencesstreamingplatform_source_repo }}" bbb-csp
+      command: |
+        git clone -b "{{ bigbluebutton_conferencesstreamingplatform_source_ref }}" "{{ bigbluebutton_conferencesstreamingplatform_source_repo }}" bbb-csp
       creates: /usr/src/bbb-csp
       responses:
         Username: "{{ gituser | default(False) }}"
@@ -29,7 +30,7 @@
   args:
     chdir: /usr/src/bbb-csp
     creates: /usr/src/bbb-csp/node_modules
-  shell: npm install
+  command: npm install
 - name: Creates BigBlueButton Conferences Streaming Platform Group
   group:
     name: "{{ bbbcsp_group }}"

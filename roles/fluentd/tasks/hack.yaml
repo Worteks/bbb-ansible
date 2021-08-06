@@ -17,7 +17,8 @@
   - timer
   register: hkunit
 - name: Reloads Systemd Configuration
-  shell: systemctl daemon-reload
+  systemd:
+    daemon_reload: yes
   when:
   - hkunit is defined
   - hkunit is changed

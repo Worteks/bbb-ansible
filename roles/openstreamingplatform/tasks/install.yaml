@@ -53,7 +53,8 @@
     loop_var: i
   register: unicorn_unit
 - name: Reloads Systemd Configuration
-  shell: systemctl daemon-reload
+  systemd:
+    daemon_reload: yes
   when:
   - unicorn_unit is defined
   - unicorn_unit is changed

@@ -1,2 +1,2 @@
-HOST={{ bbb_url.stdout_lines[0] }}api
-SECRET={{ bbb_secret.stdout_lines[0] }}
+HOST={{ bbb_url.stdout_lines[bbb_url.stdout_lines | length - 1] }}api
+SECRET={{ bbb_secret.stdout_lines[bbb_secret.stdout_lines | length - 1] }}

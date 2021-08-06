@@ -2,10 +2,10 @@
   args:
     chdir: /root/.ssh
     creates: /root/.ssh/id_rsa
+  command: |
+    /usr/bin/ssh-keygen -t rsa -b 4096 -N '' -f id_rsa
   delegate_to: "{{ srv }}"
   run_once: yes
-  shell: |
-    /usr/bin/ssh-keygen -t rsa -b 4096 -N '' -f id_rsa
 - name: "Fetches PeerTube Public SSH Key from {{ srv }}"
   args:
     chdir: /root/.ssh

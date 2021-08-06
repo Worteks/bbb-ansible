@@ -17,7 +17,8 @@
   - timer
   register: punit
 - name: Reloads Systemd Configuration
-  shell: systemctl daemon-reload
+  systemd:
+    daemon_reload: yes
   when:
   - punit is defined
   - punit is changed

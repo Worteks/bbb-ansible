@@ -2,11 +2,11 @@
   args:
     chdir: /home/scalelite-spool/.ssh
     creates: /home/scalelite-spool/.ssh/id_rsa
-  delegate_to: "{{ srv }}"
-  run_once: yes
-  shell: |
+  command: |
     /usr/bin/ssh-keygen -t rsa -b 4096 -N '' -f id_rsa;
     chown scalelite-spool:scalelite-spool id_rsa id_rsa.pub
+  delegate_to: "{{ srv }}"
+  run_once: yes
 - name: "Fetches Scalelite Public SSH Key from {{ srv }}"
   args:
     chdir: /home/scalelite-spool/.ssh

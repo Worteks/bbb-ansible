@@ -7,7 +7,8 @@
     changed_when: False
     failed_when: False
     register: hasngusr
-    shell: getent passwd | grep nagios
+    shell: |
+      set -o pipefail && getent passwd | grep nagios
   - name: Ensures Nagios User is a Member of the certs-trusted Group
     user:
       append: yes

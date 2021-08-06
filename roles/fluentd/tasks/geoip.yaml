@@ -49,8 +49,8 @@
     creates: /usr/src/geoip/GeoLite2-City.mmdb
     warn: false
   shell: |
-    tar -xzf /usr/src/geoip2.tar.gz --strip-components=1 \
-    && cp -f GeoLite2-City.mmdb /etc/td-agent/
+    tar -xzf /usr/src/geoip2.tar.gz --strip-components=1 && \
+    cp -f GeoLite2-City.mmdb /etc/td-agent/
 - name: Installs Fluentd GeoIP Filter Plugin
   changed_when: False
   shell: |

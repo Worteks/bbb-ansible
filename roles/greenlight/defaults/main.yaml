@@ -1,5 +1,6 @@
 blackbox_exporter_port: 9158
 blackbox_exporter_release: 0.17.0
+blackbox_exporter_repo: https://github.com/prometheus/blackbox_exporter
 
 nginx_ssl_ciphers:
 - EECDH+ECDSA+AESGCM

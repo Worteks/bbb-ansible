@@ -26,5 +26,8 @@
 - name: Registers Against FreeIPA Server
   args:
     creates: /etc/ipa/default.conf
-  shell: |
-    ipa-client-install --domain {{ freeipa_domain | default(ansible_domain) }} --server {{ hostvars[groups['freeipa'][0]]['ansible_fqdn'] }} -p {{ freeipa_registration_user }} -w "{{ freeipa_registration_password }}" --mkhomedir -U
+  command: |
+    ipa-client-install --domain {{ freeipa_domain | default(ansible_domain) }} \
+        --server {{ hostvars[groups['freeipa'][0]]['ansible_fqdn'] }} \
+        -p {{ freeipa_registration_user }} -w "{{ freeipa_registration_password }}" \
+        --mkhomedir -U

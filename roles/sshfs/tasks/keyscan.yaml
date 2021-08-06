@@ -1,8 +1,8 @@
 - name: "Checks for HostKey {{ ssh_remote }}"
   changed_when: False
+  command: "ssh-keygen -f {{ ssh_homedir | default('/home/changeme') }}/.ssh/known_hosts -F {{ ssh_remote }}"
   failed_when: False
   register: knows_host
-  shell: "ssh-keygen -f {{ ssh_homedir | default('/home/changeme') }}/.ssh/known_hosts -F {{ ssh_remote }}"
 - name: "Trusts {{ ssh_remote }} Host Key"
   args:
     chdir: "{{ ssh_homedir | default('/home/changeme') }}/.ssh"

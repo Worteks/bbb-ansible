@@ -1,3 +1,15 @@
+- name: Fetches BigBlueButton API Secret
+  args:
+    executable: /bin/bash
+  changed_when: False
+  delegate_to: "{{ groups['bbb'][0] }}"
+  register: bbb_secret
+  run_once: yes
+  shell: |
+    set -o pipefail && \
+    bbb-conf --secret | awk '/Secret:/{print $2}'
+  when:
+  - groups['scalelite'] | length == 0
 - name: Installs BigBlueButton Conferences Streaming Platform Site Configuration
   notify: Reloads BBB CSP
   template:
@@ -23,7 +35,8 @@
     owner: root
     src: unit.j2
 - name: Reloads Systemd Configuration
-  shell: systemctl daemon-reload
+  systemd:
+    daemon_reload: yes
   when:
   - bbbcsp_unit is defined
   - bbbcsp_unit is changed

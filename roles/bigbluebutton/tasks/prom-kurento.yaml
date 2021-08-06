@@ -8,12 +8,14 @@
   args:
     chdir: /usr/src/kurento-monitor
     creates: /usr/src/kurento-monitor/node_modules
-  shell: npm install
+  command: npm install
 - name: Downgrades modules syntax for NodeJS 8
   args:
     chdir: /usr/src/kurento-monitor
     creates: /usr/src/kurento-monitor/.patched
+    executable: /bin/bash
   shell: |
+    set -o pipefail && \
     find node_modules/prom-client/ -type f | while read line;
         do sed -i "s|} catch {|} catch(nvm) {|" "$line";
         done && date >.patched
@@ -41,7 +43,8 @@
     owner: root
     src: kr-exporter.j2
 - name: Reloads Systemd Configuration
-  shell: systemctl daemon-reload
+  systemd:
+    daemon_reload: yes
   when:
   - exporter_unit is defined
   - exporter_unit is changed

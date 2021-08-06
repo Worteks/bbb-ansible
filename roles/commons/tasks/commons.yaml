@@ -69,7 +69,7 @@
       owner: root
       src: resolv.j2
   - name: Refreshes Resolv Configuration
-    shell: resolvconf -u
+    command: resolvconf -u
     when:
     - dnsi is defined
     - dnsi is changed

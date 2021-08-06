@@ -1,7 +1,10 @@
 - name: Checks Docker Version
+  args:
+    executable: /bin/bash
   changed_when: False
   register: dkrmajor
-  shell: "docker version | grep -A1 Engine: | awk '/Version:/{print $2}' | cut -d. -f1"
+  shell: |
+    set -o pipefail && docker version | grep -A1 'Engine:' | awk '/Version:/{print $2}' | cut -d. -f1
 - block:
   - name: Installs Docker Daemon Configuration
     register: dkrrst
@@ -22,4 +25,4 @@
   - dkrmajor is defined
   - dkrmajor.stdout_lines is defined
   - dkrmajor.stdout_lines | length > 0
-  - (dkrmajor.stdout_lines[0] | int) > 16
+  - (dkrmajor.stdout_lines[dkrmajor.stdout_lines | length - 1] | int) > 16

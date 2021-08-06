@@ -7,7 +7,8 @@
     owner: root
     src: compose-systemd.j2
 - name: Reloads Systemd Configuration
-  shell: systemctl daemon-reload
+  systemd:
+    daemon_reload: yes
   when:
   - docker_unit is defined
   - docker_unit is changed

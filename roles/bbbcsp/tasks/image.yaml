@@ -15,16 +15,19 @@
       version: "{{ bigbluebutton_livestream_custom_source_ref }}"
     register: hascode
   - name: Checks for BigBlueButton LiveStreaming Cached Image
+    args:
+      executable: /bin/bash
     failed_when: False
     changed_when: False
     register: hasimage
     shell: |
+      set -o pipefail && \
       docker images | grep -E "^bbb-livestream[ \t]*latest"
   - name: Builds BigBlueButton LiveStreaming Image
     args:
       chdir: /usr/src/bbb-livestream
-    shell:
-      docker build -t bbb-livestream:latest .
+    shell: |
+      docker build -t bbb-livestream:latest . >csp-image-build.$(date +%s).log 2>&1
     when:
     - >
        (hascode is defined

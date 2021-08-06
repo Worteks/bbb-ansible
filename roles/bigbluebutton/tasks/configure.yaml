@@ -86,7 +86,7 @@
       args:
         chdir: /usr/src/bbb-download
         creates: /var/bigbluebutton/published/presentation
-      shell: sh install.sh
+      command: sh install.sh
     when:
     - bigbluebutton_version in [ 22, '22' ]
   - block:
@@ -121,9 +121,9 @@
     - name: Installs BigBlueButton/MP4 Recordings Post Process Assets
       args:
         chdir: /var/www/bbb-mp4
+      command: ./bbb-mp4-install.sh
       environment:
         PATH: /usr/sbin:/usr/bin:/sbin:/bin:/var/www/bbb-mp4
-      shell: ./bbb-mp4-install.sh
     when:
     - not (bigbluebutton_version in [ 22, '22' ])
   when:
@@ -201,7 +201,7 @@
   - freeswitch_trunk_username is defined
 
 - name: Restarts BigBlueButton
-  shell: bbb-conf --restart
+  command: bbb-conf --restart
   when:
   - >
       (fixed_home is defined

@@ -12,7 +12,7 @@
     state: restarted
   when:
   - >
-       (nginx_exporter_should_run | default(False)
+       (nginx_drbd_should_run
         and (ansible_fqdn in groups['drbd']
              or ansible_nodename in groups['drbd']
              or ansible_hostname in groups['drbd']))

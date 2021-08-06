@@ -1,2 +1,2 @@
 - name: Reloads NFS shares
-  shell: exportfs -a
+  command: exportfs -a

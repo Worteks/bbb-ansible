@@ -4,7 +4,7 @@
     group: root
     mode: 0644
     owner: root
-    url: "https://github.com/prometheus-community/postgres_exporter/releases/download/v{{ postgres_exporter_release }}/postgres_exporter-{{ postgres_exporter_release }}.linux-amd64.tar.gz"
+    url: "{{ postgres_exporter_repo }}/releases/download/v{{ postgres_exporter_release }}/postgres_exporter-{{ postgres_exporter_release }}.linux-amd64.tar.gz"
 - name: Extracts Postgres Exporter
   args:
     chdir: /usr/src

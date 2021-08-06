@@ -2,20 +2,18 @@
   - name: Checks Root Filesystem Type
     args:
       creates: /root/.ansible/fs-expand
-      warn: False
     changed_when: False
+    command: |
+      awk  '/ \/ /{print $3}' /etc/mtab
     register: has_rootfs
-    shell: |
-      mount | awk '/ \/ /{print $5}'
   - block:
     - name: Resolves Root Device
       args:
         creates: /root/.ansible/fs-expand
-        warn: False
       changed_when: False
+      command: |
+        awk  '/ \/ /{print $1}' /etc/mtab
       register: has_rootdev
-      shell: |
-        mount | awk '/ \/ /{print $1}'
     - name: Expands EXT RootFS
       args:
         creates: /root/.ansible/fs-expand

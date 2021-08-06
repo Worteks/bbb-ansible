@@ -1,8 +1,8 @@
 - include_tasks: proxy.yaml
   vars:
     site_fqdn: "{{ hostvars[groups['alertmanager'][0]]['alertmanager_fqdn'] | default(hostvars[groups['alertmanager'][0]]['ansible_fqdn']) }}"
-    proxy_to: "{{ (groups['alertmanager'] | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | join(',')).split(',') }}"
     proxy_port: "{{ alertmanager_port }}"
+    proxy_to: "{{ (groups['alertmanager'] | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | join(',')).split(',') }}"
     should_filter: True
     tplate: proxy
   when:
@@ -10,9 +10,9 @@
 - include_tasks: proxy.yaml
   vars:
     site_fqdn: "{{ hostvars[groups['bbbcsp'][0]]['bbbcsp_fqdn'] | default(hostvars[groups['bbbcsp'][0]]['ansible_fqdn']) }}"
+    proxy_port: "{{ bbbcsp_port }}"
     proxy_to:
     - "{{ hostvars[groups['bbbcsp'][0]]['corosync_vip'] | default(hostvars[groups['bbbcsp'][0]]['ansible_default_ipv4']['address']) }}"
-    proxy_port: "{{ bbbcsp_port }}"
     should_filter: True
     tplate: proxy
   when:
@@ -20,8 +20,8 @@
 - include_tasks: proxy.yaml
   vars:
     site_fqdn: "{{ hostvars[groups['grafana'][0]]['grafana_fqdn'] | default(hostvars[groups['grafana'][0]]['ansible_fqdn']) }}"
-    proxy_to: "{{ (groups['grafana'] | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | join(',')).split(',') }}"
     proxy_port: "{{ grafana_port }}"
+    proxy_to: "{{ (groups['grafana'] | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | join(',')).split(',') }}"
     should_filter: True
     tplate: proxy
   when:
@@ -33,8 +33,8 @@
   vars:
     add_hsts_headers: false
     site_fqdn: "{{ hostvars[groups['greenlight'][0]]['greenlight_fqdn'] | default(hostvars[groups['greenlight'][0]]['ansible_fqdn']) }}"
-    proxy_to: "{{ (groups['greenlight'] | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | join(',')).split(',') }}"
     proxy_port: "{{ greenlight_port }}"
+    proxy_to: "{{ (groups['greenlight'] | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | join(',')).split(',') }}"
     tplate: proxy
     x_frame_options_deny: "{{ False if (greenlight_allow_embedded | default(False)) else True }}"
     x_xss_protection: False
@@ -43,8 +43,8 @@
 - include_tasks: proxy.yaml
   vars:
     site_fqdn: "{{ hostvars[groups['kibana'][0]]['kibana_fqdn'] | default(hostvars[groups['kibana'][0]]['ansible_fqdn']) }}"
-    proxy_to: "{{ (groups['kibana'] | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | join(',')).split(',') }}"
     proxy_port: "{{ kibana_port }}"
+    proxy_to: "{{ (groups['kibana'] | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | join(',')).split(',') }}"
     should_filter: True
     tplate: proxy
   when:
@@ -56,9 +56,9 @@
   vars:
     nginx_max_body_size: "{{ peertube_max_body_size }}"
     site_fqdn: "{{ hostvars[groups['peertube'][0]]['peertube_fqdn'] | default(hostvars[groups['peertube'][0]]['ansible_fqdn']) }}"
+    proxy_port: "{{ peertube_port }}"
     proxy_to:
     - "{{ hostvars[groups['peertube'][0]]['corosync_vip'] | default(hostvars[groups['peertube'][0]]['ansible_default_ipv4']['address']) }}"
-    proxy_port: "{{ peertube_port }}"
     tplate: proxy
     x_frame_options_deny: "{{ False if (peertube_allow_embedded | default(False)) else True }}"
   when:
@@ -66,8 +66,8 @@
 - include_tasks: proxy.yaml
   vars:
     site_fqdn: "{{ hostvars[groups['prometheus'][0]]['prometheus_fqdn'] | default(hostvars[groups['prometheus'][0]]['ansible_fqdn']) }}"
-    proxy_to: "{{ (groups['prometheus'] | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | join(',')).split(',') }}"
     proxy_port: "{{ prometheus_port }}"
+    proxy_to: "{{ (groups['prometheus'] | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | join(',')).split(',') }}"
     should_filter: True
     tplate: proxy
   when:
@@ -78,8 +78,10 @@
     loop_var: node
   vars:
     site_fqdn: "{{ hostvars[groups['scalelite'][0]]['scalelite_fqdn'] | default(hostvars[groups['scalelite'][0]]['ansible_fqdn']) }}"
-    proxy_to: "{{ ([ hostvars[groups['scalelite'][0]]['corosync_vip'] ]) if (hostvars[groups['scalelite'][0]]['corosync_vip'] is defined) else (groups['scalelite'] | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | join(',')).split(',') }}"
     proxy_port: "{{ scalelite_port }}"
+    proxy_to: "{{ ([ hostvars[groups['scalelite'][0]]['corosync_vip'] ])
+                       if (hostvars[groups['scalelite'][0]]['corosync_vip'] is defined)
+                       else (groups['scalelite'] | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | join(',')).split(',') }}"
     tplate: proxy
   when:
   - do_scalelite

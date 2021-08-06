@@ -1,11 +1,12 @@
 - block:
   - name: Waits for Scalelite API
     changed_when: False
+    command: docker exec -it scalelite-api uptime
+    delay: 10
     delegate_to: "{{ groups['scalelite'][0] }}"
     register: is_started
-    retries: 20
+    retries: 6
     run_once: yes
-    shell: docker exec -it scalelite-api uptime
     until: is_started.rc == 0
   - name: Initializes Scalelite Database
     args:
@@ -31,9 +32,10 @@
 - block:
   - name: Waits for Scalelite API
     changed_when: False
+    command: docker exec -it scalelite-api uptime
+    delay: 10
     register: is_started
-    retries: 20
-    shell: docker exec -it scalelite-api uptime
+    retries: 6
     until: is_started.rc == 0
   - name: Initializes Scalelite Database
     args:

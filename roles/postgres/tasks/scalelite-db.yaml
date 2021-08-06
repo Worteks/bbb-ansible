@@ -34,9 +34,12 @@
 - name: Applies Scalelite Template Fix
   args:
     chdir: /var/lib/postgresql
+    executable: /bin/bash
   become: yes
   become_user: postgres
-  shell: cat scalelite-fix.sql | psql
+  shell: |
+    set -o pipefail && \
+    cat scalelite-fix.sql | psql
   when:
   - fix_check is defined
   - fix_check is changed

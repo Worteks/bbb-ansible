@@ -27,7 +27,7 @@ services:
 {% endif %}
     - "9093:9093"
     restart: unless-stopped
-    user: "{{ alertmanager_user_id.stdout_lines[0] }}"
+    user: "{{ alertmanager_user_id.stdout_lines[alertmanager_user_id.stdout_lines | length - 1] }}"
     volumes:
     - /etc/alertmanager:/etc/config
     - /var/lib/alertmanager:/data

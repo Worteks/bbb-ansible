@@ -35,11 +35,15 @@
   when:
   - groups['postgres_greenlight'] | length == 0
 - name: Fetches BigBlueButton API Secret
+  args:
+    executable: /bin/bash
   changed_when: False
   delegate_to: "{{ groups['bbb'][0] }}"
   register: bbb_secret
   run_once: yes
-  shell: bbb-conf --secret | awk '/Secret:/{print $2}'
+  shell: |
+    set -o pipefail && \
+    bbb-conf --secret | awk '/Secret:/{print $2}'
   when:
   - groups['scalelite'] | length == 0
 - name: Installs Greenlight Configuration

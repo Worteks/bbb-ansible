@@ -36,7 +36,8 @@
       regex: ^ExecStart
     register: leunit
   - name: Reloads Systemd Configuration
-    shell: systemctl daemon-reload
+    systemd:
+      daemon_reload: yes
     when:
     - leunit is defined
     - leunit is changed

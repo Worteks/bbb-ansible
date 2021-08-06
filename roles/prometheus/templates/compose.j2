@@ -18,7 +18,7 @@ services:
     ports:
     - "9090:9090"
     restart: unless-stopped
-    user: "{{ prometheus_user_id.stdout_lines[0] }}"
+    user: "{{ prometheus_user_id.stdout_lines[prometheus_user_id.stdout_lines | length - 1] }}"
     volumes:
     - /etc/prometheus:/etc/prometheus
     - /var/lib/prometheus:/prometheus

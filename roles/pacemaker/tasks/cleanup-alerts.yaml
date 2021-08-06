@@ -1,0 +1,24 @@
+- name: Checks for Pacemaker Alerts
+  args:
+    executable: /bin/bash
+  changed_when: False
+  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+  failed_when: False
+  register: haspcsalert
+  run_once: yes
+  shell: |
+    set -o pipefail && \
+    pcs status 2>&1 | grep '^Failed Resource Actions:'
+- name: Cleanup Pacemaker Alerts
+  command: |
+    pcs resource cleanup
+  delay: 120
+  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+  register: reloadrslt
+  retries: 3
+  run_once: yes
+  until: reloadrslt.rc == 0
+  when:
+  - haspcsalert is defined
+  - haspcsalert.rc is defined
+  - (haspcsalert.rc | default(1)) == 0

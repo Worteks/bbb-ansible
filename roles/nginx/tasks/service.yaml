@@ -1,0 +1,39 @@
+- block:
+  - name: Ensures Nginx Server Disabled
+    service:
+      enabled: no
+      name: nginx
+  - name: Ensures Nginx is Stopped on DRBD Backup Members
+    service:
+      name: nginx
+      state: stopped
+    when:
+    - not (drbd_is_primary | default(True))
+  - include_role:
+      name: pacemaker
+      tasks_from: add-service.yaml
+    vars:
+      service_id: Nginx-rsc
+      service_name: nginx
+      service_type: lsb
+  when:
+  - >
+      ansible_fqdn in groups['drbd']
+      or ansible_hostname in groups['drbd']
+      or ansible_nodename in groups['drbd']
+  - corosync_hostgroup | default(False)
+  - not nginx_drbd_should_run
+- name: Ensures Nginx Server Running
+  service:
+    enabled: yes
+    name: nginx
+    state: started
+  when:
+  - >
+      (ansible_fqdn not in groups['drbd']
+       and ansible_hostname not in groups['drbd']
+       and ansible_nodename not in groups['drbd'])
+      or (nginx_drbd_should_run
+          and (ansible_fqdn in groups['drbd']
+               or ansible_hostname in groups['drbd']
+               or ansible_nodename in groups['drbd']))

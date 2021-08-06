@@ -2,7 +2,7 @@ dependencies:
 - role: docker
 - role: nginx
   vars:
-    nginx_exporter_should_run: True
+    nginx_drbd_should_run: True
   when:
   - >
      not (ansible_fqdn in groups['bbb']
@@ -10,3 +10,6 @@ dependencies:
   - >
      not (ansible_hostname in groups['bbb']
           and ansible_hostname in groups['greenlight'])
+  - >
+     not (ansible_nodename in groups['bbb']
+          and ansible_nodename in groups['greenlight'])

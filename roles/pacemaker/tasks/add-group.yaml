@@ -37,51 +37,60 @@
                      + (hasips.stdout_lines | default([]))
                      + (hassvcs.stdout_lines | default([]))) | join(' ') }}"
 - name: Checks Resource Group Configured
+  args:
+    executable: /bin/bash
   changed_when: False
   delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
   failed_when: False
   register: hasgroup
   run_once: yes
   shell: |
+    set -o pipefail && \
     crm configure show | grep '^group APCLUSTER {{ group_deps }}'
 - name: Configures Resource Group
   block:
   - name: Checks Prior Resource Group Definition
+    args:
+      executable: /bin/bash
     changed_when: False
     delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
     failed_when: False
     register: hasoldgroup
     run_once: yes
     shell: |
+      set -o pipefail && \
       crm configure show | grep '^group APCLUSTER '
   - block:
     - name: Checks Prior Order Definition
+      args:
+        executable: /bin/bash
       changed_when: False
       delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
       failed_when: False
       register: hasoldorder
       run_once: yes
       shell: |
+        set -o pipefail && \
         crm configure show | grep '^order APCLUSTER_after_DRBD_{{ drbd_id | default("r0") }}'
     - name: Removes Prior Order Definition
-      delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
-      run_once: yes
-      shell: |
+      command: |
         crm configure delete 'APCLUSTER_after_DRBD_{{ drbd_id | default("r0") }}'
-    - name: Removes Prior Resource Group Definition
       delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
       run_once: yes
-      shell: |
+    - name: Removes Prior Resource Group Definition
+      command: |
         crm configure delete APCLUSTER
+      delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+      run_once: yes
     when:
     - hasoldgroup is defined
     - hasoldgroup.rc is defined
     - (hasoldgroup.rc | default(1)) == 0
   - name: Creates Resource Group
+    command: |
+      crm configure group APCLUSTER {{ group_deps }}
     delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
     run_once: yes
-    shell: |
-      crm configure group APCLUSTER {{ group_deps }}
   when:
   - hasgroup is defined
   - hasgroup.rc is defined

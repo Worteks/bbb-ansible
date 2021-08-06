@@ -2,11 +2,13 @@
   args:
     chdir: /etc/ceph
     creates: "/etc/ceph/{{ bbb_ceph_cluster }}.client.{{ bbb_ceph_username }}.keyring"
+  command: |
+    ceph-authtool --config {{ bbb_ceph_cluster }}.conf \
+        --create-keyring {{ bbb_ceph_cluster }}.client.{{ bbb_ceph_username }}.keyring \
+        --gen-key -n client.{{ bbb_ceph_username }}
   delegate_to: "{{ groups['cephfs'] }}"
   register: created_keyring
   run_once: yes
-  shell: |
-    ceph-authtool --config {{ bbb_ceph_cluster }}.conf --create-keyring {{ bbb_ceph_cluster }}.client.{{ bbb_ceph_username }}.keyring --gen-key -n client.{{ bbb_ceph_username }}
 - block:
   - name: Patches Keyring
     blockinfile:
@@ -21,8 +23,9 @@
   - name: Imports Patched Keyring
     args:
       chdir: /etc/ceph
+    command: |
+      ceph auth import --config {{ bbb_ceph_cluster }}.conf -i {{ bbb_ceph_cluster }}.client.{{ bbb_ceph_username }}.keyring
     delegate_to: "{{ groups['cephfs'] }}"
-    shell: ceph auth import --config {{ bbb_ceph_cluster }}.conf -i {{ bbb_ceph_cluster }}.client.{{ bbb_ceph_username }}.keyring
     run_once: yes
     when:
     - patched_keyring is defined

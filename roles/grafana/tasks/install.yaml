@@ -7,9 +7,13 @@
     groups: grafana
     name: grafana
 - name: Resolves Grafana User ID
+  args:
+    executable: /bin/bash
   changed_when: False
   register: grafana_user_id
-  shell: "getent passwd grafana | awk -F: '{print $3;exit;}'"
+  shell: |
+    set -o pipefail && \
+    getent passwd grafana | awk -F: '{print $3;exit;}'
 - name: Installs Grafana Server Configuration Directories
   file:
     dest: "{{ fl }}"

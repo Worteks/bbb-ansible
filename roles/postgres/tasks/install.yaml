@@ -2,7 +2,9 @@
   apt:
     name:
     - gnupg2
-    - python-psycopg2
+    - "{{ 'python3-psycopg2'
+            if (ansible_python['version']['major'] | int == 3)
+            else 'python-psycopg2' }}"
     - sudo
     state: present
   register: deps
@@ -15,8 +17,11 @@
 - name: Installs Postgres GPG key
   args:
     creates: /etc/apt/sources.list.d/postgres.list
+    executable: /bin/bash
     warn: False
-  shell: wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+  shell: |
+    set -o pipefail && \
+    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 - name: Installs Postgres APT Configuration
   register: srcs
   template:

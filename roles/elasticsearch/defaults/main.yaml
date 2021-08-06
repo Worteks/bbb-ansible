@@ -1,7 +1,8 @@
 elasticsearch_cluster_name: es-bbb
 
-elasticsearch_exporter_release: 1.2.0
 elasticsearch_exporter_port: 9114
+elasticsearch_exporter_release: 1.2.0
+elasticsearch_exporter_repo: https://github.com/justwatchcom/elasticsearch_exporter
 
 elasticsearch_images_release: 7.14.0
 elasticsearch_images_repo: docker.elastic.co/elasticsearch/elasticsearch

@@ -7,9 +7,12 @@
     groups: alertmanager
     name: alertmanager
 - name: Resolves AlertManager User ID
+  args:
+    executable: /bin/bash
   changed_when: False
   register: alertmanager_user_id
-  shell: "getent passwd alertmanager | awk -F: '{print $3;exit;}'"
+  shell: |
+    set -o pipefail && getent passwd alertmanager | awk -F: '{print $3;exit;}'
 - name: Installs AlertManager Server Configuration Directories
   file:
     dest: /etc/alertmanager

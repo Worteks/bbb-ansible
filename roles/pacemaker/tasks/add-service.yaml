@@ -1,36 +1,22 @@
 - name: "Checks SERVICE:{{ service_id | default(1) }} configured"
+  args:
+    executable: /bin/bash
   changed_when: False
   delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
   failed_when: False
   register: hassvc
   run_once: yes
   shell: |
+    set -o pipefail && \
     crm configure show | grep "primitive {{ service_id }} {{ service_type | default('lsb') }}:"
 - block:
-  #- name: "Checks SERVICE:{{ service_id | default(1) }} exists"
-  #  changed_when: False
-  #  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
-  #  failed_when: False
-  #  register: hasoldsvc
-  #  run_once: yes
-  #  shell: |
-  #    crm configure show | grep "primitive {{ service_id }} "
-  #- name: "Removes Faulty SERVICE:{{ lvm_id | default(1) }} primitive"
-  #  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
-  #  run_once: yes
-  #  shell: |
-  #    crm configure delete {{ service_id }}
-  #  when:
-  #  - hasoldsvc is defined
-  #  - hasoldsvc.rc is defined
-  #  - (hasoldsvc.rc | default(0)) != 0
   - name: "Configures SERVICE:{{ lvm_id | default(1) }} primitive"
-    delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
-    run_once: yes
-    shell: |
+    command: |
       crm configure primitive {{ service_id }} \
           {{ service_type }}:{{ service_name }} \
           meta migration-threshold=2 op monitor interval=20 timeout={{ service_timeout | default(60) }} on-fail=restart
+    delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+    run_once: yes
   when:
   - hassvc is defined
   - hassvc.rc is defined

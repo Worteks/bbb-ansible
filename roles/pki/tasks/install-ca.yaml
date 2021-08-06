@@ -8,7 +8,7 @@
     src: "{{ ca_path | default('/root/pki/ca.crt') }}"
   register: new_ca
 - name: Refreshes Trusted CA
-  shell: update-ca-certificates
+  command: update-ca-certificates
   when:
   - new_ca is defined
   - new_ca is changed

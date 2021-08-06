@@ -17,8 +17,8 @@ const config = {
 	bbbApiUrl: 'https://{{ hostvars[groups['scalelite'][0]]['scalelite_fqdn'] | default(hostvars[groups['scalelite'][0]]['ansible_fqdn']) }}/bigbluebutton/api/',
 	bbbApiSecret: '{{ hostvars[groups['scalelite'][0]]['scalelite_lb_secret'] }}',
 {% elif groups['bbb'] | length > 0 %}
-	bbbApiUrl: 'https://{{ hostvars[groups['bbb'][0]]['ansible_fqdn'] }}/bigbluebutton/api/',
-	bbbApiSecret: '{{ bbb_secret.stdout_lines[0] }}',
+	bbbApiUrl: 'https://{{ hostvars[groups['bbb'][0]]['bigbluebutton_fqdn'] | default(hostvars[groups['bbb'][0]]['ansible_fqdn']) }}/bigbluebutton/api/',
+	bbbApiSecret: '{{ bbb_secret.stdout_lines[bbb_secret.stdout_lines | length - 1] }}',
 {% else %}
 	bbbApiUrl: 'https://{{ greenlight_fqdn }}/bigbluebutton/api/',
 	bbbApiSecret: '{{ bigbluebutton_api_secret }}',

@@ -26,6 +26,6 @@ services:
       memlock:
         soft: -1
         hard: -1
-    user: "{{ elasticsearch_user_id.stdout_lines[0] }}"
+    user: "{{ elasticsearch_user_id.stdout_lines[elasticsearch_user_id.stdout_lines | length - 1] }}"
     volumes:
     - /var/lib/elasticsearch:/usr/share/elasticsearch/data

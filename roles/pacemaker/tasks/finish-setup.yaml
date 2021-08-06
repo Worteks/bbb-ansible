@@ -1,3 +1,3 @@
 - include_tasks: add-group.yaml
 - include_tasks: add-colocation.yaml
-
+- include_tasks: cleanup-alerts.yaml

@@ -21,9 +21,9 @@
 - name: Installs Fluentd
   args:
     creates: /etc/td-agent/td-agent.conf
+  command: td-agent-installer.sh
   environment:
     PATH: /usr/src:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-  shell: td-agent-installer.sh
 - name: Installs Fluentd ElasticSearch Output Plugin
   changed_when: False
   shell: |
@@ -56,7 +56,8 @@
   - ansible_distribution == 'Debian'
   - ansible_distribution_release == 'buster'
 - name: Reloads Systemd Configuration
-  shell: systemctl daemon-reload
+  systemd:
+    daemon_reload: yes
   when:
   - shouldrld is defined
   - shouldrld is changed

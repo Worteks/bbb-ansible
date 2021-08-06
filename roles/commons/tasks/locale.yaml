@@ -18,7 +18,7 @@
     src: /etc/locale.alias
     state: link
 - name: Generates Locales
-  shell: locale-gen
+  command: locale-gen
   when:
   - regen_locales is defined
   - regen_locales is changed

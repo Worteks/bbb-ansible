@@ -26,9 +26,17 @@ openstreamingplatform_postgres_user: ospusr
 peertube_postgres_password: peertubepw
 peertube_postgres_user: peertubeusr
 
+postgres_drbd_groups:
+- postgres_coturn
+- postgres_greenlight
+- postgres_grafana
+- postgres_peertube
+- postgres_scalelite
+
 postgres_exporter_db: postgres
 postgres_exporter_port: 9144
 postgres_exporter_release: 0.9.0
+postgres_exporter_repo: https://github.com/prometheus-community/postgres_exporter
 
 postgres_max_connections: 300
 postgres_shared_buffers_mbytes: 128

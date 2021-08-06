@@ -46,3 +46,10 @@
           and drbd_is_primary | default(False))
       or (ansible_fqdn in groups['drbd']
           and drbd_is_primary | default(False))
+- include_role:
+    name: nginx
+    tasks_from: service.yaml
+  when:
+  - ansible_fqdn not in groups['drbd']
+  - ansible_hostname not in groups['drbd']
+  - ansible_nodename not in groups['drbd']

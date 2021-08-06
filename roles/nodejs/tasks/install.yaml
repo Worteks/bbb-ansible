@@ -11,7 +11,7 @@
   environment:
     PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root
   register: srcs
-  shell: setup_node.sh
+  command: setup_node.sh
 - name: Updates APT Cache
   apt:
     update_cache: yes

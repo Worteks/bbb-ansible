@@ -3,8 +3,8 @@ services:
   bbb-exporter:
     container_name: bbb-exporter
     environment:
-    - API_BASE_URL={{ bbb_url.stdout_lines[0] }}api/
-    - API_SECRET={{ bbb_secret.stdout_lines[0] }}
+    - API_BASE_URL={{ bbb_url.stdout_lines[bbb_url.stdout_lines | length - 1] }}api/
+    - API_SECRET={{ bbb_secret.stdout_lines[bbb_secret.stdout_lines | length - 1] }}
     - BIND_IP=0.0.0.0
 {% if do_debugs | default(False) %}
     - DEBUG=true

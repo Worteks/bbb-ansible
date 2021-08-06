@@ -22,8 +22,8 @@
   args:
     chdir: /etc/nginx/ssl
     creates: /etc/nginx/ssl/dh.pem
+  command: openssl dhparam -dsaparam -out dh.pem 4096
   notify: Reloads Nginx
-  shell: openssl dhparam -dsaparam -out dh.pem 4096
   when:
   - do_unsafe_dhparam | default(False)
 

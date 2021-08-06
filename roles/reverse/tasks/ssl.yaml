@@ -1,6 +1,6 @@
 - block:
   - include_role:
-    - name: certbot
+      name: certbot
       tasks_from: sync-account.yaml
     vars:
       certbot_cluster_name: reverse

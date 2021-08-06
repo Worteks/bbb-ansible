@@ -26,13 +26,11 @@
   - drbd_parent_exists.stat is defined
   - drbd_parent_exists.stat.isblk is not defined
 - name: Check Devices
-  args:
-    warn: False
   changed_when: False
+  command: |
+    grep ^{{ drbd_parent_device }} /etc/mtab
   failed_when: False
   register: drbd_parent_mounted
-  shell: |
-    mount | grep "^{{ drbd_parent_device }}"
 - name: Fails when DRBD Parent Device already used
   any_errors_fatal: true
   fail:
@@ -55,7 +53,7 @@
     line: drbd
   register: newmod
 - name: Ensures DRBD Module is Loaded
-  shell: modprobe drbd
+  command: modprobe drbd
   when:
   - newmod is defined
   - newmod is changed

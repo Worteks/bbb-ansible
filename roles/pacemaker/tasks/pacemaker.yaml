@@ -5,14 +5,19 @@
     state: started
 
 - name: Checks Stonith
+  args:
+    executable: /bin/bash
   changed_when: False
   failed_when: False
   register: chkstonith
-  shell: "pcs property list | grep 'stonith-enabled: false'"
+  shell: |
+    set -o pipefail && \
+    pcs property list | grep 'stonith-enabled: false'
 - name: Disables Stonith
-  shell: pcs property set stonith-enabled=false
+  command: pcs property set stonith-enabled=false
   when:
   - chkstonith is defined
+  - chkstonith.rc is defined
   - (chkstonith.rc | default(0)) != 0
 
 - name: Installs Pacemaker Profile Configuration

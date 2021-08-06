@@ -6,10 +6,16 @@
     owner: root
     src: sysctl.conf
   register: essyscf
+- name: Installs Curl
+  apt:
+    name: curl
+    state: present
 - name: Applies ElasticSearch Sysctl Configuration
   args:
     chdir: /etc/sysctl.d
+    executable: /bin/bash
   shell: |
+    set -o pipefail && \
     cat 99-es.conf | while read p; do sysctl -w "$p"; done
   when:
   - essysct is defined

@@ -12,3 +12,6 @@
     src: /etc/nginx/sites-available/alertmanager.conf
     state: link
   notify: Reloads Nginx
+- include_role:
+    name: nginx
+    tasks_from: service.yaml

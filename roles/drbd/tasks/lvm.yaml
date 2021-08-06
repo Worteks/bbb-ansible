@@ -8,26 +8,31 @@
     src: lvm.j2
 - block:
   - name: Checks for Existing PV
+    args:
+      executable: /bin/bash
     changed_when: False
     failed_when: False
     register: haspv
-    shell: pvs | grep /dev/drbd1
+    shell: |
+      set -o pipefail && pvs | grep /dev/drbd1
   - name: Creates PV
     any_errors_fatal: true
-    shell: pvcreate /dev/drbd1
+    command: pvcreate /dev/drbd1
     when:
     - haspv is defined
     - haspv.rc is defined
     - (haspv.rc | default(0)) != 0
   - name: Checks for Existing VG
+    args:
+      executable: /bin/bash
     changed_when: False
     failed_when: False
     register: hasvg
     shell: |
-      vgs | grep "{{ drbd_vg_name | default('data') }}"
+      set -o pipefail && vgs | grep "{{ drbd_vg_name | default('data') }}"
   - name: Creates VG
     any_errors_fatal: true
-    shell: |
+    command: |
       vgcreate "{{ drbd_vg_name | default('data') }}" /dev/drbd1
     when:
     - hasvg is defined

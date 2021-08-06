@@ -1,0 +1,25 @@
+- name: Detects Node with Data Mounted
+  changed_when: False
+  command: vgs
+  failed_when: False
+  register: canreadvg
+- name: Mark DRBD Inactive on Nodes
+  failed_when: False
+  shell: |
+    drbdadm secondary all;
+    drbdadm disconnect all;
+    drbdadm -- --discard-my-data connect all
+  when:
+  - canreadvg is defined
+  - canreadvg.rc is defined
+  - (canreadvg.rc | default(0)) != 0
+- name: Restarts DRBD on Primary node
+  run_once: yes
+  shell: |
+    drbdadm primary all;
+    drbdadm disconnect all;
+    drbdadm connect all
+  when:
+  - canreadvg is defined
+  - canreadvg.rc is defined
+  - (canreadvg.rc | default(1)) == 0

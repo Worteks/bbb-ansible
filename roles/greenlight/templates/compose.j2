@@ -20,7 +20,7 @@ services:
     - BIGBLUEBUTTON_SECRET={{ hostvars[groups['scalelite'][0]]['scalelite_lb_secret'] }}
 {% else %}
     - BIGBLUEBUTTON_ENDPOINT=https://{{ hostvars[groups['bbb'][0]]['bigbluebutton_fqdn'] | default(hostvars[groups['bbb'][0]]['ansible_fqdn']) }}/bigbluebutton/api/
-    - BIGBLUEBUTTON_SECRET={{ bbb_secret.stdout_lines[0] }}
+    - BIGBLUEBUTTON_SECRET={{ bbb_secret.stdout_lines[bbb_secret.stdout_lines | length - 1] }}
 {% endif %}
 {% if groups['postgres_greenlight'] | length > 0 %}
     - DB_ADAPTER=postgresql

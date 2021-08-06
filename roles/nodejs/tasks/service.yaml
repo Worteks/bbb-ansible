@@ -17,7 +17,7 @@
 - name: Installs PM2 Unit
   args:
     creates: "/etc/systemd/system/pm2-{{ pm2_runtime_user }}.service"
-  shell: "pm2 startup systemd -u {{ pm2_runtime_user }} --hp {{ pm2_runtime_homedir }} --service-name pm2-{{ pm2_runtime_user }}"
+  command: "pm2 startup systemd -u {{ pm2_runtime_user }} --hp {{ pm2_runtime_homedir }} --service-name pm2-{{ pm2_runtime_user }}"
 - name: Fixes PM2 Unit - removes PID File
   lineinfile:
     dest: "/etc/systemd/system/pm2-{{ pm2_runtime_user }}.service"
@@ -29,7 +29,12 @@
     chdir: "{{ pm2_ecosystem_path }}"
     creates: /root/.pm2/dump.pm2
   register: startedup_root
-  shell: "pm2 start {{ pm2_ecosystem_file | default('ecosystem.config.js') }} && sleep 2 && pm2 save && sleep 2 && pm2 stop {{ pm2_ecosystem_file | default('ecosystem.config.js') }}"
+  shell: |
+    pm2 start {{ pm2_ecosystem_file | default('ecosystem.config.js') }} && \
+    sleep 2 && \
+    pm2 save && \
+    sleep 2 && \
+    pm2 stop {{ pm2_ecosystem_file | default('ecosystem.config.js') }}
   when:
   - pm2_ecosystem_path | default(False)
   - pm2_runtime_user == 'root'
@@ -40,13 +45,19 @@
   become: yes
   become_user: "{{ pm2_runtime_user }}"
   register: startedup_unprivileged
-  shell: "pm2 start {{ pm2_ecosystem_file | default('ecosystem.config.js') }} && sleep 2 && pm2 save && sleep 2 && pm2 stop {{ pm2_ecosystem_file | default('ecosystem.config.js') }}"
+  shell: |
+    pm2 start {{ pm2_ecosystem_file | default('ecosystem.config.js') }} && \
+    sleep 2 && \
+    pm2 save && \
+    sleep 2 && \
+    pm2 stop {{ pm2_ecosystem_file | default('ecosystem.config.js') }}
   when:
   - pm2_ecosystem_path | default(False)
   - pm2_runtime_user != 'root'
 - block:
   - name: Reloads Systemd Configuration
-    shell: systemctl daemon-reload
+    systemd:
+      daemon_reload: yes
   - name: "Stops pm2-{{ pm2_runtime_user }}"
     service:
       name: "pm2-{{ pm2_runtime_user }}"

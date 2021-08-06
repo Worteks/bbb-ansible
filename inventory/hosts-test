@@ -122,6 +122,7 @@ drbd_scalelite
 [front:children]
 bbb
 bbbcsp
+coturn
 greenlight
 kibana
 openstreamingplatform

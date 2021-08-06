@@ -33,46 +33,43 @@
   - ansible_fqdn not in groups['drbd']
   - ansible_hostname not in groups['drbd']
   - ansible_nodename not in groups['drbd']
-- include_role:
-    name: pacemaker
-    tasks_from: add-service.yaml
-  loop:
-  - redis_peertube
-  - redis_scalelite
-  loop_control:
-    loop_var: apply_to
-  vars:
-    #corosync_hostgroup: "{{ apply_to }}"
-    service_id: Redis-rsc
-    service_name: redis-server
-    service_type: lsb
+- block:
+  - include_role:
+      name: pacemaker
+      tasks_from: add-service.yaml
+    loop: "{{ redis_drbd_groups }}"
+    loop_control:
+      loop_var: apply_to
+    vars:
+      service_id: Redis-rsc
+      service_name: redis-server
+      service_type: lsb
+    when:
+    - >
+        ansible_fqdn in groups['drbd']
+        or ansible_hostname in groups['drbd']
+        or ansible_nodename in groups['drbd']
+    - groups[apply_to] | length > 0
+    - >
+        ansible_nodename in groups[apply_to]
+        or ansible_hostname in groups[apply_to]
+        or ansible_fqdn in groups[apply_to]
+    - corosync_hostgroup | default(False)
+  - include_role:
+      name: pacemaker
+      tasks_from: finish-setup.yaml
+    loop: "{{ redis_drbd_groups }}"
+    loop_control:
+      loop_var: apply_to
+    when:
+    - groups[apply_to] | length > 0
+    - >
+        ansible_nodename in groups[apply_to]
+        or ansible_hostname in groups[apply_to]
+        or ansible_fqdn in groups[apply_to]
+    - corosync_hostgroup | default(False)
   when:
   - >
       ansible_fqdn in groups['drbd']
       or ansible_hostname in groups['drbd']
       or ansible_nodename in groups['drbd']
-  - groups[apply_to] | length > 0
-  - >
-      ansible_nodename in groups[apply_to]
-      or ansible_hostname in groups[apply_to]
-      or ansible_fqdn in groups[apply_to]
-  - corosync_hostgroup | default(False)
-- include_role:
-    name: pacemaker
-    tasks_from: finish-setup.yaml
-  loop:
-  - redis_peertube
-  - redis_scalelite
-  loop_control:
-    loop_var: apply_to
-  when:
-  - >
-      ansible_fqdn in groups['drbd']
-      or ansible_hostname in groups['drbd']
-      or ansible_nodename in groups['drbd']
-  - groups[apply_to] | length > 0
-  - >
-      ansible_nodename in groups[apply_to]
-      or ansible_hostname in groups[apply_to]
-      or ansible_fqdn in groups[apply_to]
-  - corosync_hostgroup | default(False)

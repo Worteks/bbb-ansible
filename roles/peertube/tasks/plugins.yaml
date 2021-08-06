@@ -51,10 +51,10 @@
     postgresql_query:
       positional_args:
       - "{{ ansible_date_time['date'] }} 00:00:00.000+00"
-      - "{\"url\":\"{{ peertube_ldap_endpoint }}\",\"weight\":100,\"bind-dn\":\"{{ peertube_ldap_bind_dn }}\",\"custom-ca\":\"/etc/ssl/certs/ca-certificates.crt\",\"search-base\":\"{{ peertube_ldap_base }}\",\"group-base\":\"\",\"insecure-tls\":false,\"mail-property\":\"mail\",\"search-filter\":\"(|(mail={{ '{{username}}' }})({{ peertube_ldap_uid }}={{ '{{username}}' }}))\",\"group-filter\":\"(member={{ '{{dn}}' }})\",\"bind-credentials\":\"{{ peertube_ldap_password }}\",\"username-property\":\"{{ peertube_ldap_uid }}\",\"group-admin\":\"\",\"group-mod\":\"\",\"group-user\":\"\"}"
+      - "{\"url\":\"{{ peertube_ldap_endpoint }}\",\"weight\":100,\"bind-dn\":\"{{ peertube_ldap_bind_dn }}\",\"custom-ca\":\"/etc/ssl/certs/ca-certificates.crt\",\"search-base\":\"{{ peertube_ldap_base }}\",\"group-base\":\"\",\"insecure-tls\":false,\"mail-property\":\"mail\",\"search-filter\":\"(|(mail={{ '{{ username }}' }})({{ peertube_ldap_uid }}={{ '{{ username }}' }}))\",\"group-filter\":\"(member={{ '{{ dn }}' }})\",\"bind-credentials\":\"{{ peertube_ldap_password }}\",\"username-property\":\"{{ peertube_ldap_uid }}\",\"group-admin\":\"\",\"group-mod\":\"\",\"group-user\":\"\"}"
       - "auth-ldap"
       query: "UPDATE plugin SET updateAt = %s, settings = %s WHERE name = %s"
-  when: 
+  when:
   - peertube_ldap_endpoint | default(False)
 - block:
   - name: Ensures Peertube Auth SAML Plugin Present
@@ -78,7 +78,7 @@
       - "{\"auth-display-name\":\"SAML\",\"client-id\":\"{{ peertube_saml_issuer }}\",\"login-url\":\"{{ peertube_saml_endpoint }}\",\"provider-certificate\":\"/config/idp.crt\",\"service-certificate\":\"/config/saml.crt\",\"service-private-key\":\"/config/saml.key\",\"username-property\":\"{{ peertube_saml_username_field }}\",\"role-property\":\"\",\"sign-get-request\":true}"
       - "auth-saml2"
       query: "UPDATE plugin SET updateAt = %s, settings = %s WHERE name = %s"
-  when: 
+  when:
   - peertube_saml_endpoint | default(False)
 - block:
   - name: Ensures Peertube Auth OIDC Plugin Present
@@ -102,7 +102,7 @@
       - "{\"auth-display-name\":\"OIDC\",\"client-id\":\"{{ peertube_oidc_client_id }}\",\"discover-url\":\"{{ peertube_oidc_endpoint }}/.well-known/openid-configuration\",\"client-secret\":\"{{ peertube_oidc_client_secret }}\",\"scope\":\"{{ peertube_oidc_scope }}\",\"username-property\":\"{{ peertube_oidc_uid_field }}\",\"mail-property\":\"{{ peertube_oidc_mail_field }}\",\"role-property\":\"\",\"display-name-property\":\"\"}"
       - "auth-openid-connect"
       query: "UPDATE plugin SET updateAt = %s, settings = %s WHERE name = %s"
-  when: 
+  when:
   - peertube_oidc_endpoint | default(False)
   - >
       (ansible_fqdn not in groups['drbd']

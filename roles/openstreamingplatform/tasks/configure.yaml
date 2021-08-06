@@ -15,7 +15,7 @@
 - name: Fixes Ejabberd Configuration
   args:
     chdir: /usr/local/ejabberd/conf
-  shell: >
+  command: |
     sed -i "s|CHANGEME|{{ openstreamingplatform_fqdn | default(ansible_fqdn) }}|" ejabberd.yml
   when:
   - ejbcf is defined

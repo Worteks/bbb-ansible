@@ -26,7 +26,8 @@
     - timer
     register: bkpunit
   - name: Reloads Systemd Configuration
-    shell: systemctl daemon-reload
+    systemd:
+      daemon_reload: yes
     when:
     - bkpunit is defined
     - bkpunit is changed

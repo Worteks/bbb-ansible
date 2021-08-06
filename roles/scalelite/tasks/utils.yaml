@@ -1,4 +1,8 @@
 - block:
+  - name: Installs Curl
+    apt:
+      name: curl
+      state: present
   - name: Installs bbb-cli Configuration Directory
     file:
       dest: /etc/bbb-cli

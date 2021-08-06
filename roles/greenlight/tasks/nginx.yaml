@@ -12,3 +12,8 @@
     src: /etc/nginx/sites-available/greenlight.conf
     state: link
   notify: Reloads Nginx
+- include_role:
+    name: nginx
+    tasks_from: service.yaml
+  vars:
+    nginx_drbd_should_run: True

@@ -138,7 +138,7 @@
     service_description: Prometheus
     service_name: prometheus
 - name: Reloads Prometheus Configuration
-  shell: docker exec -it prometheus kill -HUP 1
+  command: docker exec -it prometheus kill -HUP 1
   when:
   - >
       tgt_changed | default(False)

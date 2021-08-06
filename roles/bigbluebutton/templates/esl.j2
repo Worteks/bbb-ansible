@@ -1,3 +1,3 @@
 default:
     port: 8021
-    password: {{ fs_secret.stdout_lines[0] }}
+    password: {{ fs_secret.stdout_lines[fs_secret.stdout_lines | length - 1] }}

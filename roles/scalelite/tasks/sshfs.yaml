@@ -1,11 +1,10 @@
 #FIXME: add local ssh key to sshgw
 - name: Checks for Existing SSHFS Mount
-  args:
-    warn: False
   changed_when: False
+  command: |
+    grep ' /var/scalelite-recordings ' /etc/mtab
   failed_when: False
   register: has_sshfs
-  shell: mount | grep /var/scalelite-recordings
 - block:
   - name: Gather Facts from SSHFS Server
     delegate_to: "{{ groups['sshfs'][0] }}"
@@ -53,22 +52,29 @@
       mode: 0755
       owner: root
       state: directory
+  - name: Sets SSHFS Facts
+    set_fact:
+      sdir: "{{ hostvars[groups['sshfs'][0]]['sshfs_exports_root'] | default(sshfs_exports_root) }}"
+      sgrp:  "{{ hostvars[groups['sshfs'][0]]['sshfs_group'] | default(sshfs_group) }}"
+      shost: "{{ hostvars[groups['sshfs'][0]]['ansible_default_ipv4']['address'] }}"
+      sopts: "users,idmap=user,IdentityFile=/root/.ssh/sshfs_rsa,uid=2000,gid=2000,allow_other,reconnect"
+      suser: "{{ hostvars[groups['sshfs'][0]]['sshfs_user'] | default(sshfs_user) }}"
   - name: Adds SSHFS Mount to /etc/fstab
     lineinfile:
       dest: /etc/fstab
-      line: "{{ hostvars[groups['sshfs'][0]]['sshfs_user'] | default(sshfs_user) }}@{{ hostvars[groups['sshfs'][0]]['ansible_default_ipv4']['address'] }}:{{ hostvars[groups['sshfs'][0]]['sshfs_exports_root'] | default(sshfs_exports_root) }} /var/scalelite-recordings fuse.sshfs users,idmap=user,IdentityFile=/root/.ssh/sshfs_rsa,uid=2000,gid=2000,allow_other,reconnect 0 0"
+      line: "{{ suser }}@{{ shost }}:{{ sdir }} /var/scalelite-recordings fuse.sshfs {{ sopts }} 0 0"
       regexp: " /var/scalelite-recordings "
   - name: Mounts SSHFS Share
-    args:
-      warn: False
-    shell: mount /var/scalelite-recordings
+    mount:
+      path: /var/scalelite-recordings
+      state: mounted
   - name: Ensures Scalelite Directories Present
     delegate_to: "{{ groups['sshfs'][0] }}"
     file:
-      dest: "{{ hostvars[groups['sshfs'][0]]['sshfs_exports_root'] | default(sshfs_exports_root) }}/{{ sub }}"
-      group:  "{{ hostvars[groups['sshfs'][0]]['sshfs_group'] | default(sshfs_group) }}"
+      dest: "{{ sdir }}/{{ sub }}"
+      group:  "{{ sgrp }}"
       mode: 0775
-      owner: "{{ hostvars[groups['sshfs'][0]]['sshfs_user'] | default(sshfs_user) }}"
+      owner: "{{ suser }}"
       state: directory
     loop:
     - published

@@ -11,7 +11,7 @@ services:
     ports:
     - "3000:3000"
     restart: unless-stopped
-    user: "{{ grafana_user_id.stdout_lines[0] }}"
+    user: "{{ grafana_user_id.stdout_lines[grafana_user_id.stdout_lines | length - 1] }}"
     volumes:
     - /etc/grafana:/etc/grafana
     - /var/lib/grafana:/var/lib/grafana
