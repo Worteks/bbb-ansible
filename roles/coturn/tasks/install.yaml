@@ -15,10 +15,12 @@
     - (coturn_plain_port | int) > 1024
     - (coturn_tls_port | int) > 1024
   - name: Fixes Coturn Database Permissions
-    args:
-      chdir: /var/lib/coturn
-    command: |
-      chown -R turnserver:turnserver .
+    file:
+      dest: /var/lib/coturn
+      group: turnserver
+      recurse: yes
+      state: directory
+      owner: turnserver
     when:
     - fixed_perms is defined
     - fixed_perms is changed

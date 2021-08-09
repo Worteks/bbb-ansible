@@ -1,2 +1,6 @@
 - include_tasks: prom-bbb.yaml
+  when:
+  - "'api' in scalelite_has_roles"
 - include_tasks: prom-textfile.yaml
+  when:
+  - "'recording-importer' in scalelite_has_roles"

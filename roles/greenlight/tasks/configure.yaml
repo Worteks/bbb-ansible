@@ -44,6 +44,10 @@
   shell: |
     set -o pipefail && \
     bbb-conf --secret | awk '/Secret:/{print $2}'
+  vars:
+    ansible_python_interpreter: "/usr/bin/{{ 'python'
+                                               if (hostvars[groups['bbb'][0]]['ansible_distribution_release'] == 'xenial')
+                                               else 'python3' }}"
   when:
   - groups['scalelite'] | length == 0
 - name: Installs Greenlight Configuration

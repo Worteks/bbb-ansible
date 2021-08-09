@@ -82,6 +82,8 @@
   - include_role:
       name: pacemaker
       tasks_from: finish-setup.yaml
+    vars:
+      drbd_facts_reset: False
     loop: "{{ redis_drbd_groups }}"
     loop_control:
       loop_var: apply_to

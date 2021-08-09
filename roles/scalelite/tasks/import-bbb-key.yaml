@@ -1,18 +1,26 @@
-- name: "Fetches BigBlueButton Public SSH Key fom {{ srv }}"
-  args:
-    chdir: /home/bigbluebutton/.ssh
-  changed_when: False
-  delegate_to: "{{ srv }}"
-  register: has_key
-  run_once: yes
-  shell: cat id_rsa.pub
-- name: "Ensures {{ srv }} Key is Trusted"
-  lineinfile:
-    create: yes
-    dest: "/home/scalelite-spool/.ssh/{{ keyfile }}"
-    line: "{{ has_key.stdout_lines[0] }}"
-  loop:
-  - authorized_keys
-  - instance_keys
-  loop_control:
-    loop_var: keyfile
+- block:
+  - name: "Fetches BigBlueButton Public SSH Key fom {{ srv }}"
+    args:
+      chdir: /home/bigbluebutton/.ssh
+    changed_when: False
+    delegate_to: "{{ srv }}"
+    register: has_key
+    run_once: yes
+    shell: cat id_rsa.pub
+    vars:
+      ansible_python_interpreter: "/usr/bin/{{ 'python'
+                                                 if (hostvars[srv]['ansible_distribution_release'] == 'xenial')
+                                                 else 'python3' }}"
+  - name: "Ensures {{ srv }} Key is Trusted"
+    lineinfile:
+      create: yes
+      dest: "/home/scalelite-spool/.ssh/{{ keyfile }}"
+      line: "{{ has_key.stdout_lines[0] }}"
+    loop:
+    - authorized_keys
+    - instance_keys
+    loop_control:
+      loop_var: keyfile
+  when:
+  - hostvars[srv] is defined
+  - hostvars[srv]['ansible_distribution_release'] is defined

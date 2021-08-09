@@ -8,6 +8,10 @@
   shell: |
     set -o pipefail && \
     bbb-conf --secret | awk '/Secret:/{print $2}'
+  vars:
+    ansible_python_interpreter: "/usr/bin/{{ 'python'
+                                               if (hostvars[bbb_remote]['ansible_distribution_release'] == 'xenial')
+                                               else 'python3' }}"
 - name: "Fetches URL from {{ bbb_remote }}"
   args:
     executable: /bin/bash
@@ -18,6 +22,10 @@
   shell: |
     set -o pipefail && \
     bbb-conf --secret | awk '/URL:/{print $2}'
+  vars:
+    ansible_python_interpreter: "/usr/bin/{{ 'python'
+                                               if (hostvars[bbb_remote]['ansible_distribution_release'] == 'xenial')
+                                               else 'python3' }}"
 
 - name: "Checks {{ bbb_remote }} Registered (main)"
   args:

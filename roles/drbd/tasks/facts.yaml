@@ -71,6 +71,7 @@
       primary_node: "{{ primary_node + ( [ chk ] if (hostvars[chk]['drbd_is_primary']) else [ ] ) }}"
       secondary_node: "{{ secondary_node + ( [ ] if (hostvars[chk]['drbd_is_primary']) else [ chk ] ) }}"
   - name: Fails When DRBD Primary Missing
+    any_errors_fatal: true
     fail:
       msg: |
         Could not figure out which node is DRBD Primary

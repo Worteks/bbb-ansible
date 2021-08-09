@@ -1,3 +1,3 @@
 if test `id -u` = 0; then
-    pcs status || true
+    pcs status >&2 || true
 fi

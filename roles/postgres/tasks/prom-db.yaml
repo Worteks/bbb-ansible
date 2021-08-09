@@ -78,6 +78,8 @@
     loop: "{{ postgres_drbd_groups }}"
     loop_control:
       loop_var: apply_to
+    vars:
+      drbd_facts_reset: False
     when:
     - groups[apply_to] | length > 0
     - >

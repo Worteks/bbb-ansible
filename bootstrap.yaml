@@ -298,7 +298,6 @@
 - hosts: scalelite
   roles:
   - scalelite
-  serial: 1
 
 # Registers BigBlueButton backends to Scalelite
 - hosts: scalelite
@@ -308,6 +307,7 @@
       tasks_from: init-backends.yaml
     when:
     - groups['bbb'] | length > 0
+    - not (skip_bbb | default(False))
 # Trusts Scalelite SSH Hostkey in BBB
 - hosts: bbb
   tasks:
@@ -317,6 +317,7 @@
     when:
     - groups['cephfs'] | length == 0
     - groups['nfs'] | length == 0
+    - not (skip_bbb | default(False))
 
 # Installs HAProxy for frontend services
 # -- don't re-apply, if host also member of lb_back group
@@ -339,7 +340,6 @@
 - hosts: greenlight
   roles:
   - greenlight
-  serial: 1
 
 # Installs OpenStreamingPlatform
 - hosts: openstreamingplatform

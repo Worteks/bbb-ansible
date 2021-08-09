@@ -3,6 +3,16 @@
     tasks_from: facts.yaml
   when:
   - "'drbd1' in ansible_devices"
+- name: Gather Facts from BigBlueButton
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['bbb'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+  vars:
+    ansible_python_interpreter: /usr/bin/python
 - include_tasks: ./init-bbb.yaml
   loop: "{{ groups['bbb'] }}"
   loop_control:

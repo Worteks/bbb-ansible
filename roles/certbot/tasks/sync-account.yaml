@@ -35,7 +35,8 @@
       group: root
       mode: 0600
       owner: root
-      src: "/etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org/directory/{{ has_certbot_account.stdout_lines[has_certbot_account.stdout_lines | length - 1] }}/{{ fl }}"
+      src: "/etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org/directory/{{
+              has_certbot_account.stdout_lines[has_certbot_account.stdout_lines | length - 1] }}/{{ fl }}"
     loop:
     - meta.json
     - private_key.json
@@ -52,11 +53,15 @@
       loop_var: fl
     register: lekeytoo
     synchronize:
-      dest: "/etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org/directory/{{ has_certbot_account.stdout_lines[has_certbot_account.stdout_lines | length - 1] }}/{{ fl }}"
+      dest: "/etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org/directory/{{
+               has_certbot_account.stdout_lines[has_certbot_account.stdout_lines | length - 1] }}/{{ fl }}"
       group: True
       owner: True
       perms: True
-      src: "{{ pki_root }}/certbot-{{ certbot_cluster_name | default('reverse') }}/{{ groups[certbot_cluster_name | default('reverse')][0] }}/etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org/directory/{{ has_certbot_account.stdout_lines[has_certbot_account.stdout_lines | length - 1] }}/{{ fl }}"
+      src: "{{ pki_root }}/certbot-{{ certbot_cluster_name | default('reverse') }}/{{
+               groups[certbot_cluster_name | default('reverse')][0]
+            }}/etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org/directory/{{
+               has_certbot_account.stdout_lines[has_certbot_account.stdout_lines | length - 1] }}/{{ fl }}"
     when:
     - ansible_fqdn != groups[certbot_cluster_name | default('reverse')][0]
     - ansible_hostname != groups[certbot_cluster_name | default('reverse')][0]
@@ -89,7 +94,8 @@
         group: root
         mode: 0600
         owner: root
-        src: "/etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org/directory/{{ bkp_has_certbot_account.stdout_lines[bkp_has_certbot_account.stdout_lines | length - 1] }}/{{ fl }}"
+        src: "/etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org/directory/{{
+                bkp_has_certbot_account.stdout_lines[bkp_has_certbot_account.stdout_lines | length - 1] }}/{{ fl }}"
       loop:
       - meta.json
       - private_key.json
@@ -106,11 +112,15 @@
         loop_var: fl
       register: corokeytri
       synchronize:
-        dest: "/etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org/directory/{{ bkp_has_certbot_account.stdout_lines[bkp_has_certbot_account.stdout_lines | length - 1] }}/{{ fl }}"
+        dest: "/etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org/directory/{{
+                 bkp_has_certbot_account.stdout_lines[bkp_has_certbot_account.stdout_lines | length - 1] }}/{{ fl }}"
         group: True
         owner: True
         perms: True
-        src: "{{ pki_root }}/certbot-{{ certbot_cluster_name | default('reverse') }}/{{ groups[certbot_cluster_name | default('reverse')][0] }}/etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org/directory/{{ bkp_has_certbot_account.stdout_lines[bkp_has_certbot_account.stdout_lines | length - 1] }}/{{ fl }}"
+        src: "{{ pki_root }}/certbot-{{ certbot_cluster_name | default('reverse') }}/{{
+                 groups[certbot_cluster_name | default('reverse')][0]
+              }}/etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org/directory/{{
+                 bkp_has_certbot_account.stdout_lines[bkp_has_certbot_account.stdout_lines | length - 1] }}/{{ fl }}"
       when:
       - ansible_fqdn != groups[certbot_cluster_name | default('reverse')][1]
       - ansible_nodename != groups[certbot_cluster_name | default('reverse')][1]

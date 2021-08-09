@@ -21,6 +21,8 @@
     loop_var: srv
   run_once: yes
   setup:
+  vars:
+    ansible_python_interpreter: /usr/bin/python
   when:
   - groups['scalelite'] | length == 0
 - name: Gather Facts from Scalelite

@@ -69,7 +69,7 @@
   vars:
     service_description: PeerTube
     service_name: peertube
-    service_standby: "{{ False if ((groups['peertube'] | first) in [ ansible_hostname, ansible_nodename, ansible_fqdn ])
+    service_standby: "{{ False if (groups['peertube'][0] in [ ansible_hostname, ansible_nodename, ansible_fqdn ])
                                else True }}"
 - include_role:
     name: pacemaker

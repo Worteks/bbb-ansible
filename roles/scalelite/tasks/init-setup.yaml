@@ -44,32 +44,31 @@
     shell: |
       docker exec -i scalelite-api bundle exec rake db:setup >db-init.log 2>&1;
       echo init >db-upgrade-{{ scalelite_images_release }}.log 2>&1
-  - name: Marks DB initialized on other DRBD members
-    copy:
-      content: "# Done on DRBD primary node"
-      dest: /etc/docker-compose/scalelite/db-init.log
-      force: no
-      group: root
-      mode: 0644
-      owner: root
-  - block:
-    - name: Updates Scalelite Database
-      args:
-        chdir: /etc/docker-compose/scalelite
-        creates: "/etc/docker-compose/scalelite/db-upgrade-{{ scalelite_images_release }}.log"
-      shell: |
-        docker exec -i scalelite-api bundle exec rake db:migrate >db-upgrade-{{ scalelite_images_release }}.log 2>&1
-    - name: Marks DB upgraded on other DRBD members
-      copy:
-        content: "# Done on DRBD primary node"
-        dest: "/etc/docker-compose/scalelite/db-upgrade-{{ scalelite_images_release }}.log"
-        force: no
-        group: root
-        mode: 0644
-        owner: root
+  - name: Updates Scalelite Database
+    args:
+      chdir: /etc/docker-compose/scalelite
+      creates: "/etc/docker-compose/scalelite/db-upgrade-{{ scalelite_images_release }}.log"
+    shell: |
+      docker exec -i scalelite-api bundle exec rake db:migrate >db-upgrade-{{ scalelite_images_release }}.log 2>&1
   when:
   - >
       ansible_nodename in groups['drbd']
       or ansible_hostname in groups['drbd']
       or ansible_fqdn in groups['drbd']
   - drbd_is_primary | default(False)
+- name: Marks DB initialized on secondary nodes
+  copy:
+    content: "# Done on Scalelite primary node"
+    dest: /etc/docker-compose/scalelite/db-init.log
+    force: no
+    group: root
+    mode: 0644
+    owner: root
+- name: Marks DB upgraded on secondary nodes
+  copy:
+    content: "# Done on Scalelite primary node"
+    dest: "/etc/docker-compose/scalelite/db-upgrade-{{ scalelite_images_release }}.log"
+    force: no
+    group: root
+    mode: 0644
+    owner: root

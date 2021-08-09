@@ -33,3 +33,16 @@
   setup:
   when:
   - groups['lb'] | length == 0
+- name: Gather Facts from BigBlueButton
+  delegate_to: "{{ srv }}"
+  delegate_facts: True
+  loop: "{{ groups['bbb'] }}"
+  loop_control:
+    loop_var: srv
+  run_once: yes
+  setup:
+  vars:
+    ansible_python_interpreter: /usr/bin/python
+  when:
+  - groups['bbb'] | length > 0
+  - not (skip_bbb | default(False))

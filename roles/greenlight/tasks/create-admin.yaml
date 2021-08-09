@@ -46,3 +46,11 @@
   - hasadmin is defined
   - hasadmin.stat is defined
   - not hasadmin.stat.exists
+- name: Marks Site initialized on secondary nodes
+  copy:
+    content: "# Done on Greenlight primary node"
+    dest: /etc/docker-compose/greenlight/greenlight-initial-admin.log
+    force: no
+    group: root
+    mode: 0644
+    owner: root

@@ -18,4 +18,5 @@
     group: True
     owner: True
     perms: True
-    src: "{{ pki_root }}/{{ bbb_ceph_cluster }}.client.{{ bbb_ceph_username }}.keyring/{{ hostvars[groups['cephfs'][0]]['ansible_nodename'] }}/etc/ceph/{{ bbb_ceph_cluster }}.client.{{ bbb_ceph_username }}.keyring"
+    src: "{{ pki_root }}/{{ bbb_ceph_cluster }}.client.{{ bbb_ceph_username }}.keyring/{{
+               hostvars[groups['cephfs'][0]]['ansible_nodename'] }}/etc/ceph/{{ bbb_ceph_cluster }}.client.{{ bbb_ceph_username }}.keyring"

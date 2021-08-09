@@ -26,6 +26,7 @@
   lineinfile:
     create: yes
     dest: /etc/exports
-    line: "{{ nfs_exports_root }} {{ nfs_trusted_clients }}({{ nfs_exports_options | join(',') }},anonuid={{ nfs_scalelite_uid }},anongid={{ nfs_scalelite_gid }})"
+    line: "{{ nfs_exports_root }} {{ nfs_trusted_clients }}({{ nfs_exports_options | join(',') }},anonuid={{
+              nfs_scalelite_uid }},anongid={{ nfs_scalelite_gid }})"
     regexp: "^{{ nfs_exports_root }} "
   notify: Reloads NFS shares

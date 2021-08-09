@@ -9,15 +9,21 @@
   shell: |
     set -o pipefail && \
     pcs status 2>&1 | grep '^Failed Resource Actions:'
-- name: Cleanup Pacemaker Alerts
-  command: |
-    pcs resource cleanup
-  delay: 120
-  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
-  register: reloadrslt
-  retries: 3
-  run_once: yes
-  until: reloadrslt.rc == 0
+- block:
+  - name: Cleanup Pacemaker Alerts
+    command: |
+      pcs resource cleanup
+    delay: 120
+    delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+    register: reloadrslt
+    retries: 3
+    run_once: yes
+    until: reloadrslt.rc == 0
+  - include_role:
+      name: drbd
+      tasks_from: facts.yaml
+    when:
+    - drbd_facts_reset | default(True)
   when:
   - haspcsalert is defined
   - haspcsalert.rc is defined

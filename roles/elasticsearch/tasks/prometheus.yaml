@@ -12,7 +12,8 @@
     group: root
     mode: 0644
     owner: root
-    url: "{{ elasticsearch_exporter_repo }}/releases/download/v{{ elasticsearch_exporter_release }}/elasticsearch_exporter-{{ elasticsearch_exporter_release }}.linux-amd64.tar.gz"
+    url: "{{ elasticsearch_exporter_repo }}/releases/download/v{{ elasticsearch_exporter_release }}/elasticsearch_exporter-{{
+             elasticsearch_exporter_release }}.linux-amd64.tar.gz"
 - name: Extracts ElasticSearch Exporter
   args:
     chdir: /usr/src

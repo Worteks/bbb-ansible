@@ -46,6 +46,11 @@
       service_name: scalelite-exporter
       service_timeout: 300
       service_type: systemd
+  - include_role:
+      name: pacemaker
+      tasks_from: finish-setup.yaml
+    vars:
+      drbd_facts_reset: False
   when:
   - >
       ansible_fqdn in groups['drbd']

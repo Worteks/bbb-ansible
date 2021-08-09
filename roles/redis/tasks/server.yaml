@@ -12,10 +12,12 @@
   stat:
     path: /var/lib/redis
 - name: Fixes Permissions on Redis Data Directory
-  args:
-    warn: False
-  shell: |
-    chown -R redis:redis /var/lib/redis
+  file:
+    dest: /var/lib/redis
+    group: redis
+    recurse: yes
+    state: directory
+    owner: redis
   when:
   - redisdata is defined
   - redisdata.stat is defined
@@ -45,10 +47,6 @@
       service_name: redis-server
       service_type: lsb
     when:
-    - >
-        ansible_fqdn in groups['drbd']
-        or ansible_hostname in groups['drbd']
-        or ansible_nodename in groups['drbd']
     - groups[apply_to] | length > 0
     - >
         ansible_nodename in groups[apply_to]

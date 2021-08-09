@@ -31,6 +31,7 @@
   shell: |
     crm configure show | awk '/^primitive/{print $2}' | grep -v ^IP | grep -E '.*-rsc'
 - name: Sets Resource Group Facts
+  run_once: yes
   set_fact:
     group_deps: "{{ ((haslvms.stdout_lines | default([]))
                      + (hasmounts.stdout_lines | default([]))

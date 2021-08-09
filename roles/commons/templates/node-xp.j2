@@ -5,7 +5,7 @@ After=network.target
 [Service]
 User=root
 Group=root
-ExecStart=/usr/bin/node_exporter --collector.interrupts{% if groups['freeipa'] | length == 0 %} --collector.ntp{% endif %}{% if 'drbd1' in ansible_devices %} --collector.drbd{% endif %} --collector.tcpstat --collector.processes --collector.systemd --collector.filesystem.ignored-mount-points=^/(sys|proc|dev|run|var/lib/docker/containers)($|/) --collector.textfile.directory=/var/lib/node-exporter --web.listen-address=:{{ node_exporter_port }}
+ExecStart=/usr/bin/node_exporter --collector.interrupts{% if groups['freeipa'] | length == 0 %} --collector.ntp{% endif %}{% if ansible_hostname in groups['drbd'] or ansible_nodename in groups['drbd'] or ansible_fqdn in groups['drbd'] %} --collector.drbd{% endif %} --collector.tcpstat --collector.processes --collector.systemd --collector.filesystem.ignored-mount-points=^/(sys|proc|dev|run|var/lib/docker/containers)($|/) --collector.textfile.directory=/var/lib/node-exporter --web.listen-address=:{{ node_exporter_port }}
 Restart=always
 
 [Install]

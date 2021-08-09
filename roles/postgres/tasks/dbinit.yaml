@@ -1,6 +1,7 @@
 - name: Initializes Postgres Database
   args:
     creates: "/var/lib/postgresql/{{ postgres_version }}/main"
+  any_errors_fatal: true
   become: yes
   become_user: postgres
   environment:

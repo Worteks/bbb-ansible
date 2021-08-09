@@ -41,6 +41,8 @@
   - include_role:
       name: nginx
       tasks_from: service.yaml
+    when:
+    - "'api' in scalelite_has_roles"
   - include_role:
       name: pacemaker
       tasks_from: finish-setup.yaml
