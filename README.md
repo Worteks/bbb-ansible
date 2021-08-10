@@ -357,8 +357,6 @@ freeswitch:
 
 ## FIXMEs
 
- - latest DRBD/Pacemaker additions were tested, using variables shipping in
-   samples - may not be as stable as the rest of our roles.
  - redis-sentinel first fails to start
    manual restart fixed, further playbook runs work
    could be due to redis-server being slow to startup?
