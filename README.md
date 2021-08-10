@@ -263,11 +263,7 @@ freeswitch:
 
  * https://github.com/coturn/coturn/pull/517/files
  * https://github.com/coturn/coturn/blob/master/docker/coturn/turnserver.conf
- * https://github.com/coturn/coturn/pull/627
-   ^ anyway, after grabbing the sources and trying to build coturn myself,
-     trying to enable that Prometheus exporter, it turns out their last release
-     (4.5.1.3, June 24th) doesn't ship with that code yet. We'll have to check
-     back on that later... https://coturn.net/turnserver/
+ * https://github.com/coturn/coturn/pull/627 (requires 4.5.2 to enable prometheus metrics exporter)
  * https://ourcodeworld.com/articles/read/1175/how-to-create-and-configure-your-own-stun-turn-server-with-coturn-in-ubuntu-18-04
 
 ### Scalelite
