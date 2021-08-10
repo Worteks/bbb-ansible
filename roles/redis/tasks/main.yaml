@@ -3,8 +3,8 @@
     tasks_from: facts.yaml
   when:
   - "'drbd1' in ansible_devices"
-- include_tasks: install.yaml
 - include_tasks: configure.yaml
+- include_tasks: install.yaml
 - include_tasks: server.yaml
 - include_tasks: sentinel.yaml
   when:

@@ -39,7 +39,7 @@
       chdir: /root/.ssh
     changed_when: False
     register: has_key
-    shell: cat sshfs_rsa.pub
+    shell: cat sshfs_rsa.pub 2>/dev/null
   - include_tasks: import-scalelite-key.yaml
     loop: "{{ groups['sshfs'] }}"
     loop_control:

@@ -2,17 +2,18 @@
   args:
     executable: /bin/bash
   changed_when: False
-  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+  delegate_to: "{{ groups[corosync_hostgroup | default('pacemaker')][0] }}"
   failed_when: False
   register: hascoloc
   run_once: yes
   shell: |
     set -o pipefail && crm configure show | grep '^colocation APCLUSTER_on_DRBD_{{ drbd_id | default("r0") }}'
 - name: Configures Colocation
+  any_errors_fatal: true
   command: |
     crm configure colocation APCLUSTER_on_DRBD_{{ drbd_id | default("r0") }} \
         'inf:' APCLUSTER '{{ drbd_ms_name | default("ms_DRBD_" ~ (drbd_id | default("r0"))) }}:Master'
-  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+  delegate_to: "{{ groups[corosync_hostgroup | default('pacemaker')][0] }}"
   run_once: yes
   when:
   - hascoloc is defined
@@ -22,7 +23,7 @@
   args:
     executable: /bin/bash
   changed_when: False
-  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+  delegate_to: "{{ groups[corosync_hostgroup | default('pacemaker')][0] }}"
   failed_when: False
   register: hasorder
   run_once: yes
@@ -30,9 +31,10 @@
     set -o pipefail && \
     crm configure show | grep '^order APCLUSTER_after_DRBD_{{ drbd_id | default("r0") }}'
 - name: Configures Order
+  any_errors_fatal: true
   args:
     executable: /bin/bash
-  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+  delegate_to: "{{ groups[corosync_hostgroup | default('pacemaker')][0] }}"
   run_once: yes
   shell: |
     set -o pipefail && \

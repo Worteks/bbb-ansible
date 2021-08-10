@@ -20,13 +20,13 @@
 - name: Restarts DRBD on any Node
   any_errors_fatal: true
   delay: 20
-  delegate_to: "{{ corosync_members[0] }}"
   retries: 3
-  run_once: yes
   shell: |
     drbdadm primary all;
     drbdadm disconnect all;
     drbdadm connect all
+  when:
+  - corosync_members[0] in [ ansible_hostname, ansible_nodename, ansible_fqdn ]
 - name: Gives it a few seconds
   delegate_to: "{{ corosync_members[0] }}"
   pause:

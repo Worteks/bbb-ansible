@@ -16,7 +16,7 @@
   register: has_key
   retries: 3
   run_once: yes
-  shell: cat id_rsa.pub
+  shell: cat id_rsa.pub 2>/dev/null
 - name: "Ensures {{ srv }} Key is Trusted"
   lineinfile:
     create: yes

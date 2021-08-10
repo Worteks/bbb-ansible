@@ -11,6 +11,7 @@
 /inventory/group_vars*/private.yaml
 /old
 /roles/coturn/files/schema.sql
+/roles/pacemaker/tasks/reset-group.yaml
 /test*.yaml
 /wip
 .*.sw[a-z]

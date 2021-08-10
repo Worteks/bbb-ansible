@@ -8,7 +8,7 @@
     register: has_key
     retries: 3
     run_once: yes
-    shell: cat id_rsa.pub
+    shell: cat id_rsa.pub 2>/dev/null
     vars:
       ansible_python_interpreter: "/usr/bin/{{ 'python'
                                                  if (hostvars[srv]['ansible_distribution_release'] == 'xenial')

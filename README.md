@@ -11,8 +11,9 @@
     * [Usage](#usage)
     * [Third-Party Documentations](#third-party-documentations)
       * [BigBlueButton](#bigbluebutton)
-        * [2.2 Old Stable](#2-2-old-stable)
-        * [2.3](#2-3)
+        * [2.2 - Old Stable](#2-2---old-stable)
+        * [2.3 - Stable](#2-3---stable)
+        * [2.4 - Dev](#2-4---dev)
         * [RTMP LiveStream](#rtmp-livestream)
           * [BigBlueButton Conferences Streaming Platform](#bigbluebutton-conferences-streaming-platform)
         * [RTSP LiveStream](#rtsp-livestream)
@@ -45,33 +46,37 @@ The rest depends on your context.
 ### Standalone BBB
 
  * 1 BBB instance, preferably physical, 1+ CPU, 4G+ RAM, 20G+ disk
- * (optional) 1 Greenlight instance, preferably physical, 1+ CPU, 3G+ RAM, 20G+ disk
+ * (optional) 1 Greenlight instance, could be virtual, 0.5+ CPU, 2G+ RAM, 20G+ disk
  * (optional) 1 TURN server instance, preferably physical, 0.5+ CPU, 1G+ RAM, 20G+ disk (integrating with 3rd-party TURN possible)
 
 ### BBB Sharding
 
- * 2+ BBB instance, preferably physical, 4+ CPU, 8G+ RAM, 50G+ disk
- * 1+ Postgres instance, could be virtual, 0.5+ CPU, 768M+ RAM, 16G disk
- * 1+ Redis instance, could be virtual, 0.5+ CPU, 1G+ RAM, 12G disk
- * 1+ Scalelite instance, preferably physical, 2+ CPU, 4G+ RAM, 30G+ disk
- * (optional) 1+ Greenlight instance, preferably physical, 4+ CPU, 8G+ RAM, 50G+ disk
- * (optional) 1+ TURN server instance, preferably physical, 0.5+ CPU, 2G+ RAM, 20G+ disk
+ * 2+ BBB instance, preferably physical, 4+ CPU, 8/16G+ RAM, 50G+ disk
+ * 1 Postgres instance, could be virtual, 0.5+ CPU, 768M+ RAM, 16G disk
+ * 1 Redis instance, could be virtual, 0.5+ CPU, 1G+ RAM, 12G disk
+ * 1 Scalelite instance, could be virtual, 2+ CPU, 4G+ RAM, 30G+ disk
+ * (optional) 1 Greenlight instance, could be virtual, 0.5+ CPU, 2G+ RAM, 20G+ disk
+ * (optional) 1 TURN server instance, preferably physical, 0.5+ CPU, 2G+ RAM, 20G+ disk
 
 ### BBB HA
 
- * 2+ BBB instance, preferably physical, 4+ CPU, 8G+ RAM, 50G+ disk
- * 1+ Postgres instance, could be virtual, 0.5+ CPU, 768M+ RAM, 16G disk
- * 2+ Redis instance, could be virtual, 0.5+ CPU, 1G+ RAM, 12G disk
- * 2+ Scalelite instance, preferably physical, 4+ CPU, 8G+ RAM, 50G+ disk
- * (optional) 2+ Greenlight instance, preferably physical, 2+ CPU, 4G+ RAM, 30G+ disk
+ * 2+ BBB instance, preferably physical, 4+ CPU, 8/16G+ RAM, 50G+ disk
+ * 2+ Postgres instance, could be virtual, 0.5+ CPU, 768M+ RAM, 16G disk, DRBD+VIP
+ * 2+ Redis instance, could be virtual, 0.5+ CPU, 1G+ RAM, 12G disk, Sentinel+HAProxy routing queries to current Master, or DRBD+VIP
+ * 2+ Scalelite instance, could be virtual, 2+ CPU, 4G+ RAM, 30G+ disk
+ * (optional) 2+ Greenlight instance, could be virtual, 0.5+ CPU, 2G+ RAM, 20G+ disk
  * (optional) 2+ TURN server instance, preferably physical, 0.5+ CPU, 2G+ RAM, 20G+ disk
- * 2+ LB instance, could be virtual, 0.5+ CPU, 1G RAM, 8G disk (in front of Redis, Scalelite, Greenlight, Prometheus, AlertManager or Grafana)
- * 1+ NFS server, SSH server (sshfs) or CephFS capable Ceph cluster, offering a shared filesystem (when more than 1 Scalelite)
+ * (optional) 2+ Front LB instance, could be virtual, 0.5+ CPU, 1G RAM, 8G disk (in front Scalelite, Greenlight, Prometheus, AlertManager, Grafana, ...)
+
+Unless using DRBD and a VIP running Redis, or Scalelite, we would also need:
+
+ * 2+ LB Back instance, could be virtual, 0.5+ CPU, 1G RAM, 8G disk (routing Redis clients to the current Master)
+ * 1+ NFS server, SSH server (sshfs), or CephFS capable Ceph cluster, offering a shared filesystem to Scalelite instances
 
 ### Streaming
 
  * 1+ RTMP server (OpenStreamingPlatform or PeerTube) instance, preferably physical, 1+ CPU, 4G+ RAM, very large disk storing records, the more resources the more concurrent streams & transcodings
- * (optional) 1+ BBB ContentStreamingPlatform instance, preferably physical/would use docker runtime, 1+ CPU, 4G+ RAM
+ * (optional) 1+ BBB ContentStreamingPlatform instance, preferably physical/would use docker runtime (1+ CPU, 4G+ RAM), or running in Kubernetes/would use API (0.1+ CPU, 1G RAM, + transcoding Pods)
 
 ### Logging
 
@@ -151,20 +156,24 @@ to prevent this. Scaleway would do. When in doubt, prefer bare-metal.
  * https://docs.bigbluebutton.org/dev/recording.html
  * https://docs.bigbluebutton.org/support/faq.html
 
-#### 2.2 Old Stable
+#### 2.2 - Old Stable
 
  * https://docs.bigbluebutton.org/2.2/install.html#minimum-server-requirements
  * https://docs.bigbluebutton.org/2.2/install.html
- * https://docs.bigbluebutton.org/2.2/setup-turn-server.html
- * https://www.amazonaws.cn/en/solutions/big-blue-button-solution/
- * https://github.com/aws-samples/big-blue-button-on-aws-cn
- * https://docs.bigbluebutton.org/2.2/customize.html
  * https://github.com/createwebinar/bbb-download
 
-#### 2.3
+#### 2.3 - Stable
 
- * https://docs.bigbluebutton.org/dev/dev23.html
+ * https://docs.bigbluebutton.org/2.3/install.html#minimum-server-requirements
+ * https://docs.bigbluebutton.org/2.3/install.html
+ * https://docs.bigbluebutton.org/admin/setup-turn-server.html
+ * https://github.com/aws-samples/aws-scalable-big-blue-button-example
+ * https://docs.bigbluebutton.org/admin/customize.html
  * https://github.com/manishkatyan/bbb-mp4
+
+#### 2.4 - Dev
+
+ * https://docs.bigbluebutton.org/2.4/new.html
 
 #### RTMP LiveStream
 

@@ -13,7 +13,7 @@
   delegate_to: "{{ srv }}"
   register: has_key
   run_once: yes
-  shell: cat id_rsa.pub
+  shell: cat id_rsa.pub 2>/dev/null
 - name: "Ensures {{ srv }} Key is Trusted"
   lineinfile:
     create: yes

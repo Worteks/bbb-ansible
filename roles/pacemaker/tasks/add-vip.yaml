@@ -2,7 +2,7 @@
   args:
     executable: /bin/bash
   changed_when: False
-  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+  delegate_to: "{{ groups[corosync_hostgroup | default('pacemaker')][0] }}"
   failed_when: False
   register: hasvip
   run_once: yes
@@ -10,13 +10,14 @@
     set -o pipefail && \
     crm configure show | grep -A1 'primitive IP-' | grep -E ' ip={{ vip }}($| )'
 - name: "Configures VIP:{{ vip }} primitive"
+  any_errors_fatal: true
   command: |
     crm configure primitive IP-rsc \
         ocf:heartbeat:IPaddr2 ip={{ vip }} \
         nic={{ vip_iface | default(ansible_default_ipv4['interface']) }} \
         cidr_netmask={{ vip_netmask | default(24) }} \
         meta migration-threshold=2 op monitor interval=20 timeout=60 on-fail=restart
-  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+  delegate_to: "{{ groups[corosync_hostgroup | default('pacemaker')][0] }}"
   run_once: yes
   when:
   - hasvip is defined

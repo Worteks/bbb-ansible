@@ -1,3 +1,4 @@
+corosync_hostgroup: pacemaker_csp
 corosync_members:
 - bbb-csp-1.friends.intra.example.com
 - bbb-csp-2.friends.intra.example.com
@@ -14,6 +15,8 @@ firehol_app_opened_ports:
   value: tcp/2224
 - name: corosync
   value: udp/5442
+- name: nodejsxp
+  value: tcp/8080
 - name: nodexp
   value: tcp/9142
 - name: nginxxp

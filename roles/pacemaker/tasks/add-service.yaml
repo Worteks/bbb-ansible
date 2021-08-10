@@ -2,22 +2,60 @@
   args:
     executable: /bin/bash
   changed_when: False
-  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+  delegate_to: "{{ groups[corosync_hostgroup | default('pacemaker')][0] }}"
   failed_when: False
   register: hassvc
   run_once: yes
   shell: |
     set -o pipefail && \
     crm configure show | grep "primitive {{ service_id }} {{ service_type | default('lsb') }}:"
-- block:
-  - name: "Configures SERVICE:{{ lvm_id | default(1) }} primitive"
-    command: |
-      crm configure primitive {{ service_id }} \
-          {{ service_type }}:{{ service_name }} \
-          meta migration-threshold=2 op monitor interval=20 timeout={{ service_timeout | default(60) }} on-fail=restart
-    delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
-    run_once: yes
+- name: "Configures SERVICE:{{ service_id | default(1) }} primitive"
+  any_errors_fatal: true
+  command: |
+    crm configure primitive {{ service_id | default(1) }} \
+        {{ service_type }}:{{ service_name }} \
+        meta migration-threshold=2 op monitor interval=20 timeout={{ service_timeout | default(60) }} on-fail=restart
+  delegate_to: "{{ groups[corosync_hostgroup | default('pacemaker')][0] }}"
+  run_once: yes
   when:
   - hassvc is defined
   - hassvc.rc is defined
   - (hassvc.rc | default(0)) != 0
+
+- name: Checks Resource Group Configured
+  args:
+    executable: /bin/bash
+  changed_when: False
+  delegate_to: "{{ groups[corosync_hostgroup | default('pacemaker')][0] }}"
+  failed_when: False
+  register: hasgroup
+  run_once: yes
+  shell: |
+    set -o pipefail && \
+    crm configure show | grep '^group APCLUSTER '
+- block:
+  - name: "Checks SERVICE:{{ service_id | default(1) }} in Resource Group"
+    args:
+      executable: /bin/bash
+    changed_when: False
+    delegate_to: "{{ groups[corosync_hostgroup | default('pacemaker')][0] }}"
+    failed_when: False
+    register: svcingroup
+    run_once: yes
+    shell: |
+      set -o pipefail && \
+      crm configure show | grep '^group APCLUSTER ' | grep {{ service_id | default(1) }}
+  - name: "Adds SERVICE:{{ service_id | default(1) }} to Resource Group"
+    any_errors_fatal: true
+    command: |
+      crm configure modgroup APCLUSTER add {{ service_id | default(1) }}
+    delegate_to: "{{ groups[corosync_hostgroup | default('pacemaker')][0] }}"
+    run_once: yes
+    when:
+    - svcingroup is defined
+    - svcingroup.rc is defined
+    - (svcingroup.rc | default(0)) != 0
+  when:
+  - hasgroup is defined
+  - hasgroup.rc is defined
+  - (hasgroup.rc | default(1)) == 0

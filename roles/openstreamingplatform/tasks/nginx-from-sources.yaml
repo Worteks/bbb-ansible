@@ -19,11 +19,6 @@
     loop_var: i
   retries: 3
 - name: Extracts Nginx Sources (tar)
-  args:
-    chdir: /usr/src
-    creates: "/usr/src/{{ i.dr }}"
-  command: |
-    tar -xf {{ i.fl }}
   loop:
   - fl: nginx.tar.gz
     dr: nginx-1.17.3
@@ -33,11 +28,17 @@
     dr: nginx-goodies-nginx-sticky-module-ng-08a395c66e42
   loop_control:
     loop_var: i
+  unarchive:
+    creates: "/usr/src/{{ i.dr }}"
+    dest: /usr/src
+    remote_src: yes
+    src: "/usr/src/{{ i.fl }}"
 - name: Extracts Nginx Sources (zip)
-  args:
-    chdir: /usr/src
+  unarchive:
     creates: /usr/src/nginx-rtmp-module-1.2.1
-  command: unzip rtmp.zip
+    dest: /usr/src
+    remote_src: yes
+    src: /usr/src/rtmp.zip
 - name: Prepares to Build Nginx
   args:
     chdir: /usr/src/nginx-1.17.3

@@ -2,7 +2,7 @@
   args:
     executable: /bin/bash
   changed_when: False
-  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+  delegate_to: "{{ groups[corosync_hostgroup | default('pacemaker')][0] }}"
   failed_when: False
   register: haslvm
   run_once: yes
@@ -10,12 +10,13 @@
     set -o pipefail && \
     crm configure show | grep "primitive LVM_{{ vg_id | default('r0') }} "
 - name: "Configures LVM:{{ vg_id | default('r0') }} primitive"
+  any_errors_fatal: true
   command: |
     crm configure primitive LVM_{{ vg_id | default('r0') }} \
         ocf:heartbeat:LVM \
         volgrpname="{{ vg_name | default('data') }}" \
         op monitor interval="30s"
-  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+  delegate_to: "{{ groups[corosync_hostgroup | default('pacemaker')][0] }}"
   run_once: yes
   when:
   - haslvm is defined

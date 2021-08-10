@@ -1,3 +1,4 @@
 mongodb_exporter_port: 9117
 mongodb_exporter_release: 0.11.2
+mongodb_exporter_repo: https://github.com/percona/mongodb_exporter
 mongodb_listen_address: 127.0.0.1

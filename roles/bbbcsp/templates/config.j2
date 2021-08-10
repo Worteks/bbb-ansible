@@ -37,13 +37,23 @@ const config = {
 	kubernetesNamespace: 'default',
 	listenAddr: '{{ '0.0.0.0' if (groups['prometheus'] | length > 0) else '127.0.0.1' }}',
 	listenPort: '8080',
+{% if groups['peertube'] | length > 0 %}
 	peertubeApiUrl: 'https://{{ peertube_fqdn | default(hostvars[groups['peertube'][0]]['peertube_fqdn'] | default(hostvars[groups['peertube'][0]]['ansible_fqdn'])) }}',
 	peertubePassword: '{{ peertube_rtmp_password | default(hostvars[groups['peertube'][0]]['peertube_initial_root_password'] | default(peertube_initial_root_password)) }}',
 	peertubeUsername: '{{ peertube_rtmp_user | default(hostvars[groups['peertube'][0]]['peertube_rtmp_user'] | default('root')) }}',
+{% else %}
+	peertubeApiUrl: 'https://{{ peertube_fqdn }}',
+	peertubePassword: '{{ peertube_rtmp_password | default(peertube_initial_root_password) }}',
+	peertubeUsername: '{{ peertube_rtmp_user | default('root') }}',
+{% endif %}
 {% if bbb_uses_selfsigned | default(True) %}
 	peertubeVerifyTls: false,
 {% endif %}
+{% if groups['peertube'] | length > 0 %}
 	rtmpServerUrlPrefix: 'rtmp://{{ hostvars[groups['peertube'][0]]['corosync_vip'] | default(peertube_fqdn | default(hostvars[groups['peertube'][0]]['ansible_fqdn'])) }}:1935/live'
+{% else %}
+	rtmpServerUrlPrefix: 'rtmp://{{ peertube_rtmp_address | default(peertube_fqdn) }}:1935/live'
+{% endif %}
     };
 
 module.exports = config;

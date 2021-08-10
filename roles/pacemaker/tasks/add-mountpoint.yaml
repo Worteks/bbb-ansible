@@ -2,7 +2,7 @@
   args:
     executable: /bin/bash
   changed_when: False
-  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+  delegate_to: "{{ groups[corosync_hostgroup | default('pacemaker')][0] }}"
   failed_when: False
   register: haslv
   run_once: yes
@@ -10,6 +10,7 @@
     set -o pipefail && \
     crm configure show | grep "primitive SRV_MOUNT_{{ lvm_id | default(1) }} "
 - name: "Configures SRV_MOUNT:{{ lvm_id | default(1) }} primitive"
+  any_errors_fatal: true
   command: |
     crm configure primitive SRV_MOUNT_{{ lvm_id | default(1) }} \
         ocf:heartbeat:Filesystem \
@@ -17,7 +18,7 @@
         directory="{{ lv_path | default('/media') }}" \
         fstype="xfs" options="noatime,nodiratime,noexec,nodev,nosuid" \
         op monitor interval="40s"
-  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+  delegate_to: "{{ groups[corosync_hostgroup | default('pacemaker')][0] }}"
   run_once: yes
   when:
   - haslv is defined

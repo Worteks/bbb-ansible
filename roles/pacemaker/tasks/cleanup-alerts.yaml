@@ -2,7 +2,7 @@
   args:
     executable: /bin/bash
   changed_when: False
-  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+  delegate_to: "{{ groups[corosync_hostgroup | default('pacemaker')][0] }}"
   failed_when: False
   register: haspcsalert
   run_once: yes
@@ -14,7 +14,7 @@
     command: |
       pcs resource cleanup
     delay: 120
-    delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+    delegate_to: "{{ groups[corosync_hostgroup | default('pacemaker')][0] }}"
     register: reloadrslt
     retries: 3
     run_once: yes

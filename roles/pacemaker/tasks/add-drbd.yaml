@@ -2,7 +2,7 @@
   args:
     executable: /bin/bash
   changed_when: False
-  delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+  delegate_to: "{{ groups[corosync_hostgroup | default('pacemaker')][0] }}"
   failed_when: False
   register: hasdrbd
   run_once: yes
@@ -10,6 +10,7 @@
     set -o pipefail && crm configure show | grep "primitive DRBD_{{ drbd_id | default('r0') }} "
 - block:
   - name: "Configures DRBD:{{ drbd_id | default('r0') }} primitive"
+    any_errors_fatal: true
     command: |
       crm configure primitive DRBD_{{ drbd_id | default('r0') }} \
           ocf:linbit:drbd drbd_resource="{{ drbd_name | default(drbd_resource_name) }}" \
@@ -17,10 +18,10 @@
           op stop interval="0" timeout="100" \
           op monitor role=Master interval=59s timeout=30s \
           op monitor role=Slave interval=60s timeout=30s
-    delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+    delegate_to: "{{ groups[corosync_hostgroup | default('pacemaker')][0] }}"
     run_once: yes
   - name: Gives it a few seconds
-    delegate_to: "{{ groups[corosync_hostgroup | default('corosync')][0] }}"
+    delegate_to: "{{ groups[corosync_hostgroup | default('pacemaker')][0] }}"
     pause:
       seconds: 5
     run_once: yes

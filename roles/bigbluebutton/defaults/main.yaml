@@ -8,6 +8,8 @@ bigbluebutton_exporter_port: 9688
 
 bigbluebutton_recordings_retention_days: 7
 
+coturn_auth_secret: changemechangemechangemechangeme
+
 freeswitch_exporter_port: 9725
 freeswitch_exporter_release: 1.0.1
 

@@ -24,6 +24,7 @@
     - name: Reboots System
       shell: ( sleep 2 && reboot ) &
     - name: Waits for System to Reboot
+      any_errors_fatal: true
       wait_for_connection:
         delay: 10
     when:
