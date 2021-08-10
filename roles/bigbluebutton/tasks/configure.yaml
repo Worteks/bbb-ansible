@@ -52,6 +52,7 @@
     when:
     - hostvars[groups['scalelite'][0]]['corosync_vip'] is defined
   - name: Installs BigBlueButton/Scalelite Recordings Post Process Script
+    delay: 5
     get_url:
       dest: /usr/local/bigbluebutton/core/scripts/post_publish/scalelite_post_publish.rb
       group: root
@@ -59,13 +60,16 @@
       owner: root
       url: https://raw.githubusercontent.com/blindsidenetworks/scalelite/master/bigbluebutton/scalelite_post_publish.rb
     register: has_postpublish
+    retries: 3
   - name: Installs BigBlueButton/Scalelite Recordings Migration Script
+    delay: 5
     get_url:
       dest: /root/scalelite_batch_import.sh
       group: root
       mode: 0755
       owner: root
       url: https://raw.githubusercontent.com/blindsidenetworks/scalelite/master/bigbluebutton/scalelite_batch_import.sh
+    retries: 3
   - include_role:
       name: sshfs
       tasks_from: user.yaml

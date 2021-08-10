@@ -7,6 +7,7 @@
     groups: esxp
     name: esxp
 - name: Fetches ElasticSearch Exporter
+  delay: 5
   get_url:
     dest: "/usr/src/elasticsearch_exporter-{{ elasticsearch_exporter_release }}.tar.gz"
     group: root
@@ -14,6 +15,7 @@
     owner: root
     url: "{{ elasticsearch_exporter_repo }}/releases/download/v{{ elasticsearch_exporter_release }}/elasticsearch_exporter-{{
              elasticsearch_exporter_release }}.linux-amd64.tar.gz"
+  retries: 3
 - name: Extracts ElasticSearch Exporter
   args:
     chdir: /usr/src

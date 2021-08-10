@@ -1,0 +1,34 @@
+- block:
+  - name: Releases Local Logical Volumes on Secondary Nodes - if any
+    failed_when: False
+    loop: "{{ drbd_filesystems }}"
+    loop_control:
+      loop_var: fs
+    shell: |
+      umount -f {{ fs['mountpoint'] }} || echo ok;
+      dmsetup remove {{ drbd_vg_name | default('data') }}-{{ fs['name'] }} || echo ok
+  - name: Mark DRBD Inactive on Secondary Nodes
+    any_errors_fatal: true
+    delay: 20
+    retries: 3
+    shell: |
+      drbdadm disconnect all;
+      drbdadm secondary all;
+      drbdadm connect --discard-my-data all
+  when:
+  - corosync_members[0] not in [ ansible_hostname, ansible_nodename, ansible_fqdn ]
+- name: Restarts DRBD on any Node
+  any_errors_fatal: true
+  delay: 20
+  delegate_to: "{{ corosync_members[0] }}"
+  retries: 3
+  run_once: yes
+  shell: |
+    drbdadm primary all;
+    drbdadm disconnect all;
+    drbdadm connect all
+- name: Gives it a few seconds
+  delegate_to: "{{ corosync_members[0] }}"
+  pause:
+    seconds: 5
+  run_once: yes

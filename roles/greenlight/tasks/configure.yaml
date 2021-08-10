@@ -38,8 +38,10 @@
   args:
     executable: /bin/bash
   changed_when: False
+  delay: 5
   delegate_to: "{{ groups['bbb'][0] }}"
   register: bbb_secret
+  retries: 3
   run_once: yes
   shell: |
     set -o pipefail && \

@@ -1,10 +1,12 @@
 - name: Fetches HA Cluster Exporter
+  delay: 5
   get_url:
     dest: "/usr/src/ha_cluster_exporter-{{ hacluster_exporter_release }}"
     group: root
     mode: 0644
     owner: root
     url: "https://github.com/ClusterLabs/ha_cluster_exporter/releases/download/{{ hacluster_exporter_release }}/ha_cluster_exporter-amd64"
+  retries: 3
 - name: Installs HA Cluster Exporter
   copy:
     dest: /usr/bin/ha_cluster_exporter

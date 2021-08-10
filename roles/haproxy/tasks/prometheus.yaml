@@ -1,10 +1,12 @@
 - name: Fetches HAProxy Exporter
+  delay: 5
   get_url:
     dest: "/usr/src/haproxy-exporter-{{ haproxy_exporter_release }}.tar.gz"
     group: root
     mode: 0644
     owner: root
     url: "{{ haproxy_exporter_repo }}/releases/download/v{{ haproxy_exporter_release }}/haproxy_exporter-{{ haproxy_exporter_release }}.linux-amd64.tar.gz"
+  retries: 3
 - name: Extracts HAProxy Exporter
   args:
     chdir: /usr/src

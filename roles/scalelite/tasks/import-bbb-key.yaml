@@ -3,8 +3,10 @@
     args:
       chdir: /home/bigbluebutton/.ssh
     changed_when: False
+    delay: 5
     delegate_to: "{{ srv }}"
     register: has_key
+    retries: 3
     run_once: yes
     shell: cat id_rsa.pub
     vars:

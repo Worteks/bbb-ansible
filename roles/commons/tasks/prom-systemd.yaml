@@ -1,10 +1,12 @@
 - name: Fetches Systemd Exporter
+  delay: 5
   get_url:
     dest: "/usr/src/systemd-exporter-{{ systemd_exporter_release }}.tar.gz"
     group: root
     mode: 0644
     owner: root
     url: "{{ systemd_exporter_repo }}/releases/download/v{{ systemd_exporter_release }}/systemd_exporter-{{ systemd_exporter_release }}.linux-amd64.tar.gz"
+  retries: 3
 - name: Extracts Systemd Exporter
   args:
     chdir: /usr/src

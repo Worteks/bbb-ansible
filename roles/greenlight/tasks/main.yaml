@@ -10,6 +10,9 @@
   - >
      not (ansible_hostname in groups['bbb']
           and ansible_hostname in groups['greenlight'])
+  - >
+     not (ansible_nodename in groups['bbb']
+          and ansible_nodename in groups['greenlight'])
 - include_tasks: bbb-proxy.yaml
   when:
   - not (skip_bbb | default(False))

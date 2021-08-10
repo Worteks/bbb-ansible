@@ -4,6 +4,7 @@
   failed_when: False
   register: canreadvg
 - name: Mark DRBD Inactive on Nodes
+  any_errors_fatal: true
   failed_when: False
   shell: |
     drbdadm secondary all;
@@ -14,6 +15,7 @@
   - canreadvg.rc is defined
   - (canreadvg.rc | default(0)) != 0
 - name: Restarts DRBD on Primary node
+  any_errors_fatal: true
   run_once: yes
   shell: |
     drbdadm primary all;

@@ -6,12 +6,14 @@
     owner: root
     state: directory
 - name: Fetches Node Exporter
+  delay: 5
   get_url:
     dest: "/usr/src/node-exporter-{{ node_exporter_release }}.tar.gz"
     group: root
     mode: 0644
     owner: root
     url: "{{ node_exporter_repo }}/releases/download/v{{ node_exporter_release }}/node_exporter-{{ node_exporter_release }}.linux-amd64.tar.gz"
+  retries: 3
 - name: Extracts Node Exporter
   args:
     chdir: /usr/src

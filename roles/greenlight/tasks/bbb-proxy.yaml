@@ -1,9 +1,12 @@
 - name: "Reconfigures BigBlueButton Sending {{ greenlight_app_root }} to Geenlight"
+  delay: 5
   delegate_to: "{{ bbb }}"
   loop: "{{ groups['bbb'] }}"
   loop_control:
     loop_var: bbb
   register: conf_check
+  retries: 3
+  run_once: yes
   template:
     dest: /etc/bigbluebutton/nginx/greenlight.nginx
     group: root
@@ -17,14 +20,23 @@
                                  and ansible_fqdn in groups['greenlight']))
                          else 'rewrite'
               }}.j2"
+  vars:
+    ansible_python_interpreter: "/usr/bin/{{ 'python'
+                                               if (hostvars[bbb]['ansible_distribution_release'] == 'xenial')
+                                               else 'python3' }}"
 - name: Reloads Nginx on BigBlueButton Nodes
   delegate_to: "{{ bbb }}"
   loop: "{{ groups['bbb'] }}"
   loop_control:
     loop_var: bbb
+  run_once: yes
   service:
     name: nginx
     state: restarted
+  vars:
+    ansible_python_interpreter: "/usr/bin/{{ 'python'
+                                               if (hostvars[bbb]['ansible_distribution_release'] == 'xenial')
+                                               else 'python3' }}"
   when:
   - conf_check is defined
   - conf_check is changed

@@ -1,10 +1,12 @@
 - name: Fetches Ejabberd Installer
+  delay: 5
   get_url:
     dest: /usr/src/ejabberd.run
     group: root
     mode: 0755
     owner: root
     url: "https://www.process-one.net/downloads/downloads-action.php?file=/20.04/ejabberd-20.04-linux-x64.run"
+  retries: 3
 - name: Installs Ejabberd
   args:
     chdir: /usr/src

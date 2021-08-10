@@ -1,4 +1,5 @@
 - name: Fetches Fluentd Installer (deb)
+  delay: 5
   get_url:
     dest: /usr/src/td-agent-installer.sh
     group: root
@@ -6,9 +7,11 @@
     owner: root
     url: "https://toolbelt.treasuredata.com/sh/install-{{ ansible_distribution | lower }}-{{ ansible_distribution_release | lower }}-td-agent4.sh"
   register: fsetup1
+  retries: 3
   when:
   - ansible_distribution in [ 'Debian', 'Ubuntu' ]
 - name: Fetches Fluentd Installer (el)
+  delay: 5
   get_url:
     dest: /usr/src/td-agent-installer.sh
     group: root
@@ -16,6 +19,7 @@
     owner: root
     url: https://toolbelt.treasuredata.com/sh/install-redhat-td-agent4.sh
   register: fsetup2
+  retries: 3
   when:
   - ansible_distribution in [ 'CentOS', 'Fedora', 'RedHat' ]
 - name: Installs Fluentd

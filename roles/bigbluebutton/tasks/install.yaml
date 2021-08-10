@@ -37,12 +37,14 @@
   - haslangpack is defined
   - haslangpack is changed
 - name: Fetches BigBlueButton Installer
+  delay: 5
   get_url:
     dest: /root/bbb-install.sh
     group: root
     mode: 0700
     owner: root
     url: https://raw.githubusercontent.com/Worteks/bbb-install/master/bbb-install.sh
+  retries: 3
 - name: Fixes /etc/hosts
   lineinfile:
     dest: /etc/hosts

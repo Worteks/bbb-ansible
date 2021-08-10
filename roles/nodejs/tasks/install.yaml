@@ -1,10 +1,12 @@
 - name: Fetches NodeJS Sources Installation Script
+  delay: 5
   get_url:
     dest: /root/setup_node.sh
     group: root
     mode: 0750
     owner: root
     url: "https://deb.nodesource.com/setup_{{ nodejs_version }}.x"
+  retries: 3
 - name: Installs NodeJS
   args:
     creates: /etc/apt/sources.list.d/nodesource.list

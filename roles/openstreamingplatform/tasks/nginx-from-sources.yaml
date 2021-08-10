@@ -1,4 +1,5 @@
 - name: Fetches Nginx Sources
+  delay: 5
   get_url:
     dest: "/usr/src/{{ i.fl }}"
     group: root
@@ -16,6 +17,7 @@
     fl: sticky.tar.gz
   loop_control:
     loop_var: i
+  retries: 3
 - name: Extracts Nginx Sources (tar)
   args:
     chdir: /usr/src

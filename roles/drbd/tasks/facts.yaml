@@ -11,7 +11,7 @@
 - name: Checks DRBD Up
   changed_when: False
   command: |
-    grep -E 'cs:(Connected|Sync(Source|Target))' /proc/drbd
+    grep -E 'cs:(Connected|Sync(Source|Target)|StandAlone|WFConnection)' /proc/drbd
   failed_when: False
   register: drbddev
 - include_tasks: up.yaml
@@ -32,7 +32,7 @@
   - drbd2sec.rc is defined
   - (drbd2sec.rc | default(1)) == 0
 
-- name: Checks DRBD Split-Brain
+- name: Checks DRBD Split-Brain (1/2)
   changed_when: False
   command: |
     grep 'ro:Primary/Primary' /proc/drbd
@@ -43,6 +43,18 @@
   - drbd2prim is defined
   - drbd2prim.rc is defined
   - (drbd2prim.rc | default(1)) == 0
+
+- name: Checks DRBD Split-Brain (2/2)
+  changed_when: False
+  command: |
+    grep 'ro:Primary/Unknown' /proc/drbd
+  failed_when: False
+  register: drbdnosec
+- include_tasks: fix-standalone.yaml
+  when:
+  - drbdnosec is defined
+  - drbdnosec.rc is defined
+  - (drbdnosec.rc | default(1)) == 0
 
 - name: Checks DRBD Status
   changed_when: False

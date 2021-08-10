@@ -1,0 +1,4 @@
+- name: Reloads Node Exporter
+  service:
+    name: node-exporter
+    state: restarted

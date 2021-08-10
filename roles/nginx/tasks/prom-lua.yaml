@@ -16,6 +16,7 @@
   loop_control:
     loop_var: d
 - name: Install Nginx Lua Prometheus Package
+  delay: 5
   get_url:
     dest: /etc/nginx/lua.d/prometheus/prometheus.lua
     group: root
@@ -23,7 +24,9 @@
     owner: root
     url: https://raw.githubusercontent.com/knyar/nginx-lua-prometheus/master/prometheus.lua
   notify: Reloads Nginx
+  retries: 3
 - name: Install Nginx Lua Prometheus Package
+  delay: 5
   get_url:
     dest: /etc/nginx/lua.d/prometheus/prometheus_keys.lua
     group: root
@@ -31,7 +34,9 @@
     owner: root
     url: https://raw.githubusercontent.com/knyar/nginx-lua-prometheus/master/prometheus_keys.lua
   notify: Reloads Nginx
+  retries: 3
 - name: Install Nginx Lua Prometheus Package
+  delay: 5
   get_url:
     dest: /etc/nginx/lua.d/prometheus/prometheus_resty_counter.lua
     group: root
@@ -39,6 +44,7 @@
     owner: root
     url: https://raw.githubusercontent.com/knyar/nginx-lua-prometheus/master/prometheus_resty_counter.lua
   notify: Reloads Nginx
+  retries: 3
 - name: Install Prometheus Nginx Lua
   notify: Reloads Nginx
   template:

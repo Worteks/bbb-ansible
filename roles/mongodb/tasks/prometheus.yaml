@@ -6,12 +6,14 @@
     owner: root
     state: directory
 - name: Fetches MongoDB Exporter
+  delay: 5
   get_url:
     dest: "/usr/src/mongodb-exporter-{{ mongodb_exporter_release }}.tar.gz"
     group: root
     mode: 0644
     owner: root
     url: "https://github.com/percona/mongodb_exporter/releases/download/v{{ mongodb_exporter_release }}/mongodb_exporter-{{ mongodb_exporter_release }}.linux-amd64.tar.gz"
+  retries: 3
 - name: Extracts MongoDB Exporter
   args:
     chdir: "/usr/src/mongodb-exporter-v{{ mongodb_exporter_release }}.linux-amd64"

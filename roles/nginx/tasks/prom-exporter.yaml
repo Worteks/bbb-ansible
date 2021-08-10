@@ -6,12 +6,14 @@
     owner: root
     state: directory
 - name: Fetches Nginx Exporter
+  delay: 5
   get_url:
     dest: "/usr/src/nginx-exporter-{{ nginx_exporter_release }}.tar.gz"
     group: root
     mode: 0644
     owner: root
     url: "{{ nginx_exporter_repo }}/releases/download/v{{ nginx_exporter_release }}/nginx-prometheus-exporter-{{ nginx_exporter_release }}-linux-amd64.tar.gz"
+  retries: 3
 - name: Extracts Nginx Exporter
   args:
     chdir: "/usr/src/nginx-exporter-v{{ nginx_exporter_release }}.linux-amd64"

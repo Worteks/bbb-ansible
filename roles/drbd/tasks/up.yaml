@@ -3,6 +3,7 @@
     command: |
       drbdadm up {{ drbd_resource_name }}
     delay: 10
+    notify: Reloads Node Exporter
     register: drbduprslt
     retries: 3
     until: drbduprslt.rc == 0

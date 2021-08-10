@@ -22,6 +22,7 @@
   when:
   - ansible_distribution in [ 'CentOS', 'RedHat' ]
 - name: Pulls GeoIP Database from Provider
+  delay: 5
   get_url:
     dest: /usr/src/geoip2.tar.gz
     group: root
@@ -29,6 +30,7 @@
     owner: root
     url: "{{ geoip_database_url }}"
   register: newcopy
+  retries: 3
 - name: Installs GeoIP Extract Directory
   file:
     dest: /usr/src/geoip

@@ -1,3 +1,17 @@
+- name: Fails if BBB or PeerTube Missing
+  fail:
+    msg: |
+      PeerTube and BigBlueButton - or Scalelite - required
+  when:
+  - >
+      ((bigbluebutton_api_secret is not defined
+        or greenlight_fqdn is not defined)
+       and (groups['scalelite'] | length == 0
+            and groups['bbb'] | length == 0))
+      or (groups['peertube'] | length == 0
+          and (peertube_rtmp_user is not defined
+               or peertube_rtmp_password is not defined
+               or peertube_fqdn is not defined))
 - name: Gather Facts from PeerTube
   delegate_to: "{{ srv }}"
   delegate_facts: True
@@ -14,8 +28,11 @@
     loop_var: srv
   run_once: yes
   setup:
+  vars:
+    ansible_python_interpreter: /usr/bin/python
   when:
-  - groups['bbb'] | length == 0
+  - groups['scalelite'] | length == 0
+  - groups['bbb'] | length > 0
 - name: Gather Facts from Scalelite
   delegate_to: "{{ srv }}"
   delegate_facts: True

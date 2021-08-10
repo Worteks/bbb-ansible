@@ -6,7 +6,7 @@ locale: en_US.UTF-8
 localegen: en_US UTF-8
 
 node_exporter_port: 9142
-node_exporter_release: 1.1.2
+node_exporter_release: 1.2.2
 node_exporter_repo: https://github.com/prometheus/node_exporter
 
 ntp_upstreams:

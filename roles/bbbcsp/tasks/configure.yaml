@@ -2,14 +2,22 @@
   args:
     executable: /bin/bash
   changed_when: False
+  delay: 5
   delegate_to: "{{ groups['bbb'][0] }}"
   register: bbb_secret
+  retries: 3
   run_once: yes
   shell: |
     set -o pipefail && \
     bbb-conf --secret | awk '/Secret:/{print $2}'
+  vars:
+    ansible_python_interpreter: "/usr/bin/{{ 'python'
+                                               if (hostvars[groups['bbb'][0]]['ansible_distribution_release'] == 'xenial')
+                                               else 'python3' }}"
   when:
   - groups['scalelite'] | length == 0
+  - groups['bbb'] | length > 0
+  - bigbluebutton_api_secret is not defined
 - name: Installs BigBlueButton Conferences Streaming Platform Site Configuration
   notify: Reloads BBB CSP
   template:
