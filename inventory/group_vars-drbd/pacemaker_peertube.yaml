@@ -1,3 +1,4 @@
+corosync_cluster_name: ptapp
 corosync_hostgroup: drbd_peertube
 corosync_members:
 - peertube-1.friends.intra.example.com

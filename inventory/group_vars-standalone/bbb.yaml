@@ -1,3 +1,4 @@
+do_redis_backups: False
 firehol_app_filtered_ports:
 - name: ssh
   value: tcp/22

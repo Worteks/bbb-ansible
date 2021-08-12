@@ -1,3 +1,4 @@
+setup_firewall: True
 firehol_app_filtered_ports:
 - name: ssh
   value: tcp/22

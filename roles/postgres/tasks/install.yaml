@@ -2,9 +2,8 @@
   apt:
     name:
     - gnupg2
-    - "{{ 'python3-psycopg2'
-            if (ansible_python['version']['major'] | int == 3)
-            else 'python-psycopg2' }}"
+    - python3-psycopg2
+    - python-psycopg2
     - sudo
     state: present
   register: deps

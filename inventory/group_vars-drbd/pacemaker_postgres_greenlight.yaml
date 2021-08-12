@@ -1,3 +1,4 @@
+corosync_cluster_name: glapp
 corosync_hostgroup: drbd_postgres_greenlight
 corosync_members:
 - greenlight-1.friends.intra.example.com

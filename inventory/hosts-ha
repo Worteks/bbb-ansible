@@ -48,8 +48,8 @@ elasticsearch-1.friends.intra.example.com
 elasticsearch-2.friends.intra.example.com
 elasticsearch-3.friends.intra.example.com
 [freeipa]
-#freeipa-1.friends.intra.example.com
-#freeipa-2.friends.intra.example.com
+#freeipa-1.friends.intra.example.com ansible_python_interpreter=/usr/bin/python2.7
+#freeipa-2.friends.intra.example.com ansible_python_interpreter=/usr/bin/python2.7
 [grafana]
 lachesis.faust.intra.example.com
 [greenlight]

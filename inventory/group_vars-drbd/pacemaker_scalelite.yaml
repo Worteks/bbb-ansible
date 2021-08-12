@@ -1,3 +1,4 @@
+corosync_cluster_name: slapp
 corosync_hostgroup: drbd_scalelite
 corosync_members:
 - scalelite-1.friends.intra.example.com

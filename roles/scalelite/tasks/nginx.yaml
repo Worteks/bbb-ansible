@@ -40,12 +40,10 @@
       (ansible_nodename not in groups['drbd']
        and ansible_hostname not in groups['drbd']
        and ansible_fqdn not in groups['drbd'])
-      or (ansible_nodename in groups['drbd']
-          and drbd_is_primary | default(False))
-      or (ansible_hostname in groups['drbd']
-          and drbd_is_primary | default(False))
-      or (ansible_fqdn in groups['drbd']
-          and drbd_is_primary | default(False))
+      or (drbd_is_primary and
+          (ansible_nodename in groups['drbd']
+           or ansible_hostname in groups['drbd']
+           or ansible_fqdn in groups['drbd']))
 - include_role:
     name: nginx
     tasks_from: service.yaml

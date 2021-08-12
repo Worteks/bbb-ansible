@@ -1,3 +1,4 @@
+corosync_cluster_name: sldb
 corosync_hostgroup: drbd_postgres_scalelite
 corosync_members:
 - bbb-postgres-1.friends.intra.example.com

@@ -1,3 +1,4 @@
+corosync_cluster_name: ptdb
 corosync_hostgroup: drbd_postgres_peertube
 corosync_members:
 - bbb-postgres-1.friends.intra.example.com

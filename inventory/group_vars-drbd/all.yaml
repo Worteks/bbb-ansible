@@ -37,8 +37,8 @@ elasticsearch_jvm_xmx: 8g
 elasticsearch_retention_days: 31
 
 # Firewall for LB/DB/turn
-#setup_firewall: True
-#firehol_private_if: priv0
+setup_firewall: False
+firehol_private_if: ens3
 #firehol_trusted_networks:
 #- 127.0.0.0/24
 #- 51.75.112.172/32

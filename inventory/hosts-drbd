@@ -10,7 +10,6 @@ postgres_trusted_clients=['10.42.253.0/24']
 prometheus_fqdn=prometheus.friends.intra.example.com
 prometheus_k8s_integration=True
 scalelite_fqdn=scalelite.friends.intra.example.com
-setup_firewall=False
 smtp_relay=smtp.vms.intra.example.com
 
 [monitoring:vars]
@@ -30,8 +29,8 @@ bbb-csp-1.friends.intra.example.com
 bbb-csp-2.friends.intra.example.com
 [cephfs]
 [coturn]
-coturn-1.friends.intra.example.com coturn_external_address=8.8.8.8 coturn_fqdn=coturn-1.intra.example.com setup_firewall=True
-coturn-2.friends.intra.example.com coturn_external_address=1.1.1.1 coturn_fqdn=coturn-2.intra.example.com setup_firewall=True
+coturn-1.friends.intra.example.com coturn_external_address=8.8.8.8 coturn_fqdn=coturn-1.intra.example.com
+coturn-2.friends.intra.example.com coturn_external_address=1.1.1.1 coturn_fqdn=coturn-2.intra.example.com
 [drbd_peertube]
 peertube-1.friends.intra.example.com
 peertube-2.friends.intra.example.com
@@ -57,8 +56,8 @@ elasticsearch-1.friends.intra.example.com
 elasticsearch-2.friends.intra.example.com
 elasticsearch-3.friends.intra.example.com
 [freeipa]
-#freeipa-1.friends.intra.example.com
-#freeipa-2.friends.intra.example.com
+#freeipa-1.friends.intra.example.com ansible_python_interpreter=/usr/bin/python2.7
+#freeipa-2.friends.intra.example.com ansible_python_interpreter=/usr/bin/python2.7
 [grafana]
 grafana-1.friends.intra.example.com
 grafana-2.friends.intra.example.com
@@ -94,8 +93,8 @@ bbb-postgres-2.friends.intra.example.com
 [pacemaker_redis_peertube]
 [pacemaker_redis_scalelite]
 [pacemaker_reverse]
-reverse-1.friends.intra.example.com
-reverse-2.friends.intra.example.com
+reverse-1.friends.intra.example.com certbot_renew_day_of_month=1
+reverse-2.friends.intra.example.com certbot_renew_day_of_month=15
 [pacemaker_scalelite]
 scalelite-1.friends.intra.example.com
 scalelite-2.friends.intra.example.com

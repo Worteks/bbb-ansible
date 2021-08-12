@@ -1,3 +1,4 @@
+corosync_cluster_name: reverse
 corosync_bindnetaddr: 192.168.255.1
 corosync_members:
 - reverse-1.friends.intra.example.com

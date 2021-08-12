@@ -1,3 +1,4 @@
+corosync_cluster_name: cspapp
 corosync_hostgroup: pacemaker_csp
 corosync_members:
 - bbb-csp-1.friends.intra.example.com
