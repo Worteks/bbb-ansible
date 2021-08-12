@@ -40,6 +40,13 @@ server {
     location /playback/presentation/playback.html {
 	return 301 /playback/presentation/0.81/playback.html?$query_string;
     }
+    # https://github.com/bigbluebutton/bbb-playback#playing-old-recordings
+    location /playback/presentation/0.9.0/playback.html {
+	return 301 /playback/presentation/2.3/$arg_meetingId?$query_string;
+    }
+    location /playback/presentation/2.0/playback.html {
+	return 301 /playback/presentation/2.3/$arg_meetingId?$query_string;
+    }
     location /playback/presentation {
 	root    /var/scalelite-recordings;
 	index  index.html index.htm;
