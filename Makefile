@@ -1,5 +1,7 @@
 DEPLOYMENT=drbd
 
+-include Makefile.cust
+
 .PHONY: deploy
 deploy: init
 	@@if ! ansible --version >/dev/null 2>&1; then \

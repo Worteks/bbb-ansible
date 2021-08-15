@@ -36,7 +36,7 @@ scalelite_exporter_port: 9688
 
 scalelite_custom_source_repo: https://github.com/Worteks/scalelite
 scalelite_custom_source_ref: fix-recordings-metrics
-scalelite_images_release: v1.1.6
+scalelite_images_release: v1.1.7
 scalelite_images_repo: docker.io/blindsidenetwks/scalelite
 
 scalelite_postgres_database: scalelite

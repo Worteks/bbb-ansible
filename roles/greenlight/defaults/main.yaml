@@ -22,7 +22,7 @@ nginx_ssl_protocols:
 - TLSv1.2
 
 greenlight_help_url: https://docs.bigbluebutton.org/greenlight/gl-overview.html
-greenlight_images_release: release-2.9.0
+greenlight_images_release: release-2.9.1
 greenlight_images_repo: docker.io/bigbluebutton/greenlight
 
 greenlight_allow_local_accounts: True

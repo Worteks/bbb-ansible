@@ -194,12 +194,13 @@ contact_form:
 
 signup:
   enabled: false
-  limit: 10
-  requires_email_verification: false
   filters:
     cidr:
       whitelist: []
       blacklist: []
+  limit: 10
+  minimum_age: 18
+  requires_email_verification: false
 
 user:
   video_quota: -1
