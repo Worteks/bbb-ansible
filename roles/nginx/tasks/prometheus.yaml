@@ -2,4 +2,4 @@
 - include_tasks: prom-exporter.yaml
 - include_tasks: prom-lua.yaml
   when:
-  - ansible_distribution_release in [ 'buster', 'bionic', 'focal' ]
+  - ansible_distribution_release in [ 'bullseye', 'buster', 'bionic', 'focal' ]

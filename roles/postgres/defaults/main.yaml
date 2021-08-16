@@ -28,8 +28,10 @@ peertube_postgres_user: peertubeusr
 
 postgres_drbd_groups:
 - postgres_coturn
-- postgres_greenlight
 - postgres_grafana
+- postgres_greenlight
+- postgres_moodle
+- postgres_openstreamingplatform
 - postgres_peertube
 - postgres_scalelite
 

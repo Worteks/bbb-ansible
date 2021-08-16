@@ -26,8 +26,10 @@
       - ntp
       - ntpdate
       - openssl
-      - python-apt
-      - python-boto
+      - "{{ 'python3-apt' if (ansible_distribution_release == 'bullseye')
+                          else 'python-apt' }}"
+      - "{{ 'python3-boto' if (ansible_distribution_release == 'bullseye')
+                           else 'python-boto' }}"
       - rsync
       - unattended-upgrades
       - vim

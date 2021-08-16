@@ -1,7 +1,8 @@
 - block:
   - name: Installs pexpect
     apt:
-      name: python-pexpect
+      name: "{{ 'python3-pexpect' if (ansible_distribution_release == 'bullseye')
+                                  else [ 'python-pexpect', 'python3-pexpect' ] }}"
       state: present
   - name: Clones BigBlueButton Conferences Streaming Platform Sources from Git (with auth)
     expect:

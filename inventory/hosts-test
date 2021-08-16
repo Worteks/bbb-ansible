@@ -29,6 +29,7 @@ coturn-1.friends.intra.example.com
 [drbd_postgres_coturn]
 [drbd_postgres_grafana]
 [drbd_postgres_greenlight]
+[drbd_postgres_moodle]
 [drbd_postgres_openstreamingplatform]
 [drbd_postgres_peertube]
 [drbd_postgres_scalelite]
@@ -53,6 +54,7 @@ greenlight.friends.intra.example.com
 [pacemaker_postgres_coturn]
 [pacemaker_postgres_grafana]
 [pacemaker_postgres_greenlight]
+[pacemaker_postgres_moodle]
 [pacemaker_postgres_openstreamingplatform]
 [pacemaker_postgres_peertube]
 [pacemaker_postgres_scalelite]
@@ -112,6 +114,7 @@ drbd_peertube
 drbd_postgres_coturn
 drbd_postgres_grafana
 drbd_postgres_greenlight
+drbd_postgres_moodle
 drbd_postgres_openstreamingplatform
 drbd_postgres_peertube
 drbd_postgres_scalelite
@@ -146,6 +149,7 @@ pacemaker_peertube
 pacemaker_postgres_coturn
 pacemaker_postgres_grafana
 pacemaker_postgres_greenlight
+pacemaker_postgres_moodle
 pacemaker_postgres_openstreamingplatform
 pacemaker_postgres_peertube
 pacemaker_postgres_scalelite

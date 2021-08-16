@@ -2,16 +2,21 @@
   apt:
     name:
     - gnupg2
-    - python3-psycopg2
-    - python-psycopg2
     - sudo
     state: present
-  register: deps
+  register: deps1
+- name: Ensures Psycopg2 is Installed
+  apt:
+    name: "{{ 'python3-psycopg2' if (ansible_distribution_release == 'bullseye')
+                                 else [ 'python-psycopg2', 'python3-psycopg2' ] }}"
+    state: present
+  register: deps2
 - name: Reloads Facts
   setup:
   when:
-  - deps is defined
-  - deps is changed
+  - >
+      (deps1 is defined and deps1 is changed)
+      or (deps2 is defined and deps2 is changed)
 
 - name: Installs Postgres GPG key
   args:

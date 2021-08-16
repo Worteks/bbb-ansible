@@ -32,8 +32,11 @@
       set -o pipefail && vgs | grep "{{ drbd_vg_name | default('data') }}"
   - name: Creates VG
     any_errors_fatal: true
-    command: |
-      vgcreate "{{ drbd_vg_name | default('data') }}" /dev/drbd1
+    shell: |
+      vgcreate "{{ drbd_vg_name | default('data') }}" /dev/drbd1 && \
+      sleep 3 && \
+      vgscan -y && \
+      vgchange -ay
     when:
     - hasvg is defined
     - hasvg.rc is defined

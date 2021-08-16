@@ -58,7 +58,7 @@
   register: shouldrld
   when:
   - ansible_distribution == 'Debian'
-  - ansible_distribution_release == 'buster'
+  - ansible_distribution_release in [ 'bullseye', 'buster' ]
 - name: Reloads Systemd Configuration
   systemd:
     daemon_reload: yes

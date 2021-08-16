@@ -39,7 +39,7 @@ Deploying BigBlueButton at scale with Ansible
 
  * Ansible 2.9+ on your deployment node, python-cryptography > 3, rsync
  * Ubuntu Bionic on your BigBlueButton nodes (bbb 2.3, or Xenial for bbb 2.2)
- * Debian Buster for everything else (ubuntu might work, though untested so far)
+ * Debian Buster or Bullseye for everything else (ubuntu might work, though untested so far)
 
 The rest depends on your context.
 
@@ -264,6 +264,7 @@ freeswitch:
  * https://github.com/coturn/coturn/pull/517/files
  * https://github.com/coturn/coturn/blob/master/docker/coturn/turnserver.conf
  * https://github.com/coturn/coturn/pull/627 (requires 4.5.2 to enable prometheus metrics exporter)
+ * https://github.com/coturn/coturn/issues/760 (and on debian, 4.5.2 isn't enough / packages won't support it ...)
  * https://ourcodeworld.com/articles/read/1175/how-to-create-and-configure-your-own-stun-turn-server-with-coturn-in-ubuntu-18-04
 
 ### Scalelite

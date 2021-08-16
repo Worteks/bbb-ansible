@@ -8,7 +8,9 @@
   - block:
     - name: "Creates LV {{ fs['name'] }}"
       shell: |
-        echo y | lvcreate -n "{{ fs['name'] }}" -L "{{ fs['size'] | default('10G') }}" "{{ vg_name | default('data') }}"
+        echo y | lvcreate -n "{{ fs['name'] }}" -L "{{ fs['size'] | default('10G') }}" "{{ vg_name | default('data') }}" && \
+        sleep 3 && \
+        lvscan -ay
     - name: "Creates Fileystem {{ fs['name'] }}"
       shell: |
         mkfs.{{ fs['type'] | default('xfs') }} /dev/{{ vg_name | default('data') }}/{{ fs['name'] }}

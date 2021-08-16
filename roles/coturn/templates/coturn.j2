@@ -63,6 +63,9 @@ verbose
 {% if 0 == 1 and (groups['prometheus'] | length > 0 or do_prometheus | default(False)) %}
 # disable that option, as it is not yet recognized (deb10 / coturn-4.5.1.1-1.1)
 # requires 4.5.2+, see https://github.com/coturn/coturn/blob/master/ChangeLog
+# testing with deb11 / coturn-4.5.2-3
+# would not work, packages are not linked to prometheus-client-c library
+# https://github.com/coturn/coturn/issues/760
 prometheus
 {% endif %}
 {% if coturn_cli_password | default(False) %}
