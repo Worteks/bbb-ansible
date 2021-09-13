@@ -3,12 +3,21 @@ services:
   kibana:
     container_name: kibana
     environment:
+{% if storage_flavor == 'open' %}
+    - 'OPENSEARCH_HOSTS=["http://{{ es_nodes | join(':9200","http://') }}:9200"]'
+    - OPENSEARCH_REQUESTTIMEOUT={{ kibana_es_request_timeout }}000
+{% else %}
     - 'ELASTICSEARCH_HOSTS=["http://{{ es_nodes | join(':9200","http://') }}:9200"]'
     - ELASTICSEARCH_REQUESTTIMEOUT={{ kibana_es_request_timeout }}000
+{% endif %}
     - SERVER_NAME={{ kibana_fqdn | default(ansible_fqdn) }}
     - TELEMETRY_ENABLED=false
     - 'XPACK_SECURITY_ENABLED=false'
+{% if storage_flavor == 'open' %}
+    image: {{ opensearchdashboards_images_repo }}:{{ opensearchdashboards_images_release }}
+{% else %}
     image: {{ kibana_images_repo }}:{{ kibana_images_release }}
+{% endif %}
     logging:
       driver: journald
 {% if docker_hostnetwork | default(False) %}
@@ -18,4 +27,8 @@ services:
     - "5601:5601"
     restart: unless-stopped
     volumes:
+{% if storage_flavor == 'open' %}
+    - /usr/share/kibana/plugins:/usr/share/opensearch-dashboards/plugins
+{% else %}
     - /usr/share/kibana/plugins:/usr/share/kibana/plugins
+{% endif %}

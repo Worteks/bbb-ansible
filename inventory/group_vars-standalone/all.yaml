@@ -25,6 +25,9 @@ timezone: Europe/Paris
 #- 78.193.67.92/32
 #- 192.168.255.0/24
 
+# ElasticSearch or OpenSearch?
+storage_flavor: elastic
+
 # until https://github.com/povilasv/systemd_exporter/pull/41 gets merged/released:
 systemd_exporter_release: 0.5.0-rc1
 systemd_exporter_repo: https://github.com/Worteks/systemd_exporter

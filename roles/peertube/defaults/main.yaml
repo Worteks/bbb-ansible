@@ -20,7 +20,7 @@ nginx_ssl_protocols:
 peertube_csp_enable: True
 
 #peertube_images_release: production-buster
-peertube_images_release: v3.3.0-buster
+peertube_images_release: v3.4.0-buster
 peertube_images_repo: docker.io/chocobozzz/peertube
 
 peertubeexporter_images_release: master

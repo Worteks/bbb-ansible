@@ -3,3 +3,13 @@
     creates: /usr/share/kibana/plugins/kibanaPrometheusExporter
   shell: |
     docker exec -it kibana /bin/sh -c "cd /usr/share/kibana && ./bin/kibana-plugin install '{{ kibana_prometheus_plugin }}'"
+  when:
+  - storage_flavor == 'elastic'
+# FIXME / doesn't work yet
+#- name: Installs OpenSearchDashboards Prometheus Plugin
+#  args:
+#    creates: /usr/share/kibana/plugins/kibanaPrometheusExporter
+#  shell: |
+#    docker exec -it kibana /bin/sh -c "cd /usr/share/opensearch-dashboards && ./bin/opensearch-dashboards-plugin install '{{ opensearchdashboards_prometheus_plugin }}'"
+#  when:
+#  - storage_flavor == 'open'

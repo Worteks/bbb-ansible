@@ -10,12 +10,20 @@ services:
 {% endif %}
     - cluster.initial_master_nodes={{ es_nodes | join(',') }}
     - bootstrap.memory_lock=true
+{% if storage_flavor == 'open' %}
+    - "OPENSEARCH_JAVA_OPTS=-Xms{{ elasticsearch_jvm_xms }} -Xmx{{ elasticsearch_jvm_xmx }}"
+{% else %}
     - "ES_JAVA_OPTS=-Xms{{ elasticsearch_jvm_xms }} -Xmx{{ elasticsearch_jvm_xmx }}"
+{% endif %}
     extra_hosts:
 {% for node in groups['elasticsearch'] %}
     - {{ hostvars[node]['ansible_hostname'] }}:{{ hostvars[node]['ansible_default_ipv4']['address'] }}
 {% endfor %}
+{% if storage_flavor == 'open' %}
+    image: {{ opensearch_images_repo }}:{{ opensearch_images_release }}
+{% else %}
     image: {{ elasticsearch_images_repo }}:{{ elasticsearch_images_release }}
+{% endif %}
     logging:
       driver: journald
     network_mode: host
@@ -24,8 +32,17 @@ services:
     restart: unless-stopped
     ulimits:
       memlock:
-        soft: -1
         hard: -1
+        soft: -1
+{% if es_set_nofile | default(False) %}
+      nofile:
+        hard: 65536
+        soft: 65536
+{% endif %}
     user: "{{ elasticsearch_user_id.stdout_lines[elasticsearch_user_id.stdout_lines | length - 1] }}"
     volumes:
+{% if storage_flavor == 'open' %}
+    - /var/lib/elasticsearch:/usr/share/opensearch/data
+{% else %}
     - /var/lib/elasticsearch:/usr/share/elasticsearch/data
+{% endif %}

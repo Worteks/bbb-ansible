@@ -77,6 +77,9 @@ peertube_twitter_username: '@worteks_com'
 #postgres_trusted_clients:
 #- 192.168.255.0/24
 
+# ElasticSearch or OpenSearch?
+storage_flavor: elastic
+
 # until https://github.com/povilasv/systemd_exporter/pull/41 gets merged/released:
 systemd_exporter_release: 0.5.0-rc1
 systemd_exporter_repo: https://github.com/Worteks/systemd_exporter

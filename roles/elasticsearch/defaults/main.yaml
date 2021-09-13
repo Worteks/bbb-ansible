@@ -11,3 +11,9 @@ elasticsearch_jvm_xms: 512m
 elasticsearch_jvm_xmx: 512m
 
 elasticsearch_retention_days: 15
+
+# if storage_flavor == 'open'
+opensearch_images_release: 1.0.1
+opensearch_images_repo: docker.io/opensearchproject/opensearch
+
+storage_flavor: elastic

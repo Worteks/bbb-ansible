@@ -80,6 +80,9 @@ peertube_twitter_username: '@worteks_com'
 # All Redis are standalone / do not configure Sentinels
 redis_standalone: True
 
+# ElasticSearch or OpenSearch?
+storage_flavor: elastic
+
 # until https://github.com/povilasv/systemd_exporter/pull/41 gets merged/released:
 systemd_exporter_release: 0.5.0-rc1
 systemd_exporter_repo: https://github.com/Worteks/systemd_exporter
