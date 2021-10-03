@@ -70,7 +70,13 @@ prometheus
 {% endif %}
 {% if coturn_cli_password | default(False) %}
 {% if coturn_cli_interface | default(False) %}
+{% if hostvars[ansible_nodename] is defined %}
 cli-ip={{ hostvars[ansible_nodename]['ansible_' ~ coturn_cli_interface]['ipv4']['address'] }}
+{% elif hostvars[ansible_hostname] is defined %}
+cli-ip={{ hostvars[ansible_hostname]['ansible_' ~ coturn_cli_interface]['ipv4']['address'] }}
+{% else %}
+cli-ip={{ hostvars[ansible_fqdn]['ansible_' ~ coturn_cli_interface]['ipv4']['address'] }}
+{% endif %}
 {% else %}
 cli-ip=127.0.0.1
 {% endif %}
@@ -80,7 +86,13 @@ cli-port={{ coturn_cli_port }}
 {% if coturn_webadmin | default(False) %}
 web-admin
 {% if coturn_webadmin_interface | default(False) %}
+{% if hostvars[ansible_nodename] is defined %}
 web-admin-ip={{ hostvars[ansible_nodename]['ansible_' ~ coturn_webadmin_interface]['ipv4']['address'] }}
+{% elif hostvars[ansible_hostname] is defined %}
+web-admin-ip={{ hostvars[ansible_hostname]['ansible_' ~ coturn_webadmin_interface]['ipv4']['address'] }}
+{% else %}
+web-admin-ip={{ hostvars[ansible_fqdn]['ansible_' ~ coturn_webadmin_interface]['ipv4']['address'] }}
+{% endif %}
 {% else %}
 web-admin-ip=127.0.0.1
 {% endif %}
