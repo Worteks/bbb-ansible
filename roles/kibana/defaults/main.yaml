@@ -4,7 +4,7 @@ kibana_es_request_timeout: 30
 
 #kibana_fqdn: kibana.example.com        defaults to fqdn
 
-kibana_images_release: 7.15.0
+kibana_images_release: 7.16.1
 kibana_images_repo: docker.elastic.co/kibana/kibana
 
 kibana_prometheus_plugin: "https://github.com/pjhampton/kibana-prometheus-exporter/releases/download/{{ kibana_images_release }}/kibanaPrometheusExporter-{{ kibana_images_release }}.zip"
@@ -29,7 +29,7 @@ nginx_ssl_protocols:
 - TLSv1.2
 
 # if storage_flavor == 'open'
-opensearchdashboards_images_release: 1.0.1
+opensearchdashboards_images_release: 1.2.0
 opensearchdashboards_images_repo: docker.io/opensearchproject/opensearch-dashboards
 
 # pull kibana prometheus exporter v7.10.2 -- es version on which os was forked

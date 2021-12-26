@@ -1,7 +1,7 @@
 grafana_admin_account: admin
 grafana_admin_password: secret
 
-grafana_images_release: 8.2.3
+grafana_images_release: 8.3.3
 grafana_images_repo: docker.io/grafana/grafana
 
 grafana_ldap_base: dc=demo,dc=local
