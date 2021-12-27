@@ -75,15 +75,21 @@ smtp:
   username: null
 {% endif %}
 
+{% endif %}
 email:
   body:
     signature: "PeerTube"
   subject:
     prefix: "[PeerTube]"
 
-{% endif %}
+client:
+  videos:
+    miniature:
+      prefer_author_display_name: true
+
 storage:
   tmp: '/data/tmp/'
+  bin: '/app/storage/bin/'
   avatars: '/data/avatars/'
   videos: '/data/videos/'
   streaming_playlists: '/data/streaming-playlists'
@@ -101,9 +107,9 @@ log:
   level: 'info'
   rotation:
     enabled : true
-    maxFileSize: 12MB
-    maxFiles: 20
-  anonymizeIP: false
+    max_file_size: 12MB
+    max_files: 20
+  anonymize_ip: false
   log_ping_requests: false
   prettify_sql: false
 
@@ -162,6 +168,8 @@ history:
 
 views:
   videos:
+    local_buffer_update_interval: '30 minutes'
+    ip_view_expiration: '1 hour'
     remote:
       max_age: '15 days'
 
@@ -180,6 +188,12 @@ peertube:
   check_latest_version:
     enabled: false
     url: 'https://joinpeertube.org/api/v1/versions.json'
+
+webadmin:
+  configuration:
+    allow_edits: true
+    edition:
+      allowed: true
 
 cache:
   captions:
@@ -206,6 +220,9 @@ user:
   video_quota: -1
   video_quota_daily: -1
 
+video_channels:
+  max_per_user: 20
+
 transcoding:
   allow_additional_extensions: true
   allow_audio_files: true
@@ -215,7 +232,8 @@ transcoding:
     enabled: false
   profile: 'default'
   resolutions:
-    0p: false
+    0p: true
+    144p: false
     240p: false
     360p: false
     480p: true
@@ -234,11 +252,18 @@ live:
   max_instance_lives: -1
   max_user_lives: -1
   rtmp:
+    enabled: true
     port: 1935
+  rtmps:
+    cert_file: ''
+    enabled: false
+    key_file: ''
+    port: 1936
   transcoding:
     enabled: true
     profile: 'default'
     resolutions:
+      144p: false
       240p: false
       360p: false
       480p: true
@@ -253,10 +278,12 @@ import:
     concurrency: 1
     http:
       enabled: false
+      youtube_dl_release:
+        url: 'https://yt-dl.org/downloads/latest/youtube-dl'
+        #url: https://api.github.com/repos/ytdl-org/youtube-dl/releases
+        #url: https://api.github.com/repos/yt-dlp/yt-dlp/releases
+        name: 'youtube-dl'
       force_ipv4: false
-      proxy:
-        enabled: false
-        url: ""
     torrent:
       enabled: false
 
