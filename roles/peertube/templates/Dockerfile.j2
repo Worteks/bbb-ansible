@@ -1,17 +1,8 @@
 FROM {{ peertube_images_repo }}:{{ peertube_images_release }}
 
-ENV DEBIAN_FRONTEND=noninteractive \
-    GITHUB_URL=https://raw.githubusercontent.com/expressjs/multer \
-    PR_REF=97d386740f5ed4c4be09dfdd23e5b7fc3d940d42
+ENV DEBIAN_FRONTEND=noninteractive
+
+# placeholder for customization
 
 RUN set -x \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get update \
-    && apt-get install -y wget \
-    && wget $GITHUB_URL/$PR_REF/lib/make-middleware.js \
-	-O /app/node_modules/multer/lib/make-middleware.js \
-    && wget $GITHUB_URL/$PR_REF/lib/multer-error.js \
-	-O /app/node_modules/multer/lib/multer-error.js \
-    && chown -R peertube:peertube /app/node_modules/multer \
-    && apt-get remove --purge -y wget \
     && rm -rf /var/lib/apt/lists/*

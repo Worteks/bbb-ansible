@@ -20,7 +20,7 @@ nginx_ssl_protocols:
 peertube_csp_enable: True
 
 #peertube_images_release: production-bullseye
-peertube_images_release: v4.0.0-bullseye
+peertube_images_release: v4.2.2-bullseye
 peertube_images_repo: docker.io/chocobozzz/peertube
 
 peertubeexporter_images_release: master
